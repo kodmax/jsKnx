@@ -7,7 +7,17 @@ export class Knx {
 
     }
 
-    public getDataPoint<T extends DataPointAbstract>(address: string, DataPointType: new(address: string, knxIp: KnxIp) => T): T {
-        return new DataPointType(address, this.knxIp)
+    /**
+     * 
+     * @param address device address
+     * @param pin device input/output number
+     * @returns 
+     */
+    public async scanGroups(address: string, pin: number): Promise<string[]> {
+        return [address]
+    }
+
+    public getDataPoint<T extends DataPointAbstract>(groups: string[], DataPointType: new(addresses: string[], knxIp: KnxIp) => T): T {
+        return new DataPointType(groups, this.knxIp)
     }
 }

@@ -1,4 +1,4 @@
-import { DataPointBinary, DataPoint, DataPointAbstract } from "./types"
+import { DataPoint, DataPointAbstract } from "./types"
 
 export class B1 extends DataPointAbstract implements DataPoint<boolean> {
 
@@ -20,12 +20,12 @@ export class B1 extends DataPointAbstract implements DataPoint<boolean> {
     }
 
     public async write(value: boolean): Promise<void> {
-        console.log('Write', this.toBuffer(value, Buffer.alloc(1)), 'to', this.address)
+        console.log('Write', this.toBuffer(value, Buffer.alloc(1)), 'to', this.addresses [0])
 
         this.toBuffer(value, Buffer.alloc(1))
     }
 
-    public on(cb: (value: boolean) => Promise<void>) {
+    public on(eventType: string, cb: (value: boolean) => Promise<void>) {
 
     }    
 }
