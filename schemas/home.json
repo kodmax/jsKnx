@@ -1,0 +1,27 @@
+{
+    "ip": "192.168.0.8",
+    "name": "Home",
+    "locations": [
+        {
+            "name": "Salon",
+            "functions": [
+                {
+                    "name": "Światło nad TV",
+                    "components": [
+                        {
+                            "uid": "salon-światło",
+                            "name": "Włącz/wyłącz",
+                            "address": "1.1.1",
+                            "pin": 5
+                        },
+                        {
+                            "name": "Stan",
+                            "address": "1.1.1",
+                            "pin": 6
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
