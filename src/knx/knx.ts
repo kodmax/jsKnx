@@ -1,5 +1,10 @@
 import { KnxSchemaDeclaration, IKnxGateway } from "./types";
 import { IDPT } from "./datapoint-types/types";
+import { IPGateway } from "./ip-gateway";
+
+import { Socket, createSocket } from "dgram";
+import * as fs from "fs"
+
 
 export class KnxFunction {
     public constructor(private readonly functionName: string, private readonly locationName: string, private readonly knx: Knx) {
@@ -11,7 +16,23 @@ export class KnxFunction {
     }
 }
 export class Knx {
-    public constructor(private readonly gateway: IKnxGateway, schema: KnxSchemaDeclaration) {
+    public static async connect(path: string, ip?: string, port?: number): Promise<Knx> {
+        const schema = JSON.parse(await fs.promises.readFile(path, { encoding: 'utf-8' }))
+
+        const targetPort: number = port || schema.port || 3671
+        const targetIp: string = ip || schema.ip || ''
+        if (targetIp) {
+            const socket: Socket = createSocket('udp4')
+            socket.connect(targetPort, targetIp)
+
+            return new Knx(new IPGateway(socket), schema)
+    
+        } else {
+            throw new Error("No IP speciefied for the schema")
+        }
+    }
+
+    private constructor(private readonly gateway: IKnxGateway, schema: KnxSchemaDeclaration) {
 
     }
 

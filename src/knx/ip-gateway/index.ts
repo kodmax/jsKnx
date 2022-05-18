@@ -1,32 +1,27 @@
-import { Socket, createSocket } from "dgram";
-import * as fs from "fs"
+import { IKnxGateway, KnxEventType, KnxMessageCallback } from "../types";
+import { createSocket, Socket } from "dgram";
 
-import { KnxSchemaDeclaration } from "../types";
-import { IPGateway } from "./gateway";
-import { Knx } from "../knx"
+export class IPGateway implements IKnxGateway {
+    private readonly bus = createSocket({ type: 'udp4' })
 
-export class KnxIp {
-    private static async socket(ip: string, port: number = 3671): Promise<Socket> {
-        const socket: Socket = createSocket('udp4')
-
-        return new Promise((resolve, reject) => {
-            socket.connect(port, ip, () => resolve(socket))
+    public constructor(private readonly socket: Socket) {
+        console.log('Gateway initialization')
+        this.bus.on('error', err => {
+            console.log('bus error', err)
         })
-    }
+        
+        socket.on('connect', () => {
+            console.log('tunnel connect')
+        })
+        
+        this.bus.on('listening', () => {
+            console.log(`server listening ${this.bus.address().address}:${this.bus.address().port}`);
+        })
 
-    public static async connect(path: string, ip?: string, port?: number): Promise<Knx> {
-        const schema  = JSON.parse(await fs.promises.readFile(path, { encoding: 'utf-8' }))
-        const destIp: string = ip || schema.ip || ''
-        if (destIp) {
-            const gateway = new IPGateway(await KnxIp.socket(destIp, port || schema.port))
-            return new Knx(gateway, schema)
-    
-        } else {
-            throw new Error("No IP speciefied for the schema")
-        }
-    }
+        this.bus.bind(3671, () => {
+             socket.addMembership('224.0.23.12')
+        })
 
-    private constructor(private readonly socket: Socket) {
         socket.on('error', err => {
             console.log('socket error', err)
         })
@@ -34,6 +29,21 @@ export class KnxIp {
         socket.on('message', (msg, rinfo) => {
             console.log('knx message', msg)
         })
+
+        this.bus.on('message', (msg, rinfo) => {
+            console.log('bus message', msg)
+        })
     }
-    
+
+    public async send(message: Buffer): Promise<void> {
+
+    }
+
+    public removeEventListener(eventType: KnxEventType, cb: KnxMessageCallback): void {
+
+    }
+
+    public addEventListener(eventType: KnxEventType, cb: KnxMessageCallback): void {
+
+    }
 }
