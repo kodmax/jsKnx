@@ -1,5 +1,5 @@
 export type KnxMessageCallback = (msg: KnxMessage) => Promise<void>
-export type KnxEventType = "message" | "error"
+export type KnxEventType = "state" | "command" | "write"
 export type KnxMessage = {
     body: Buffer
 }
@@ -33,3 +33,4 @@ export type KnxSchemaDeclaration = {
     name: string
     ip?: string
 }
+

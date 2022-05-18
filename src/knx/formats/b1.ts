@@ -1,6 +1,6 @@
 import { DataPoint, DataPointAbstract } from "./types"
 
-export class B1 extends DataPointAbstract implements DataPoint<number> {
+export class B1 extends DataPointAbstract<number> implements DataPoint<number> {
 
     private fromBuffer(buf: Buffer, position: number = 0): number {
         return buf.readUint8(position) & 0x01
@@ -21,16 +21,8 @@ export class B1 extends DataPointAbstract implements DataPoint<number> {
 
     public async write(value: number): Promise<void> {
         console.log('Write', this.toBuffer(value, Buffer.alloc(1)), 'to', this.addresses [0])
-
+        this.triggerEvent("write", value)
         this.toBuffer(value, Buffer.alloc(1))
     }
-
-    public removeEventListener(eventType: string, cb: (value: number) => Promise<void>) {
-
-    }    
-
-    public addEventListener(eventType: string, cb: (value: number) => Promise<void>) {
-
-    }    
 }
 
