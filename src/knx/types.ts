@@ -1,4 +1,4 @@
-import { KnxServiceType } from "./ip-gateway/service-descriptor"
+import { KnxServiceId } from "./enums"
 
 export type KnxMessageCallback = (msg: KnxMessage) => Promise<void>
 export type KnxEventType = "state" | "command" | "write"
@@ -9,7 +9,6 @@ export type KnxMessage = {
 export interface IKnxGateway {
     removeEventListener(eventType: KnxEventType, cb: KnxMessageCallback)
     addEventListener(eventType: KnxEventType, cb: KnxMessageCallback)
-    send(service: KnxServiceType, blocks: Buffer[]): Promise<number>
 }
 
 type Component = {
