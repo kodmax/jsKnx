@@ -1,7 +1,7 @@
-import { DPT_Switch, Knx } from "./knx"
+import { DPT_Switch, IPGateway } from "./knx"
 
 
-Knx.connect('./schemas/home.json').then(async schema => {
+IPGateway.connect('./schemas/home.json').then(async schema => {
     
     await schema.getFunction("Światło nad TV", "Salon").then(async func => {
         const light1 = await func.scanComponent("Włącz/Wyłącz", DPT_Switch)
