@@ -1,1 +1,1 @@
-export { DPT_Switch } from "./1.001"
+export * from "./b1"

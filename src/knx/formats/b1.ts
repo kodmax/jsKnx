@@ -1,13 +1,13 @@
 import { DataPoint, DataPointAbstract } from "./types"
 
-export class B1 extends DataPointAbstract implements DataPoint<boolean> {
+export class B1 extends DataPointAbstract implements DataPoint<number> {
 
-    private fromBuffer(buf: Buffer, position: number = 0): boolean {
-        return (buf.readUint8(position) & 0x01) === 1
+    private fromBuffer(buf: Buffer, position: number = 0): number {
+        return buf.readUint8(position) & 0x01
     }
 
-    private toBuffer(value: boolean, buf: Buffer, position: number = 0): Buffer {
-        buf.writeUint8(value ? 1 : 0, position)
+    private toBuffer(value: number, buf: Buffer, position: number = 0): Buffer {
+        buf.writeUint8((value & 0x01) === 1 ? 1 : 0, position)
         return buf
     }
 
@@ -15,21 +15,21 @@ export class B1 extends DataPointAbstract implements DataPoint<boolean> {
 
     }
 
-    public async read(): Promise<boolean> {
+    public async read(): Promise<number> {
         return this.fromBuffer(Buffer.alloc(1))
     }
 
-    public async write(value: boolean): Promise<void> {
+    public async write(value: number): Promise<void> {
         console.log('Write', this.toBuffer(value, Buffer.alloc(1)), 'to', this.addresses [0])
 
         this.toBuffer(value, Buffer.alloc(1))
     }
 
-    public removeEventListener(eventType: string, cb: (value: boolean) => Promise<void>) {
+    public removeEventListener(eventType: string, cb: (value: number) => Promise<void>) {
 
     }    
 
-    public addEventListener(eventType: string, cb: (value: boolean) => Promise<void>) {
+    public addEventListener(eventType: string, cb: (value: number) => Promise<void>) {
 
     }    
 }

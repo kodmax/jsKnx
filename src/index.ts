@@ -19,6 +19,7 @@ KnxIp.connect('./schemas/home.json').then(async schema => {
         })
     
         const light1State = await func.scanComponent("Stan", DPT_Switch)
+
         light1State.addEventListener("change", async value => {
             console.log('light1State change', value)
         })
