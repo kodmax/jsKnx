@@ -1,4 +1,5 @@
-import { IKnxGateway, KnxEventType } from "../types"
+import { KnxEventType } from "../types"
+import { Socket } from "dgram"
 
 export interface DataPoint<T> {
     removeEventListener(eventType: KnxEventType, cb: (value: T) => Promise<void>): void
@@ -12,7 +13,7 @@ type EventCallbacks<T> = Record<KnxEventType, Set<EventCallback<T>>>
 export type EventCallback<T> = (value: T) => Promise<void>
 
 export abstract class DataPointAbstract<T> {
-    public constructor(protected readonly addresses: string[], protected readonly gateway: IKnxGateway) {
+    public constructor(protected readonly addresses: string[], protected readonly bus: Socket) {
         if (addresses.length === 0) {
             throw new Error("At least one DataPoint address must be specified")
         }
@@ -30,7 +31,7 @@ export abstract class DataPointAbstract<T> {
 
     public addEventListener(eventType: KnxEventType, cb: EventCallback<T>): EventCallback<T> {
         this.eventCallbacks [eventType].add(cb)
-        
+
         return cb
     }    
 
