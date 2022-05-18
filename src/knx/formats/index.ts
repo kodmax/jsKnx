@@ -1,2 +1,2 @@
 
-export { B1 } from "./b1"
+export * from "./b1"

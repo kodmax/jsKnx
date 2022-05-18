@@ -1,10 +1,18 @@
 import { DataPointAbstract } from "./formats/types";
-import { KnxSchema } from "./schema";
-import { KnxIp } from "./knx-ip";
-import * as fs from "fs"
+import { KnxSchemaDeclaration } from "./types";
+import { IKnxGateway } from "./types";
 
+export class KnxFunction {
+    public constructor(private readonly functionName: string, private readonly locationName: string, private readonly knx: Knx) {
+
+    }
+
+    public async scanComponent<T extends DataPointAbstract>(name: string, type: new(addresses: string[], gateway: IKnxGateway) => T): Promise<T> {
+        return this.knx.getDataPoint<T>(await this.knx.scanComponent(name, this.functionName, this.locationName), type)
+    }
+}
 export class Knx {
-    public constructor(private readonly knxIp: KnxIp) {
+    public constructor(private readonly gateway: IKnxGateway, schema: KnxSchemaDeclaration) {
 
     }
 
@@ -26,7 +34,11 @@ export class Knx {
         return ['']
     }
 
-    public getDataPoint<T extends DataPointAbstract>(groups: string[], DataPointType: new(addresses: string[], knxIp: KnxIp) => T): T {
-        return new DataPointType(groups, this.knxIp)
+    public async getFunction(functionName: string, locationName: string): Promise<KnxFunction> {
+        return new KnxFunction(functionName, locationName, this)
+    }
+
+    public getDataPoint<T extends DataPointAbstract>(groups: string[], DataPointType: new(addresses: string[], gateway: IKnxGateway) => T): T {
+        return new DataPointType(groups, this.gateway)
     }
 }

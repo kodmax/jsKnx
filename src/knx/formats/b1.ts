@@ -25,7 +25,11 @@ export class B1 extends DataPointAbstract implements DataPoint<boolean> {
         this.toBuffer(value, Buffer.alloc(1))
     }
 
-    public on(eventType: string, cb: (value: boolean) => Promise<void>) {
+    public removeEventListener(eventType: string, cb: (value: boolean) => Promise<void>) {
+
+    }    
+
+    public addEventListener(eventType: string, cb: (value: boolean) => Promise<void>) {
 
     }    
 }

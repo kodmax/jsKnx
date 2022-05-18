@@ -2,11 +2,11 @@ import { B1 } from "../formats"
 
 
 export class DPT_Switch extends B1 {
-    public async switchOn(): Promise<void> {
+    public async on(): Promise<void> {
         return this.write(true)
     }
 
-    public async switchOff(): Promise<void> {
+    public async off(): Promise<void> {
         return this.write(false)
     }
 
