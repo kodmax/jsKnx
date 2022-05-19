@@ -17,13 +17,19 @@ export class KnxConnection {
         })
     }
 
+    private connectionType?: KnxConnectionType
+    private channel? : number
+    private layer?: KnxLayer
+
     private constructor(private readonly gateway: Socket, private readonly tunnel: Socket) {
         gateway.on('message', data => {
             const msg = KnxMessage.decode(data)
             if (msg.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
-                this.connect()
+                if (this.connectionType && this.layer) {
+                    this.connect(this.connectionType, this.layer)
+                }
             }
-            
+
             msg.dump("Gateway message")
         })
 
@@ -44,7 +50,27 @@ export class KnxConnection {
         return this.tunnel
     }
 
-    public async connect(): Promise<number> {
+    /**
+     * Destroys the sockets, this object is no longer usable after calling this method
+     */
+    public destroy(): void {
+        //
+    }
+
+    public async disconnect(): Promise<void> {
+        this.connectionType = undefined
+        this.layer = undefined
+
+        //
+
+        // KnxMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
+        this.channel = undefined
+    }
+
+    public async connect(connectionType: KnxConnectionType, layer: KnxLayer): Promise<number> {
+        this.connectionType = connectionType
+        this.layer = layer
+        
         return new Promise((resolve, reject) => {
             const cb = (msg: Buffer, rinfo: RemoteInfo) => {
                 if (msg.readUInt16BE(2) === KnxServiceId.CONNECTION_RESPONSE) {
@@ -57,12 +83,13 @@ export class KnxConnection {
                         reject(new Error('Error Connection to KNX/IP Gateway: ' + KnxErrorCode[error]))
     
                     } else {
+                        this.channel = channel
                         resolve(channel)
                     }
                 }
             }
     
-            KnxMessage.compose(KnxServiceId.CONNECTION_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)]).send(this.gateway)
+            KnxMessage.compose(KnxServiceId.CONNECTION_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
             this.gateway.on('message', cb)
         })
     }
