@@ -1,6 +1,7 @@
 {
     "ip": "192.168.0.8",
     "name": "Home",
+    "groups": [],
     "locations": [
         {
             "name": "Salon",
@@ -12,11 +13,13 @@
                             "uid": "salon-światło",
                             "name": "Włącz/wyłącz",
                             "address": "1.1.1",
+                            "links": [],
                             "pin": 5
                         },
                         {
                             "name": "Stan",
                             "address": "1.1.1",
+                            "links": [],
                             "pin": 6
                         }
                     ]

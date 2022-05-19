@@ -1,8 +1,8 @@
 import * as fs from "fs"
 import { KnxConnection } from "./connection"
-import { KnxConnectionType, KnxLayer } from "./enums"
+import { KnxConnectionType, KnxLayer, KnxServiceId } from "./enums"
 import { Knx } from "./knx"
-import { KnxIpMessage } from "./message"
+import { KnxIpMessage, KnxMessage, cri } from "./message"
 import { KnxSchemaDeclaration } from "./types"
 
 export class KnxSchema {
@@ -18,13 +18,20 @@ export class KnxSchema {
         this.ip = ip || this.schema.ip || ''
     }
 
-    public async busMonitor(cb: (msg: KnxIpMessage) => void): Promise<KnxSchema> {
+    public async busMonitor(cb: (msg: KnxMessage) => void): Promise<KnxSchema> {
         if (this.ip) {
             const connection = await KnxConnection.bind(this.ip, this.port)
-            await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.BUSMONITOR_LAYER)
+            const tunnel = connection.getTunnel()
 
-            connection.getTunnel().on('message', msg => {
-                cb(KnxIpMessage.decode(msg))
+            await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.BUSMONITOR_LAYER)
+            tunnel.on('message', msg => {
+                const ipMessage = KnxIpMessage.decode(msg)
+                if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
+                    KnxIpMessage.compose(KnxServiceId.TUNNEL_RESPONSE, [Buffer.from([0x04, ipMessage.getChannel(), ipMessage.getSequenceNumber(), 0x00])]).send(tunnel)
+                    if (ipMessage.hasCemiFrame()) {
+                        cb(ipMessage.getCemiFrame())
+                    }
+                } 
             })
     
             return this
@@ -37,8 +44,8 @@ export class KnxSchema {
     public async connect(): Promise<Knx> {
         if (this.ip) {
             const connection = await KnxConnection.bind(this.ip, this.port)
-            const channel = await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
 
+            const channel = await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
             return new Knx(this.schema, channel, connection.getTunnel(), connection.getGateway())
     
         } else {

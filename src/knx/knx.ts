@@ -3,6 +3,7 @@ import { IDPT } from "./types";
 
 import { Socket } from "dgram";
 import { KnxIpMessage } from "./message";
+import { KnxServiceId } from "./enums";
 
 export class KnxFunction {
     public constructor(private readonly functionName: string, private readonly locationName: string, private readonly knx: Knx) {
@@ -16,7 +17,13 @@ export class KnxFunction {
 export class Knx {
     public constructor(private readonly schema: KnxSchemaDeclaration, private readonly channel: number, private readonly tunnel: Socket, private readonly gateway: Socket) {
         tunnel.on('message', msg => {
-            KnxIpMessage.decode(msg).dump("Tunnel message")
+            const ipMessage = KnxIpMessage.decode(msg)
+            if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
+                KnxIpMessage.compose(KnxServiceId.TUNNEL_RESPONSE, [Buffer.from([0x04, ipMessage.getChannel(), ipMessage.getSequenceNumber(), 0x00])]).send(tunnel)
+                if (ipMessage.hasCemiFrame()) {
+                    ipMessage.getCemiFrame().dump("Knx Bus Message")
+                }
+            } 
         })
     }
 

@@ -1,3 +1,5 @@
+import { DPT } from "./enums"
+
 export type KnxIpMessageCallback = (msg: KnxIpMessage) => Promise<void>
 export type KnxEventType = "state" | "command" | "write"
 export type KnxIpMessage = {
@@ -5,6 +7,7 @@ export type KnxIpMessage = {
 }
 
 type Component = {
+    links?: string[]
     address: string
     name: string
     uid?: string
@@ -21,8 +24,29 @@ type Location = {
     name: string
 }
 
+type TopGroup = {
+    name: string
+    id: number
+    items: MidGroup[]
+}
+
+type MidGroup = {
+    name: string
+    id: number
+    items: Group[]
+}
+
+type Group = {
+    dataType: keyof DPT
+    description: string
+    title?: string
+    name: string
+    id: number
+}
+
 export type KnxSchemaDeclaration = {
     locations: Location[]
+    groups: TopGroup[]
     port?: number
     name: string
     ip?: string

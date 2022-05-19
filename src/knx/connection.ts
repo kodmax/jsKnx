@@ -3,6 +3,10 @@ import { KnxIpMessage, hpai, cri } from "./message";
 
 import { createSocket, RemoteInfo, Socket } from "dgram";
 
+/**
+ * Docs
+ * http://www.eb-systeme.de/?page_id=479
+ */
 export class KnxConnection {
     public static async bind(ip: string, port: number): Promise<KnxConnection> {
         const gateway: Socket = createSocket('udp4')
@@ -10,7 +14,7 @@ export class KnxConnection {
 
         return new Promise((resolve, reject) => {
             gateway.connect(port, ip, () => {
-                tunnel.bind(0, gateway.address().address, () => {
+                tunnel.connect(port, ip, () => {
                     resolve(new KnxConnection(gateway, tunnel))
                 })
             })
@@ -74,17 +78,15 @@ export class KnxConnection {
         return new Promise((resolve, reject) => {
             const cb = (msg: Buffer, rinfo: RemoteInfo) => {
                 if (msg.readUInt16BE(2) === KnxServiceId.CONNECTION_RESPONSE) {
-                    this.gateway.off('message', cb)
-                    const channel: number = msg.readUint8(6)
                     const error: number = msg.readUint8(7)
+                    this.channel = msg.readUint8(6)
                     this.gateway.off('message', cb)
     
                     if (error) {
                         reject(new Error('Error Connection to KNX/IP Gateway: ' + KnxErrorCode[error]))
     
                     } else {
-                        this.channel = channel
-                        resolve(channel)
+                        resolve(this.channel)
                     }
                 }
             }
