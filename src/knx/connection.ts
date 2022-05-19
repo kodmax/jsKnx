@@ -1,5 +1,5 @@
 import { KnxErrorCode, KnxConnectionType, KnxServiceId, KnxLayer } from "./enums";
-import { KnxMessage, hpai, cri } from "./message";
+import { KnxIpMessage, hpai, cri } from "./message";
 
 import { createSocket, RemoteInfo, Socket } from "dgram";
 
@@ -23,7 +23,7 @@ export class KnxConnection {
 
     private constructor(private readonly gateway: Socket, private readonly tunnel: Socket) {
         gateway.on('message', data => {
-            const msg = KnxMessage.decode(data)
+            const msg = KnxIpMessage.decode(data)
             if (msg.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
                 if (this.connectionType && this.layer) {
                     this.connect(this.connectionType, this.layer)
@@ -63,7 +63,7 @@ export class KnxConnection {
 
         //
 
-        // KnxMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
+        // KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
         this.channel = undefined
     }
 
@@ -89,7 +89,7 @@ export class KnxConnection {
                 }
             }
     
-            KnxMessage.compose(KnxServiceId.CONNECTION_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
+            KnxIpMessage.compose(KnxServiceId.CONNECTION_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
             this.gateway.on('message', cb)
         })
     }

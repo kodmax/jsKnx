@@ -1,8 +1,8 @@
 import { KnxServiceId } from "./enums"
 
-export type KnxMessageCallback = (msg: KnxMessage) => Promise<void>
+export type KnxIpMessageCallback = (msg: KnxIpMessage) => Promise<void>
 export type KnxEventType = "state" | "command" | "write"
-export type KnxMessage = {
+export type KnxIpMessage = {
     body: Buffer
 }
 

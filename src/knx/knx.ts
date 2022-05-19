@@ -2,7 +2,7 @@ import { KnxSchemaDeclaration } from "./types";
 import { IDPT } from "./datapoint-types/types";
 
 import { Socket } from "dgram";
-import { KnxMessage } from "./message";
+import { KnxIpMessage } from "./message";
 
 export class KnxFunction {
     public constructor(private readonly functionName: string, private readonly locationName: string, private readonly knx: Knx) {
@@ -16,7 +16,7 @@ export class KnxFunction {
 export class Knx {
     public constructor(private readonly schema: KnxSchemaDeclaration, private readonly channel: number, private readonly tunnel: Socket, private readonly gateway: Socket) {
         tunnel.on('message', msg => {
-            KnxMessage.decode(msg).dump("Tunnel message")
+            KnxIpMessage.decode(msg).dump("Tunnel message")
         })
     }
 

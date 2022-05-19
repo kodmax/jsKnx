@@ -2,7 +2,7 @@ import * as fs from "fs"
 import { KnxConnection } from "./connection"
 import { KnxConnectionType, KnxLayer } from "./enums"
 import { Knx } from "./knx"
-import { KnxMessage } from "./message"
+import { KnxIpMessage } from "./message"
 import { KnxSchemaDeclaration } from "./types"
 
 export class KnxSchema {
@@ -18,13 +18,13 @@ export class KnxSchema {
         this.ip = ip || this.schema.ip || ''
     }
 
-    public async busMonitor(cb: (msg: KnxMessage) => void): Promise<KnxSchema> {
+    public async busMonitor(cb: (msg: KnxIpMessage) => void): Promise<KnxSchema> {
         if (this.ip) {
             const connection = await KnxConnection.bind(this.ip, this.port)
             await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.BUSMONITOR_LAYER)
 
             connection.getTunnel().on('message', msg => {
-                cb(KnxMessage.decode(msg))
+                cb(KnxIpMessage.decode(msg))
             })
     
             return this

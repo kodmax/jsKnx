@@ -1,8 +1,8 @@
 import { DPT_Switch, KnxSchema } from "./knx"
-import { KnxMessage } from "./knx/message"
+import { KnxIpMessage } from "./knx/message"
 
 
-KnxSchema.load('./schemas/home.json').then(schema => schema.busMonitor((msg: KnxMessage) => {
+KnxSchema.load('./schemas/home.json').then(schema => schema.busMonitor((msg: KnxIpMessage) => {
     msg.dump("Bus Monitor")
 }))
 
