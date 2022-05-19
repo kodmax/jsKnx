@@ -1,5 +1,6 @@
 import { KnxEventType } from "../types"
 import { Socket } from "dgram"
+import { DPT } from "../enums"
 
 export interface DataPoint<T> {
     removeEventListener(eventType: KnxEventType, cb: (value: T) => Promise<void>): void
@@ -13,6 +14,9 @@ type EventCallbacks<T> = Record<KnxEventType, Set<EventCallback<T>>>
 export type EventCallback<T> = (value: T) => Promise<void>
 
 export abstract class DataPointAbstract<T> {
+    public static readonly unit: string
+    public static readonly type: DPT
+
     public constructor(protected readonly addresses: string[], protected readonly bus: Socket) {
         if (addresses.length === 0) {
             throw new Error("At least one DataPoint address must be specified")

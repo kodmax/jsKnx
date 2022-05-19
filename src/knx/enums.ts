@@ -104,3 +104,17 @@ export enum KnxIpProtocol {
   IPV4_UDP = 0x01,
   IPV4_TCP = 0x02
 };
+
+export enum DPT {
+  Switch = '1.001',
+  Bool = '1.002',
+  Enable = '1.003',
+  UpDown = '1.008',
+  OpenClose = '1.009',
+  Reset = '1.015',
+  Ack = '1.016',
+  Trigger = '1.017',
+  Occupancy = '1.018',
+  Window_Door = '1.019',
+  DayNight = '1.024',
+}

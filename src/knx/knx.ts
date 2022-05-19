@@ -1,5 +1,5 @@
 import { KnxSchemaDeclaration } from "./types";
-import { IDPT } from "./datapoint-types/types";
+import { IDPT } from "./types";
 
 import { Socket } from "dgram";
 import { KnxIpMessage } from "./message";

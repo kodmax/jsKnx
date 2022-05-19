@@ -1,5 +1,3 @@
-import { KnxServiceId } from "./enums"
-
 export type KnxIpMessageCallback = (msg: KnxIpMessage) => Promise<void>
 export type KnxEventType = "state" | "command" | "write"
 export type KnxIpMessage = {
@@ -30,3 +28,6 @@ export type KnxSchemaDeclaration = {
     ip?: string
 }
 
+export interface IDPT {
+
+}
