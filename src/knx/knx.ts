@@ -1,9 +1,8 @@
-import { KnxSchemaDeclaration, IKnxGateway } from "./types";
+import { KnxSchemaDeclaration } from "./types";
 import { IDPT } from "./datapoint-types/types";
-import { KnxServiceId } from "./enums";
 
 import { Socket } from "dgram";
-import { Message } from "./message";
+import { KnxMessage } from "./message";
 
 export class KnxFunction {
     public constructor(private readonly functionName: string, private readonly locationName: string, private readonly knx: Knx) {
@@ -15,9 +14,9 @@ export class KnxFunction {
     }
 }
 export class Knx {
-    public constructor(private readonly schema: KnxSchemaDeclaration, private readonly channel: number, private readonly bus: Socket, private readonly gateway: Socket) {
-        bus.on('message', msg => {
-            Message.decode(msg).dump()
+    public constructor(private readonly schema: KnxSchemaDeclaration, private readonly channel: number, private readonly tunnel: Socket, private readonly gateway: Socket) {
+        tunnel.on('message', msg => {
+            KnxMessage.decode(msg).dump("Tunnel message")
         })
     }
 
@@ -44,6 +43,6 @@ export class Knx {
     }
 
     public getDataPoint<T extends IDPT>(groups: string[], DataPointType: new(addresses: string[], bus: Socket) => T): T {
-        return new DataPointType(groups, this.bus)
+        return new DataPointType(groups, this.tunnel)
     }
 }

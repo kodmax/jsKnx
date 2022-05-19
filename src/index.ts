@@ -1,8 +1,8 @@
-import { DPT_Switch, connect } from "./knx"
+import { DPT_Switch, KnxSchema } from "./knx"
 
 
-connect('./schemas/home.json').then(async knx => {
-    
+KnxSchema.load('./schemas/home.json').then(schema => schema.connect()).then(async knx => {
+
     await knx.getFunction("Światło nad TV", "Salon").then(async func => {
         const light1 = await func.scanComponent("Włącz/Wyłącz", DPT_Switch)
 

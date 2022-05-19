@@ -6,11 +6,6 @@ export type KnxMessage = {
     body: Buffer
 }
 
-export interface IKnxGateway {
-    removeEventListener(eventType: KnxEventType, cb: KnxMessageCallback)
-    addEventListener(eventType: KnxEventType, cb: KnxMessageCallback)
-}
-
 type Component = {
     address: string
     name: string
