@@ -3,6 +3,7 @@ import { IDPT } from "./datapoint-types/types";
 import { KnxServiceId } from "./enums";
 
 import { Socket } from "dgram";
+import { Message } from "./message";
 
 export class KnxFunction {
     public constructor(private readonly functionName: string, private readonly locationName: string, private readonly knx: Knx) {
@@ -16,10 +17,7 @@ export class KnxFunction {
 export class Knx {
     public constructor(private readonly schema: KnxSchemaDeclaration, private readonly channel: number, private readonly bus: Socket, private readonly gateway: Socket) {
         bus.on('message', msg => {
-            const serviceId = KnxServiceId[msg.readUInt16BE(2)]
-            const body = msg.slice(6)
-
-            console.log('bus message', serviceId, body)
+            Message.decode(msg).dump()
         })
     }
 
