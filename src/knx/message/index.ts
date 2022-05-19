@@ -6,12 +6,16 @@ export { hpai } from "./hpai"
 export { cri } from "./cri"
 
 export class KnxMessage {
-    private readonly serviceId: number
+    private readonly serviceId: KnxServiceId
     private readonly body: Buffer
 
     private constructor(private readonly message: Buffer) {
         this.serviceId = message.readUint16BE(2)
         this.body = message.slice(6)
+    }
+
+    public getServiceId(): KnxServiceId {
+        return this.serviceId
     }
 
     public static decode(message: Buffer): KnxMessage {

@@ -18,8 +18,13 @@ export class KnxConnection {
     }
 
     private constructor(private readonly gateway: Socket, private readonly tunnel: Socket) {
-        gateway.on('message', msg => {
-            KnxMessage.decode(msg).dump("Gateway message")
+        gateway.on('message', data => {
+            const msg = KnxMessage.decode(data)
+            if (msg.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
+                this.connect()
+            }
+            
+            msg.dump("Gateway message")
         })
 
         gateway.on('error', err => {
