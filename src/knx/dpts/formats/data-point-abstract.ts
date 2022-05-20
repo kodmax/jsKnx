@@ -13,11 +13,10 @@ export abstract class DataPointAbstract<T> implements IDPT {
     protected abstract write(value: T): Promise<void>
     protected abstract decode(data: Buffer): T
 
-    protected async send(data: Buffer): Promise<void> {
+    protected async send(value: Buffer): Promise<void> {
         const linkInfo = this.link.getLinkInfo()
-        const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [
-            TunnelingRequest.compose(linkInfo.channel), 
-            KnxCemiFrame.compose(KnxCemiCode.L_Data_Confirmation, linkInfo.gatewayAddress, this.address, data)
+        const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [ TunnelingRequest.compose(linkInfo.channel), 
+            KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value)
         ])
 
         await telegram.send(this.connection.getTunnel())
@@ -26,10 +25,9 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
     public async requestValue(): Promise<void> {
         const linkInfo = this.link.getLinkInfo()
-        const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [
-            TunnelingRequest.compose(linkInfo.channel), 
-            KnxCemiFrame.compose(KnxCemiCode.L_Data_Request, linkInfo.gatewayAddress, this.address, Buffer.from([0])
-        )])
+        const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [ TunnelingRequest.compose(linkInfo.channel), 
+            KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', this.address)
+        ])
         
         await telegram.send(this.connection.getTunnel())
     }

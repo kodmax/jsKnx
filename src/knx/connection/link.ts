@@ -18,9 +18,6 @@ export class KnxLink {
                 connection.connect(this.linkInfo.connectionType, this.linkInfo.layer).then(linkInfo => {
                     this.linkInfo = linkInfo
                 })
-
-            } else {
-                console.log('Ignored Gateway message', ipMessage.getServiceId(), ipMessage.getBody())
             }
         })
 
@@ -34,10 +31,10 @@ export class KnxLink {
                 if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
                     const cemiFrame = new KnxCemiFrame(tunneling.getBody())
                     this.events.emit("tunnel-request", cemiFrame)
-                }
 
-            } else {
-                console.log('Ignored Tunnel message', ipMessage.getServiceId(), ipMessage.getBody())
+                } else {
+                    console.log('Ignored Tunnel message', ipMessage.getServiceId(), ipMessage.getBody())
+                }
             }
         })
     }

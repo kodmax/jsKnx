@@ -79,7 +79,7 @@ export class KnxConnection {
                             layer,
                         }
 
-                        KnxIpMessage.compose(KnxServiceId.CONNECTIONSTATE_REQUEST, [Buffer.from([linkInfo.channel, 0x00]), hpai(this.gateway)]).send(this.gateway)
+                        KnxIpMessage.compose(KnxServiceId.CONNECTIONSTATE_REQUEST, [Buffer.from([linkInfo.channel, 0x00]), hpai(this.gateway)]).send(this.tunnel)
                     }
 
                 } else if (msg.readUint16BE(2) === KnxServiceId.CONNECTIONSTATE_RESPONSE) {
