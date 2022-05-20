@@ -22,13 +22,13 @@ export class KnxConnection {
     }
 
     private connectionType?: KnxConnectionType
-    private channel? : number
     private layer?: KnxLayer
 
     private constructor(private readonly gateway: Socket, private readonly tunnel: Socket) {
         gateway.on('message', data => {
             const msg = KnxIpMessage.decode(data)
             if (msg.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
+                console.log('RECONNECTING')
                 if (this.connectionType && this.layer) {
                     this.connect(this.connectionType, this.layer)
                 }
@@ -54,21 +54,18 @@ export class KnxConnection {
         return this.tunnel
     }
 
-    /**
-     * Destroys the sockets, this object is no longer usable after calling this method
-     */
-    public destroy(): void {
-        //
+    public close(): void {
+        this.gateway.close()
+        this.tunnel.close()
     }
 
-    public async disconnect(): Promise<void> {
+    public async disconnect(channel: number): Promise<void> {
         this.connectionType = undefined
         this.layer = undefined
 
         //
 
         // KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
-        this.channel = undefined
     }
 
     public async connect(connectionType: KnxConnectionType, layer: KnxLayer): Promise<number> {
@@ -79,14 +76,14 @@ export class KnxConnection {
             const cb = (msg: Buffer, rinfo: RemoteInfo) => {
                 if (msg.readUInt16BE(2) === KnxServiceId.CONNECTION_RESPONSE) {
                     const error: number = msg.readUint8(7)
-                    this.channel = msg.readUint8(6)
+                    const channel = msg.readUint8(6)
                     this.gateway.off('message', cb)
     
                     if (error) {
                         reject(new Error('Error Connection to KNX/IP Gateway: ' + KnxErrorCode[error]))
     
                     } else {
-                        resolve(this.channel)
+                        resolve(channel)
                     }
                 }
             }

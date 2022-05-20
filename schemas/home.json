@@ -1,30 +1,59 @@
 {
     "ip": "192.168.0.8",
     "name": "Home",
-    "groups": [],
-    "locations": [
-        {
-            "name": "Salon",
-            "functions": [
-                {
-                    "name": "Światło nad TV",
-                    "components": [
-                        {
-                            "uid": "salon-światło",
-                            "name": "Włącz/wyłącz",
-                            "address": "1.1.1",
-                            "links": [],
-                            "pin": 5
-                        },
-                        {
-                            "name": "Stan",
-                            "address": "1.1.1",
-                            "links": [],
-                            "pin": 6
-                        }
-                    ]
-                }
-            ]
+    "groups": {
+        "1/0/1": {
+            "description": "Broadcast current date/time to get all the devices witch clocks, synchronized.",
+            "name": "Date/Time Now",
+            "DPT": "DateTime"
+        },
+        "5/0/0": {
+            "name": "Request instant power consumption",
+            "DPT": "Request"
+        },
+        "5/0/1": {
+            "name": "Active power consumption",
+            "DPT": "Value_Power"
+        },
+        "5/1/0": {
+            "name": "AC Frequency",
+            "DPT": "Value_Frequency"
+        },
+        "5/2/0": {
+            "name": "Request energy readings",
+            "DPT": "Request"
+        },
+        "5/2/1": {
+            "name": "Start intermediate energy consumption meter",
+            "DPT": "StartStop"
+        },
+        "5/2/4": {
+            "name": "Stop intermediate energy consumption meter",
+            "DPT": "StartStop"
+        },
+        "5/2/5": {
+            "name": "Status of intermediate energy consumption meter",
+            "PDT": "UNSIGNED_CHAR"
+        },
+        "5/2/2": {
+            "name": "Energy consumption intermediate reading",
+            "DPT": "ActiveEnergy_V64"
+        },
+        "5/2/3": {
+            "name": "Total energy reading",
+            "DPT": "ActiveEnergy_V64"
         }
-    ]
+    },
+    "objects": {
+        "1.1.1:5": {
+            "function": "Światło nad TV",
+            "location": "Salon",
+            "name": "Włącz/wyłącz"
+        },
+        "1.1.1:6": {
+            "function": "Światło nad TV",
+            "location": "Salon",
+            "name": "Stan"
+        }
+    }
 }

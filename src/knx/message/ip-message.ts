@@ -59,7 +59,7 @@ export class KnxIpMessage {
 
     public getCemiFrame(): KnxMessage {
         if (this.serviceId === KnxServiceId.TUNNEL_REQUEST) {
-            return new KnxMessage(this.message.slice(22))
+            return new KnxMessage(this.message)
 
         } else {
             throw new Error('Invalid Service')
