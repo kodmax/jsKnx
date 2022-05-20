@@ -62,7 +62,7 @@ KnxLink.connect("192.168.0.8").then(async knx => {
             console.log(`Livingroom LED 1 command ${value ? 'Turn On' : 'Turn Off'} from ${source}`)
         })
 
-        dp.requestValue()
+        dp.write(0)
     })
 
     knx.getGroup("14/6/10", DPT_Switch, dp => {

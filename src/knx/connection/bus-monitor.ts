@@ -19,7 +19,7 @@ export class BusMonitor {
                 const tunneling = new TunnelingRequest(ipMessage.getBody())
                 tunneling.ack(tunnel)
                 
-                if ([KnxCemiCode ["L_Data.ind"]].includes(tunneling.getCemiCode())) {
+                if ([KnxCemiCode.L_Busmon_Indication].includes(tunneling.getCemiCode())) {
                     const cemiFrame = new KnxCemiFrame(tunneling.getBody(12))
                     cb(cemiFrame)                
                     

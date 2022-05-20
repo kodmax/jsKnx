@@ -19,7 +19,7 @@ export class KnxLink {
                 const tunneling = new TunnelingRequest(ipMessage.getBody())
                 tunneling.ack(tunnel)
 
-                if ([KnxCemiCode ["L_Data.ind"]].includes(tunneling.getCemiCode())) {
+                if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
                     const cemiFrame = new KnxCemiFrame(tunneling.getBody())
                     this.events.emit("tunnel-request", cemiFrame)
                 }

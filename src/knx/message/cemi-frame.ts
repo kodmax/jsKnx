@@ -11,7 +11,7 @@ export class KnxCemiFrame {
     public readonly value: Buffer
 
     public constructor(private readonly frame: Buffer) {
-        if (frame.readUint8(0) !== KnxCemiCode ["L_Data.ind"]) {
+        if (frame.readUint8(0) !== KnxCemiCode.L_Data_Indication) {
             throw new Error("Not a cEMI frame")
         }
 
@@ -60,7 +60,7 @@ export class KnxCemiFrame {
         const [ sourceHi, sourceLo ] = this.hiLo((+sa << 12) + (+sb << 8) + +sc)
         const [ targetHi, targetLo ] = this.hiLo((+ta << 11) + (+tb << 8) + +tc)
 
-        const frame = Buffer.concat([Buffer.from([code, 0x00, control, drl, sourceHi, sourceLo, targetHi, targetLo, 0x01 + value.length, 0x00, 0x80]), value])
+        const frame = Buffer.concat([Buffer.from([code, 0x00, control, drl, sourceHi, sourceLo, targetHi, targetLo, value.length, 0x00]), value])
         return frame
     }
 }

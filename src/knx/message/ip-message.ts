@@ -39,4 +39,8 @@ export class KnxIpMessage {
     public getBody(index = 0): Buffer {
         return this.message.slice(6 + index)
     }
+
+    public getBuffer(): Buffer {
+        return this.message
+    }
 }

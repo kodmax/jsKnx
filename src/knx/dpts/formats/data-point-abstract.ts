@@ -13,11 +13,15 @@ export abstract class DataPointAbstract<T> implements IDPT {
     protected abstract decode(data: Buffer): T
 
     protected async send(data: Buffer): Promise<void> {
-        await KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(this.connection.getChannel()), KnxCemiFrame.compose(KnxCemiCode["L_Data.req"], "0.0.0", this.address, data)]).send(this.connection.getTunnel())
+        const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(this.connection.getChannel()), KnxCemiFrame.compose(KnxCemiCode.L_Data_Request, "15.15.255", this.address, data)])
+        console.log('write', telegram.getBuffer())
+        await telegram.send(this.connection.getTunnel())
     }
 
     public async requestValue(): Promise<void> {
-        await KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(this.connection.getChannel()), KnxCemiFrame.compose(KnxCemiCode["L_Poll_Data.req"], "0.0.0", this.address, Buffer.alloc(0))]).send(this.connection.getTunnel())
+        const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(this.connection.getChannel()), KnxCemiFrame.compose(KnxCemiCode.L_Poll_Data_Request, "1.1.1", this.address, Buffer.from([0]))])
+        // console.log('request', telegram.getBuffer())
+        await telegram.send(this.connection.getGateway())
     }
 
     public constructor(protected connection: KnxConnection, protected readonly address: string, protected readonly events: EventEmitter) {
