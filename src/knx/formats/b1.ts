@@ -1,6 +1,6 @@
-import { DataPoint, DataPointAbstract } from "./types"
+import { DataPointAbstract } from "./data-point-abstract"
 
-export class B1 extends DataPointAbstract<number> implements DataPoint<number> {
+export abstract class B1 extends DataPointAbstract<number> {
 
     private fromBuffer(buf: Buffer, position: number = 0): number {
         return buf.readUint8(position) & 0x01
@@ -11,18 +11,12 @@ export class B1 extends DataPointAbstract<number> implements DataPoint<number> {
         return buf
     }
 
-    public async ping(): Promise<void> {
-
-    }
-
-    public async read(): Promise<number> {
-        return this.fromBuffer(Buffer.alloc(1))
+    protected decode(data: Buffer): number {
+        return this.fromBuffer(data)
     }
 
     public async write(value: number): Promise<void> {
-        console.log('Write', this.toBuffer(value, Buffer.alloc(1)), 'to', this.addresses [0])
-        this.triggerEvent("write", value)
-        this.toBuffer(value, Buffer.alloc(1))
+        return this.send(this.toBuffer(value, Buffer.alloc(1)))
     }
 }
 

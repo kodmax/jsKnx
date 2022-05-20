@@ -1,7 +1,8 @@
+import { KnxConnection } from "./connection"
 import { DPT } from "./enums"
 
 export type KnxIpMessageCallback = (msg: KnxIpMessage) => Promise<void>
-export type KnxEventType = "state" | "command" | "write"
+export type KnxEventType = "request" | "transmit"
 export type KnxIpMessage = {
     body: Buffer
 }

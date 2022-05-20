@@ -1,4 +1,4 @@
-import { DPT_Switch, Knx } from "./knx"
+import { DPT_Value_Power, Knx } from "./knx"
 // import { BusMonitor } from "./knx/bus-monitor"
 
 
@@ -8,5 +8,7 @@ import { DPT_Switch, Knx } from "./knx"
 // })
 
 Knx.connect('192.168.0.8').then(async knx => {
-    knx.group<DPT_Switch>("5/0/1", "Active power consumption")
+    knx.getGroup("5/0/1", DPT_Value_Power).addValueListener((value: number, unit: string, source: string) => {
+        console.log(`Home power consumtion is ${Math.round(value)} [${unit}]`)
+    })
 })

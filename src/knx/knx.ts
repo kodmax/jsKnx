@@ -1,9 +1,8 @@
 import { IDPT } from "./types";
 
-import { Socket } from "dgram";
 import { KnxIpMessage } from "./message";
-import { KnxConnectionType, KnxLayer, KnxServiceId } from "./enums";
-import { KnxGroup } from "./group";
+import { KnxConnectionType, KnxLayer, KnxMessageCode, KnxServiceId } from "./enums";
+
 import { KnxConnection } from "./connection";
 import { KnxCemiFrame } from "./message/cemi-frame";
 import EventEmitter from "events";
@@ -17,7 +16,7 @@ export class Knx {
 
         tunnel.on('message', msg => {
             const ipMessage = KnxIpMessage.decode(msg)
-            if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST && msg.length > 6) {
+            if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST && msg.length > 8 && ipMessage.getBody(4).readUint8(0) === KnxMessageCode ['L_Data.ind'] && ipMessage.getBody(8).length >= 11) {
                 const cemiFrame = new KnxCemiFrame(ipMessage.getBody(4))
                 this.events.emit('tunnel-request', cemiFrame)
                 cemiFrame.ack(tunnel)
@@ -31,11 +30,7 @@ export class Knx {
         return new Knx(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection)
     }
 
-    public group<T extends IDPT>(address: string, label?: string): KnxGroup<T> {
-        return new KnxGroup<T>(address, this.events)
-    }
-
-    public getDataPoint<T extends IDPT>(groups: string[], DataPointType: new(addresses: string[], bus: Socket) => T): T {
-        return new DataPointType(groups, this.connection.getTunnel())
+    public getGroup<T extends IDPT>(address: string, DataPointType: new(connection: KnxConnection, address: string, events: EventEmitter, ) => T): T {
+        return new DataPointType(this.connection, address, this.events)
     }
 }
