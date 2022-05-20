@@ -40,6 +40,11 @@ export enum KnxErrorCode {
     NO_MORE_CONNECTIONS = 0x24,
 
     /**
+     * The server could not accept a new connection, out of channels
+     */
+    NO_MORE_CHANNELS = 0x25,
+
+    /**
      * The server detected an error concerning the data connection with the specified ID.
      */
     DATA_CONNECTION = 0x26,
@@ -120,8 +125,11 @@ export enum DPT {
 
   Value_Power = '14.056',
 
+  Value_Temp = '9.001',
   Value_Humidity = '9.007',
   Value_AirQuality = '9.008',
+
+  ActiveEnergy = '13.010',
 }
 
 export enum KnxMessageCode {

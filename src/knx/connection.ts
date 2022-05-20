@@ -28,13 +28,10 @@ export class KnxConnection {
         gateway.on('message', data => {
             const msg = KnxIpMessage.decode(data)
             if (msg.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
-                console.log('RECONNECTING')
                 if (this.connectionType && this.layer) {
                     this.connect(this.connectionType, this.layer)
                 }
             }
-
-            msg.dump("Gateway message")
         })
 
         gateway.on('error', err => {
