@@ -1,5 +1,5 @@
 import { KnxConnection } from "./connection"
-import { KnxConnectionType, KnxLayer, KnxMessageCode, KnxServiceId } from "../enums"
+import { KnxConnectionType, KnxLayer, KnxCemiCode, KnxServiceId } from "../enums"
 import { KnxIpMessage, TunnelingRequest, KnxCemiFrame } from "../message"
 
 export class BusMonitor {
@@ -19,8 +19,8 @@ export class BusMonitor {
                 const tunneling = new TunnelingRequest(ipMessage.getBody())
                 tunneling.ack(tunnel)
                 
-                if ([KnxMessageCode ["L_Data.ind"]].includes(tunneling.getMessageCode())) {
-                    const cemiFrame = new KnxCemiFrame(ipMessage.getBody(16))
+                if ([KnxCemiCode ["L_Data.ind"]].includes(tunneling.getCemiCode())) {
+                    const cemiFrame = new KnxCemiFrame(tunneling.getBody(12))
                     cb(cemiFrame)                
                     
                 }

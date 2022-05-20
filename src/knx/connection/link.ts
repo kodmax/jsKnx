@@ -1,6 +1,6 @@
 
 import { KnxIpMessage, TunnelingRequest, KnxCemiFrame } from "../message"
-import { KnxConnectionType, KnxLayer, KnxMessageCode, KnxServiceId } from "../enums"
+import { KnxConnectionType, KnxLayer, KnxCemiCode, KnxServiceId } from "../enums"
 import { KnxConnection } from "./connection"
 import { IDPT } from "../dpts/formats"
 
@@ -18,14 +18,14 @@ export class KnxLink {
             if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
                 const tunneling = new TunnelingRequest(ipMessage.getBody())
                 tunneling.ack(tunnel)
-                
-                if ([KnxMessageCode ["L_Data.ind"]].includes(tunneling.getMessageCode())) {
-                    const cemiFrame = new KnxCemiFrame(ipMessage.getBody(4))
-                    this.events.emit("tunnel-request", cemiFrame)
 
-                } else {
-                    console.log('Ignored tunnel request', ipMessage.getBody())
+                if ([KnxCemiCode ["L_Data.ind"]].includes(tunneling.getCemiCode())) {
+                    const cemiFrame = new KnxCemiFrame(tunneling.getBody())
+                    this.events.emit("tunnel-request", cemiFrame)
                 }
+
+            } else {
+                console.log('Ignored', ipMessage.getServiceId(), ipMessage.getBody())
             }
         })
     }

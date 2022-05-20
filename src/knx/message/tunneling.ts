@@ -1,12 +1,18 @@
 import { Socket } from "dgram"
-import { KnxMessageCode, KnxServiceId } from "../enums"
+import { KnxCemiCode, KnxServiceId } from "../enums"
 import { KnxIpMessage } from "./ip-message"
 
 export class TunnelingRequest {
+    private static seq = 0
+
     public constructor(private readonly frame: Buffer) {
         if (frame.readUint8(0) !== 0x4 || frame.readUint8(3) !== 0x0) {
             throw new Error('Invalid Tunneling Request Frame')
         }
+    }
+
+    public static compose(channel: number): Buffer {
+        return Buffer.from([0x04, channel, TunnelingRequest.seq = (TunnelingRequest.seq + 1) % 0xff, 0x00])
     }
 
     public getChannel() {
@@ -25,7 +31,7 @@ export class TunnelingRequest {
         return this.frame.slice(4)
     }
 
-    public getMessageCode(): KnxMessageCode {
+    public getCemiCode(): KnxCemiCode {
         return this.frame.readUInt8(4)
     }
 }

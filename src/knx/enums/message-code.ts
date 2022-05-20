@@ -1,4 +1,4 @@
-export enum KnxMessageCode {
+export enum KnxCemiCode {
     "L_Raw.req" = 0x10,
     "L_Data.req" = 0x11,
     "L_Poll_Data.req" = 0x13,

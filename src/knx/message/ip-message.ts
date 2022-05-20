@@ -39,8 +39,4 @@ export class KnxIpMessage {
     public getBody(index = 0): Buffer {
         return this.message.slice(6 + index)
     }
-
-    public dump(prefix: string): void {
-        console.log(prefix, KnxServiceId [this.serviceId], this.body)
-    }
 }

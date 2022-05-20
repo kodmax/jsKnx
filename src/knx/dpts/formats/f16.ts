@@ -1,13 +1,8 @@
-import EventEmitter from "events"
-import { KnxConnection } from "../../connection/connection"
-import { KnxCemiFrame } from "../../message"
 import { DataPointAbstract } from "./data-point-abstract"
 
 export abstract class F16 extends DataPointAbstract<number> {
-    private valueEvent: EventEmitter = new EventEmitter()
-
-    private fromBuffer(buf: Buffer, position = 0): number {
-        const value = buf.readUint16BE(position)
+    private fromBuffer(buf: Buffer): number {
+        const value = buf.readUint16BE(1)
         const e = (value >> 11) & 0x0f
         const m = value & 0x07ff
         const s = value & 0x8000
@@ -15,9 +10,9 @@ export abstract class F16 extends DataPointAbstract<number> {
         return 0.01 * m * 2**e * (s ? -1 : 1)
     }
 
-    private toBuffer(value: number, buf: Buffer, position = 0): Buffer {
-        value = NaN
-        buf.writeUint16BE(value, position)
+    private toBuffer(value: number, buf: Buffer): Buffer {
+        buf.writeUint16BE(0xffff, 1)
+        buf.writeUint8(0x80, 0)
         return buf
     }
 
@@ -26,17 +21,7 @@ export abstract class F16 extends DataPointAbstract<number> {
     }
 
     public async write(value: number): Promise<void> {
-        return this.send(this.toBuffer(value, Buffer.alloc(4)))
-    }
-
-    public constructor(protected connection: KnxConnection, protected readonly address: string, protected readonly events: EventEmitter) {
-        super(connection, address, events)
-        
-        events.on("tunnel-request", (cemiFrame: KnxCemiFrame) => {
-            if (cemiFrame.target === address) {
-                this.valueEvent.emit("value", this.decode(cemiFrame.value), this.unit, cemiFrame.source)
-            }
-        })
+        return this.send(this.toBuffer(value, Buffer.alloc(3)))
     }
 
     public removeValueListener(cb: (value: number, unit: string, source: string) => void) {
