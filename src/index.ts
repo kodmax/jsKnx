@@ -1,6 +1,5 @@
 import { DPT_Switch, Knx } from "./knx"
-import { BusMonitor } from "./knx/bus-monitor"
-import { KnxMessage } from "./knx/message"
+// import { BusMonitor } from "./knx/bus-monitor"
 
 
 

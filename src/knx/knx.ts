@@ -1,4 +1,3 @@
-import { KnxSchemaDeclaration } from "./types";
 import { IDPT } from "./types";
 
 import { Socket } from "dgram";
@@ -6,21 +5,22 @@ import { KnxIpMessage } from "./message";
 import { KnxConnectionType, KnxLayer, KnxServiceId } from "./enums";
 import { KnxGroup } from "./group";
 import { KnxConnection } from "./connection";
-import { EventEmitter } from "stream";
-import { Vent } from "./vent";
+import { KnxCemiFrame } from "./message/cemi-frame";
+import EventEmitter from "events";
 
 
 export class Knx {
-    private events: Vent<KnxIpMessage> = new Vent<KnxIpMessage>()
+    private events: EventEmitter = new EventEmitter()
 
     public constructor(private readonly channel: number, private readonly connection: KnxConnection) {
         const tunnel = connection.getTunnel()
 
         tunnel.on('message', msg => {
             const ipMessage = KnxIpMessage.decode(msg)
-            if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
-                KnxIpMessage.compose(KnxServiceId.TUNNEL_RESPONSE, [Buffer.from([0x04, ipMessage.getChannel(), ipMessage.getSequenceNumber(), 0x00])]).send(tunnel)
-                this.events.trigger('tunnel-request', ipMessage)
+            if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST && msg.length > 6) {
+                const cemiFrame = new KnxCemiFrame(ipMessage.getBody(4))
+                this.events.emit('tunnel-request', cemiFrame)
+                cemiFrame.ack(tunnel)
             } 
         })
     }
@@ -31,11 +31,9 @@ export class Knx {
         return new Knx(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection)
     }
 
-
     public group<T extends IDPT>(address: string, label?: string): KnxGroup<T> {
-        return new KnxGroup<T>(address, this.events, label)
+        return new KnxGroup<T>(address, this.events)
     }
-
 
     public getDataPoint<T extends IDPT>(groups: string[], DataPointType: new(addresses: string[], bus: Socket) => T): T {
         return new DataPointType(groups, this.connection.getTunnel())

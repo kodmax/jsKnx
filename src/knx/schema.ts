@@ -1,8 +1,4 @@
 import * as fs from "fs"
-import { KnxConnection } from "./connection"
-import { KnxConnectionType, KnxLayer, KnxServiceId } from "./enums"
-import { Knx } from "./knx"
-import { KnxIpMessage, KnxMessage, cri } from "./message"
 import { KnxSchemaDeclaration } from "./types"
 
 export class KnxSchema {
@@ -18,4 +14,15 @@ export class KnxSchema {
         this.ip = ip || this.schema.ip || ''
     }
 
+    public getPort(): number {
+        return this.port
+    }
+
+    public getIp(): string {
+        return this.ip
+    }
+
+    public getGroupName(address: string): string {
+        return this.schema.groups [address]?.name
+    }
 }

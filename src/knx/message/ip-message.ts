@@ -1,5 +1,4 @@
-import { KnxServiceId,  } from "../enums";
-import { KnxMessage } from "./cemi-frame";
+import { KnxServiceId } from "../enums";
 import { Socket } from "dgram";
 
 export class KnxIpMessage {
@@ -36,34 +35,8 @@ export class KnxIpMessage {
         })
     }
 
-    public getSequenceNumber() {
-        return this.message.readUint8(8)
-    }
-
-    public getChannel() {
-        return this.message.readUint8(7)
-    }
-    
-    public getConnectionHeader(): Buffer {
-        return this.message.slice(6, 10)
-    }
-
-    public hasCemiFrame(): boolean {
-        if (this.serviceId === KnxServiceId.TUNNEL_REQUEST) {
-            return this.message.slice(22).length > 0
-
-        } else {
-            throw new Error('Invalid Service')
-        }
-    }
-
-    public getCemiFrame(): KnxMessage {
-        if (this.serviceId === KnxServiceId.TUNNEL_REQUEST) {
-            return new KnxMessage(this.message)
-
-        } else {
-            throw new Error('Invalid Service')
-        }
+    public getBody(index: number = 0): Buffer {
+        return this.message.slice(6 + index)
     }
 
     public dump(prefix: string): void {

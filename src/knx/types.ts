@@ -6,47 +6,21 @@ export type KnxIpMessage = {
     body: Buffer
 }
 
-type Component = {
-    links?: string[]
-    address: string
-    name: string
-    uid?: string
-    pin: number
-}
-
-type Func = {
-    components: Component[]
+type KnxGroupDescription = {
+    DPT?: keyof DPT
+    DTP?: string
     name: string
 }
 
-type Location = {
-    functions: Func[]
+type KnxObjectDescription = {
+    function: string
+    location: string
     name: string
-}
-
-type TopGroup = {
-    name: string
-    id: number
-    items: MidGroup[]
-}
-
-type MidGroup = {
-    name: string
-    id: number
-    items: Group[]
-}
-
-type Group = {
-    dataType: keyof DPT
-    description: string
-    title?: string
-    name: string
-    id: number
 }
 
 export type KnxSchemaDeclaration = {
-    locations: Location[]
-    groups: TopGroup[]
+    objects: Record<string, KnxObjectDescription>
+    groups: Record<string, KnxGroupDescription>
     port?: number
     name: string
     ip?: string
