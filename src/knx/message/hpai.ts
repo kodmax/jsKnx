@@ -1,6 +1,10 @@
 import { Socket } from "dgram"
-import { KnxIpProtocol } from "../enums";
 
+export enum KnxIpProtocol {
+    IPV4_UDP = 0x01,
+    IPV4_TCP = 0x02
+  }
+  
 export function hpai (socket: Socket): Buffer {
     const { address, port } = socket.address()
     

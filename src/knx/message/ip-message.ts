@@ -1,5 +1,6 @@
-import { KnxServiceId } from "../enums";
-import { Socket } from "dgram";
+import { KnxServiceId } from "../enums"
+import { Socket } from "dgram"
+
 
 export class KnxIpMessage {
     private readonly serviceId: KnxServiceId
@@ -16,7 +17,7 @@ export class KnxIpMessage {
 
     public static decode(message: Buffer): KnxIpMessage {
         if (message.readUint16BE(0) !== 0x0610 || message.readUint16BE(4) !== message.length) {
-            throw new Error('Invalid or corrupted message')
+            throw new Error("Invalid or corrupted message")
         }
 
         return new KnxIpMessage(message)
@@ -35,7 +36,7 @@ export class KnxIpMessage {
         })
     }
 
-    public getBody(index: number = 0): Buffer {
+    public getBody(index = 0): Buffer {
         return this.message.slice(6 + index)
     }
 

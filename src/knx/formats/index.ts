@@ -1,3 +1,4 @@
+export { IDPT } from "./data-point-abstract"
 export * from "./v32"
 export * from "./f32"
 export * from "./f16"

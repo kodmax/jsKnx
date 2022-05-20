@@ -11,15 +11,15 @@ export class KnxCemiFrame {
     public readonly value: Buffer
 
     public constructor(private readonly frame: Buffer) {
-        if (frame.readUint8(0) !== KnxMessageCode ['L_Data.ind']) {
-            throw new Error('Not a cEMI frame')
+        if (frame.readUint8(0) !== KnxMessageCode ["L_Data.ind"]) {
+            throw new Error("Not a cEMI frame")
         }
 
         const source = frame.readUint16BE(4)
         const target = frame.readUint16BE(6)
 
-        this.target = [(target >> 11) & 0xf, (target >> 8) & 0x7, target & 0xff].join('/')
-        this.source = [source >> 12, (source >> 8) & 0xf, source & 0xff].join('.')
+        this.target = [(target >> 11) & 0xf, (target >> 8) & 0x7, target & 0xff].join("/")
+        this.source = [source >> 12, (source >> 8) & 0xf, source & 0xff].join(".")
         this.value = frame.slice(11)
     }
 
