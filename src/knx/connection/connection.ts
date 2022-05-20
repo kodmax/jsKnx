@@ -3,6 +3,15 @@ import { KnxIpMessage, hpai, cri } from "../message"
 
 import { createSocket, RemoteInfo, Socket } from "dgram"
 
+export type KnxLinkInfo = {
+    connectionType: KnxConnectionType
+    gatewayAddress: string
+    channel: number
+    layer: KnxLayer
+    port: number
+    ip: string
+}
+
 /**
  * Docs
  * http://www.eb-systeme.de/?page_id=479
@@ -21,20 +30,7 @@ export class KnxConnection {
         })
     }
 
-    private connectionType?: KnxConnectionType
-    private channel: number = 0
-    private layer?: KnxLayer
-
     private constructor(private readonly gateway: Socket, private readonly tunnel: Socket) {
-        gateway.on("message", data => {
-            const msg = KnxIpMessage.decode(data)
-            if (msg.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
-                if (this.connectionType && this.layer) {
-                    this.connect(this.connectionType, this.layer)
-                }
-            }
-        })
-
         gateway.on("error", err => {
             throw err
         })
@@ -52,40 +48,49 @@ export class KnxConnection {
         return this.tunnel
     }
 
-    public getChannel(): number {
-        return this.channel
-    }
-
     public close(): void {
         this.gateway.close()
         this.tunnel.close()
     }
 
     public async disconnect(): Promise<void> {
-        this.connectionType = undefined
-        this.layer = undefined
-
-        //
-
+        // not implemented
         // KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
     }
 
-    public async connect(connectionType: KnxConnectionType, layer: KnxLayer): Promise<number> {
-        this.connectionType = connectionType
-        this.layer = layer
-        
+    public async connect(connectionType: KnxConnectionType, layer: KnxLayer): Promise<KnxLinkInfo> {        
+        let linkInfo: KnxLinkInfo
         return new Promise((resolve, reject) => {
             const cb = (msg: Buffer, rinfo: RemoteInfo) => {
                 if (msg.readUInt16BE(2) === KnxServiceId.CONNECTION_RESPONSE) {
-                    const error: number = msg.readUint8(7)
-                    this.channel = msg.readUint8(6)
-                    this.gateway.off("message", cb)
+                    const error: number = msg.readUint8(7)                
+                    if (error) {
+                        reject(new Error("Error Connection to KNX/IP Gateway: " + KnxErrorCode[error]))
+                        this.gateway.off("message", cb)
     
+                    } else {
+                        const address = msg.readUint16BE(18)
+                        linkInfo = {
+                            gatewayAddress: [address >> 12, (address >> 8) & 0xf, address & 0xff].join("."),
+                            ip: Uint8Array.from(msg.slice(10, 14)).join('.'),
+                            port: msg.readUint16BE(14),
+                            channel: msg.readUint8(6),
+                            connectionType,
+                            layer,
+                        }
+
+                        KnxIpMessage.compose(KnxServiceId.CONNECTIONSTATE_REQUEST, [Buffer.from([linkInfo.channel, 0x00]), hpai(this.gateway)]).send(this.gateway)
+                    }
+
+                } else if (msg.readUint16BE(2) === KnxServiceId.CONNECTIONSTATE_RESPONSE) {
+                    this.gateway.off("message", cb)
+
+                    const error: number = msg.readUint8(7)
                     if (error) {
                         reject(new Error("Error Connection to KNX/IP Gateway: " + KnxErrorCode[error]))
     
                     } else {
-                        resolve(this.channel)
+                        resolve(linkInfo)
                     }
                 }
             }

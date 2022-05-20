@@ -1,6 +1,9 @@
 import { DPT_ActiveEnergy, DPT_Value_Power, KnxLink, DPT_Value_Temp, DPT_Value_AirQuality, DPT_Switch } from "./knx"
 
 KnxLink.connect("192.168.0.8").then(async knx => {
+    const linkInfo = knx.getLinkInfo()
+    console.log(`KNX Link established. Gateway address: ${linkInfo.gatewayAddress}, channel: ${Number(linkInfo.channel).toString(16)}.`)
+
     knx.getGroup("5/0/1", DPT_Value_Power, dp => {
         dp.addValueListener((value: number, unit: string) => {
             console.log(`Home power consumtion is ${Number(value).toFixed(0)} [${unit}]`)

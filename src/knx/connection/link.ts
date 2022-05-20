@@ -1,7 +1,7 @@
 
 import { KnxIpMessage, TunnelingRequest, KnxCemiFrame } from "../message"
 import { KnxConnectionType, KnxLayer, KnxCemiCode, KnxServiceId } from "../enums"
-import { KnxConnection } from "./connection"
+import { KnxConnection, KnxLinkInfo } from "./connection"
 import { IDPT } from "../dpts/formats"
 
 import EventEmitter from "events"
@@ -10,9 +10,18 @@ import EventEmitter from "events"
 export class KnxLink {
     private events: EventEmitter = new EventEmitter()
 
-    public constructor(private readonly channel: number, private readonly connection: KnxConnection) {
-        const tunnel = connection.getTunnel()
+    public constructor(private linkInfo: KnxLinkInfo, private readonly connection: KnxConnection) {
+        const gateway = connection.getGateway()
+        gateway.on("message", data => {
+            const msg = KnxIpMessage.decode(data)
+            if (msg.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
+                connection.connect(this.linkInfo.connectionType, this.linkInfo.layer).then(linkInfo => {
+                    this.linkInfo = linkInfo
+                })
+            }
+        })
 
+        const tunnel = connection.getTunnel()
         tunnel.on("message", msg => {
             const ipMessage = KnxIpMessage.decode(msg)
             if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
@@ -36,8 +45,12 @@ export class KnxLink {
         return new KnxLink(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection)
     }
 
-    public getGroup<T extends IDPT>(address: string, DataPointType: new(connection: KnxConnection, address: string, events: EventEmitter) => T, init?: (dataPoint: T) => void): T {
-        const dataPoint = new DataPointType(this.connection, address, this.events)
+    public getLinkInfo(): KnxLinkInfo {
+        return Object.assign({}, this.linkInfo)
+    }
+
+    public getGroup<T extends IDPT>(address: string, DataPointType: new(connection: KnxConnection, address: string, events: EventEmitter, link: KnxLink) => T, init?: (dataPoint: T) => void): T {
+        const dataPoint = new DataPointType(this.connection, address, this.events, this)
         
         if (init) {
             init(dataPoint)
