@@ -118,7 +118,10 @@ export enum DPT {
   Window_Door = '1.019',
   DayNight = '1.024',
 
-  Value_Power = '14.056'
+  Value_Power = '14.056',
+
+  Value_Humidity = '9.007',
+  Value_AirQuality = '9.008',
 }
 
 export enum KnxMessageCode {

@@ -30,7 +30,13 @@ export class Knx {
         return new Knx(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection)
     }
 
-    public getGroup<T extends IDPT>(address: string, DataPointType: new(connection: KnxConnection, address: string, events: EventEmitter, ) => T): T {
-        return new DataPointType(this.connection, address, this.events)
+    public getGroup<T extends IDPT>(address: string, DataPointType: new(connection: KnxConnection, address: string, events: EventEmitter) => T, init?: (dataPoint: T) => void): T {
+        const dataPoint = new DataPointType(this.connection, address, this.events)
+        
+        if (init) {
+            init(dataPoint)
+        }
+
+        return dataPoint
     }
 }
