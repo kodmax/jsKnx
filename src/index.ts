@@ -9,7 +9,7 @@ KnxLink.connect("192.168.0.8").then(async knx => {
             console.log(`Home power consumtion is ${Number(value).toFixed(0)} [${unit}]`)
         })
 
-        dp.requestValue()
+        setInterval(() => dp.requestValue(), 1000)
     })
 
     knx.getGroup("5/2/3", DPT_ActiveEnergy, dp => {
@@ -17,7 +17,7 @@ KnxLink.connect("192.168.0.8").then(async knx => {
             console.log(`Home total energy reading is ${Number(value).toFixed(0)} [${unit}]`)
         })
 
-        dp.requestValue()
+        setInterval(() => dp.requestValue(), 1000)
     })
 
     knx.getGroup("15/0/3", DPT_Value_AirQuality, dp => {
@@ -25,54 +25,54 @@ KnxLink.connect("192.168.0.8").then(async knx => {
             console.log(`Home CO2 level is ${Number(value).toFixed(0)} [${unit}]`)
         })
 
-        dp.requestValue()
+        setInterval(() => dp.requestValue(), 1000)
     })
 
-    knx.getGroup("13/0/2", DPT_Value_Temp, dp => {
-        dp.addValueListener((value: number, unit: string) => {
-            console.log(`Bathroom floor temperature is ${Number(value).toFixed(1)} [${unit}]`)
-        })
+    // knx.getGroup("13/0/2", DPT_Value_Temp, dp => {
+    //     dp.addValueListener((value: number, unit: string) => {
+    //         console.log(`Bathroom floor temperature is ${Number(value).toFixed(1)} [${unit}]`)
+    //     })
 
-        dp.requestValue()
-    })
+    //     dp.requestValue()
+    // })
 
-    knx.getGroup("15/0/8", DPT_Value_Temp, dp => {
-        dp.addValueListener((value: number, unit: string) => {
-            console.log(`Bathroom air temperature is ${(Number(value).toFixed(1))} [${unit}]`)
-        })
+    // knx.getGroup("15/0/8", DPT_Value_Temp, dp => {
+    //     dp.addValueListener((value: number, unit: string) => {
+    //         console.log(`Bathroom air temperature is ${(Number(value).toFixed(1))} [${unit}]`)
+    //     })
 
-        dp.requestValue()
-    })
+    //     dp.requestValue()
+    // })
 
-    knx.getGroup("15/0/6", DPT_Value_Temp, dp => {
-        dp.addValueListener((value: number, unit: string) => {
-            console.log(`Bedroom air temperature is ${Number(value).toFixed(1)} [${unit}]`)
-        })
+    // knx.getGroup("15/0/6", DPT_Value_Temp, dp => {
+    //     dp.addValueListener((value: number, unit: string) => {
+    //         console.log(`Bedroom air temperature is ${Number(value).toFixed(1)} [${unit}]`)
+    //     })
 
-        dp.requestValue()
-    })
+    //     dp.requestValue()
+    // })
 
-    knx.getGroup("15/0/0", DPT_Value_Temp, dp => {
-        dp.addValueListener((value: number, unit: string) => {
-            console.log(`Livingroom air temperature is ${Number(value).toFixed(1)} [${unit}]`)
-        })
+    // knx.getGroup("15/0/0", DPT_Value_Temp, dp => {
+    //     dp.addValueListener((value: number, unit: string) => {
+    //         console.log(`Livingroom air temperature is ${Number(value).toFixed(1)} [${unit}]`)
+    //     })
 
-        dp.requestValue()
-    })
+    //     dp.requestValue()
+    // })
 
-    knx.getGroup("14/6/9", DPT_Switch, dp => {
-        dp.addValueListener((value: number, unit: string, source: string) => {
-            console.log(`Livingroom LED 1 command ${value ? 'Turn On' : 'Turn Off'} from ${source}`)
-        })
+    // knx.getGroup("14/6/9", DPT_Switch, dp => {
+    //     dp.addValueListener((value: number, unit: string, source: string) => {
+    //         console.log(`Livingroom LED 1 command ${value ? 'Turn On' : 'Turn Off'} from ${source}`)
+    //     })
 
-        dp.write(0)
-    })
+    //     dp.write(1)
+    // })
 
-    knx.getGroup("14/6/10", DPT_Switch, dp => {
-        dp.addValueListener((value: number, unit: string) => {
-            console.log(`Livingroom LED 1 state is ${value ? 'On' : 'Off'}`)
-        })
+    // knx.getGroup("14/6/10", DPT_Switch, dp => {
+    //     dp.addValueListener((value: number, unit: string) => {
+    //         console.log(`Livingroom LED 1 state is ${value ? 'On' : 'Off'}`)
+    //     })
 
-        dp.requestValue()
-    })
+    //     dp.requestValue()
+    // })
 })

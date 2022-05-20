@@ -31,9 +31,6 @@ export class KnxLink {
                 if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
                     const cemiFrame = new KnxCemiFrame(tunneling.getBody())
                     this.events.emit("tunnel-request", cemiFrame)
-
-                } else {
-                    console.log('Ignored Tunnel message', ipMessage.getServiceId(), ipMessage.getBody())
                 }
             }
         })
