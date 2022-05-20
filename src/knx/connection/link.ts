@@ -13,11 +13,14 @@ export class KnxLink {
     public constructor(private linkInfo: KnxLinkInfo, private readonly connection: KnxConnection) {
         const gateway = connection.getGateway()
         gateway.on("message", data => {
-            const msg = KnxIpMessage.decode(data)
-            if (msg.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
+            const ipMessage = KnxIpMessage.decode(data)
+            if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
                 connection.connect(this.linkInfo.connectionType, this.linkInfo.layer).then(linkInfo => {
                     this.linkInfo = linkInfo
                 })
+
+            } else {
+                console.log('Ignored Gateway message', ipMessage.getServiceId(), ipMessage.getBody())
             }
         })
 
@@ -34,7 +37,7 @@ export class KnxLink {
                 }
 
             } else {
-                console.log('Ignored', ipMessage.getServiceId(), ipMessage.getBody())
+                console.log('Ignored Tunnel message', ipMessage.getServiceId(), ipMessage.getBody())
             }
         })
     }

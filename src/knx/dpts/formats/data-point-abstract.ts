@@ -17,19 +17,20 @@ export abstract class DataPointAbstract<T> implements IDPT {
         const linkInfo = this.link.getLinkInfo()
         const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [
             TunnelingRequest.compose(linkInfo.channel), 
-            KnxCemiFrame.compose(KnxCemiCode.L_Data_Request, linkInfo.gatewayAddress, this.address, data)
+            KnxCemiFrame.compose(KnxCemiCode.L_Data_Confirmation, linkInfo.gatewayAddress, this.address, data)
         ])
-        // console.log('write', telegram.getBuffer())
+
         await telegram.send(this.connection.getTunnel())
+        
     }
 
     public async requestValue(): Promise<void> {
         const linkInfo = this.link.getLinkInfo()
         const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [
             TunnelingRequest.compose(linkInfo.channel), 
-            KnxCemiFrame.compose(KnxCemiCode.L_Poll_Data_Request, linkInfo.gatewayAddress, this.address, Buffer.from([0])
+            KnxCemiFrame.compose(KnxCemiCode.L_Data_Request, linkInfo.gatewayAddress, this.address, Buffer.from([0])
         )])
-        // console.log('request', telegram.getBuffer())
+        
         await telegram.send(this.connection.getTunnel())
     }
 
