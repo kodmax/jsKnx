@@ -1,6 +1,6 @@
 import EventEmitter from "events"
-import { KnxConnection } from "../connection/connection"
-import { KnxCemiFrame } from "../message"
+import { KnxConnection } from "../../connection/connection"
+import { KnxCemiFrame } from "../../message"
 import { DataPointAbstract } from "./data-point-abstract"
 
 export abstract class V32 extends DataPointAbstract<number> {

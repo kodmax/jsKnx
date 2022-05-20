@@ -1,4 +1,4 @@
-import { F32 } from "../formats"
+import { F32 } from "./formats"
 import { DPT } from "../enums"
 
 export class DPT_Value_Power extends F32 {

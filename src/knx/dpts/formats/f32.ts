@@ -1,23 +1,17 @@
 import EventEmitter from "events"
-import { KnxConnection } from "../connection/connection"
-import { KnxCemiFrame } from "../message"
+import { KnxConnection } from "../../connection/connection"
+import { KnxCemiFrame } from "../../message"
 import { DataPointAbstract } from "./data-point-abstract"
 
-export abstract class F16 extends DataPointAbstract<number> {
+export abstract class F32 extends DataPointAbstract<number> {
     private valueEvent: EventEmitter = new EventEmitter()
 
     private fromBuffer(buf: Buffer, position = 0): number {
-        const value = buf.readUint16BE(position)
-        const e = (value >> 11) & 0x0f
-        const m = value & 0x07ff
-        const s = value & 0x8000
-
-        return 0.01 * m * 2**e * (s ? 1 : -1)
+        return buf.readFloatBE(position)
     }
 
     private toBuffer(value: number, buf: Buffer, position = 0): Buffer {
-        value = NaN
-        buf.writeUint16BE(value, position)
+        buf.writeFloatBE(value, position)
         return buf
     }
 

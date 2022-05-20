@@ -1,4 +1,4 @@
-import { F16 } from "../formats"
+import { F16 } from "./formats"
 import { DPT } from "../enums"
 
 export class DPT_Value_Temp extends F16 {

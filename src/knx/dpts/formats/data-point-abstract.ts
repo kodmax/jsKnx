@@ -1,6 +1,6 @@
 import EventEmitter from "events"
-import { KnxConnection } from "../connection/connection"
-import { DPT } from "../enums"
+import { KnxConnection } from "../../connection/connection"
+import { DPT } from "../../enums"
 
 export interface IDPT {}
 export abstract class DataPointAbstract<T> implements IDPT {

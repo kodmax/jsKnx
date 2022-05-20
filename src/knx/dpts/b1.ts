@@ -1,4 +1,4 @@
-import { B1 } from "../formats"
+import { B1 } from "./formats"
 import { DPT } from "../enums"
 
 export class DPT_Switch extends B1 {
