@@ -1,8 +1,8 @@
 {
   "name": "js-knx",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node src",
     "lint": "eslint . --fix"
