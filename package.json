@@ -1,7 +1,8 @@
 {
   "name": "js-knx",
-  "version": "1.0.2",
-  "description": "",
+  "version": "1.2.0",
+  "description": "KNX IP/Gateway client",
+  "keywords": ["KNX"],
   "main": "dist/index.js",
   "scripts": {
     "test": "npx jest",
