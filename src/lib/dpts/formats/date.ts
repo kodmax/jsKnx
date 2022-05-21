@@ -34,7 +34,7 @@ export function toBuffer(value: string, data: Buffer): Buffer {
     }
 }
 
-export abstract class TimeOfDay extends DataPointAbstract<string> {
+export abstract class Date extends DataPointAbstract<string> {
 
     protected decode(data: Buffer): string {
         const [d, m, y] = fromBuffer(data)

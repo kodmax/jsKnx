@@ -1,6 +1,6 @@
 import { DataPointAbstract } from "./data-point-abstract"
 
-enum DayOfWeek {
+export enum DayOfWeek {
     "" = 0,
     Mon = 1,
     Tue = 2,

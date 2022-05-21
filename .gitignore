@@ -4,4 +4,3 @@ dist
 *.tgz
 package
 .npmrc
-src/index.ts

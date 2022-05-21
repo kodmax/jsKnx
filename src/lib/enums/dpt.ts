@@ -18,5 +18,9 @@ export enum DPT {
     Value_AirQuality = "9.008",
   
     ActiveEnergy = "13.010",
+    
+    Date = "11.001",
+    Time = "10.001",
+    DateTime = "19.001"
   }
   
