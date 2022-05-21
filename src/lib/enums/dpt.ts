@@ -4,6 +4,7 @@ export enum DPT {
     Enable = "1.003",
     UpDown = "1.008",
     OpenClose = "1.009",
+    Start = "1.010",
     Reset = "1.015",
     Ack = "1.016",
     Trigger = "1.017",

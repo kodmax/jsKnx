@@ -74,6 +74,18 @@ export class DPT_Reset extends B1 {
     }
 }
 
+export class DPT_Start extends B1 {
+    public readonly type: DPT = DPT.Start
+    public readonly unit: string = ""
+
+    public async start(): Promise<void> {
+        return this.write(1)
+    }
+
+    public async stop(): Promise<void> {
+        return this.write(0)
+    }
+}
 export class DPT_Ack extends B1 {
     public readonly type: DPT = DPT.Ack
     public readonly unit: string = ""

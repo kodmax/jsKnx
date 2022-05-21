@@ -1,4 +1,4 @@
-import { DPT_ActiveEnergy, DPT_Value_Power, KnxLink, DPT_Value_Temp, DPT_Value_AirQuality, DPT_Switch, DPT_DateTime, KnxDateTime, DPT_Date, DPT_Time } from "./lib"
+import { DPT_ActiveEnergy, DPT_Value_Power, KnxLink, DPT_Value_Temp, DPT_Value_AirQuality, DPT_Switch, DPT_DateTime, KnxDateTime, DPT_Date, DPT_Time, DPT_Start } from "./lib"
 import { DayOfWeek } from "./lib/dpts/formats/time-of-day"
 
 KnxLink.connect("192.168.0.8").then(async knx => {
@@ -13,6 +13,7 @@ KnxLink.connect("192.168.0.8").then(async knx => {
         // setInterval(() => dp.requestValue(), 1000)
     })
 
+    await knx.group("5/2/1", DPT_Start).start()
     /**
      * Total energy reading
      */
@@ -24,13 +25,13 @@ KnxLink.connect("192.168.0.8").then(async knx => {
         // setInterval(() => dp.requestValue(), 1000)
     })
 
-    knx.group("15/0/3", DPT_Value_AirQuality, dp => {
-        dp.addValueListener((value: number, unit: string) => {
-            console.log(`Home CO2 level is ${Number(value).toFixed(0)} [${unit}]`)
-        })
+    // knx.group("15/0/3", DPT_Value_AirQuality, dp => {
+    //     dp.addValueListener((value: number, unit: string) => {
+    //         console.log(`Home CO2 level is ${Number(value).toFixed(0)} [${unit}]`)
+    //     })
 
-        // setInterval(() => dp.requestValue(), 1000)
-    })
+    //     // setInterval(() => dp.requestValue(), 1000)
+    // })
 
     // knx.group("13/0/2", DPT_Value_Temp, dp => {
     //     dp.addValueListener((value: number, unit: string) => {
@@ -81,32 +82,32 @@ KnxLink.connect("192.168.0.8").then(async knx => {
     //     dp.requestValue()
     // })
 
-    knx.group("1/0/1", DPT_DateTime, dp => {
-        dp.addValueListener((value: KnxDateTime, unit, source) => {
-            console.log(`DateTime from ${source}`, value)
-        })
+    // knx.group("1/0/1", DPT_DateTime, dp => {
+    //     dp.addValueListener((value: KnxDateTime, unit, source) => {
+    //         console.log(`DateTime from ${source}`, value)
+    //     })
 
-        // dp.setDateTime(new Date().toISOString().substring(0, 10), new Date().toString().substring(16, 24), true, DayOfWeek.Sat)
-        // dp.requestValue()
-    })
+    //     // dp.setDateTime(new Date().toISOString().substring(0, 10), new Date().toString().substring(16, 24), true, DayOfWeek.Sat)
+    //     // dp.requestValue()
+    // })
 
-    knx.group("1/0/2", DPT_Date, dp => {
-        dp.addValueListener((value: string, unit, source) => {
-            console.log(`Date from ${source}`, value)
-        })
+    // knx.group("1/0/2", DPT_Date, dp => {
+    //     dp.addValueListener((value: string, unit, source) => {
+    //         console.log(`Date from ${source}`, value)
+    //     })
 
-        dp.write(new Date().toISOString().substring(0, 10))
-        dp.requestValue()
-    })
+    //     dp.write(new Date().toISOString().substring(0, 10))
+    //     dp.requestValue()
+    // })
 
-    knx.group("1/0/3", DPT_Time, dp => {
-        dp.addValueListener((value: string, unit, source) => {
-            console.log(`Time from ${source}`, value)
-        })
+    // knx.group("1/0/3", DPT_Time, dp => {
+    //     dp.addValueListener((value: string, unit, source) => {
+    //         console.log(`Time from ${source}`, value)
+    //     })
 
-        dp.write(new Date().toString().substring(16, 24))
-        dp.requestValue()
-    })
+    //     dp.write(new Date().toString().substring(16, 24))
+    //     dp.requestValue()
+    // })
 
     process.on("SIGINT", () => {
         knx.disconnect().then(() => process.exit(0))
