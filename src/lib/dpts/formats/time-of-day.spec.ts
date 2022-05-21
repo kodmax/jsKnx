@@ -30,6 +30,7 @@ describe("TimeOfDay", () => {
             expect(toBuffer("7:12:0", Buffer.alloc(4))).toEqual(Buffer.from([0x00, 7, 12, 0]))
         })
     })
+    
     describe("decode", () => {
         it("time", () => {
             expect(fromBuffer(Buffer.from([0x00, 0x2f, 0x2a, 0x07]))).toEqual([1, 15, 42, 7])
