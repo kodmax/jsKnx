@@ -53,9 +53,8 @@ export class KnxConnection {
         this.tunnel.close()
     }
 
-    public async disconnect(): Promise<void> {
-        // not implemented
-        // KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [hpai(this.gateway), hpai(this.tunnel), cri(connectionType, layer)]).send(this.gateway)
+    public async disconnect(channel: number): Promise<void> {
+        await KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([channel, 0x00]), hpai(this.gateway.address())]).send(this.gateway)
     }
 
     public async connect(connectionType: KnxConnectionType, layer: KnxLayer): Promise<KnxLinkInfo> {        

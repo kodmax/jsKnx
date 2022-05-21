@@ -107,4 +107,9 @@ KnxLink.connect("192.168.0.8").then(async knx => {
         dp.write(new Date().toString().substring(16, 24))
         dp.requestValue()
     })
+
+    process.on("SIGINT", () => {
+        knx.disconnect().then(() => process.exit(0))
+    })
 })
+

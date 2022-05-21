@@ -18,6 +18,9 @@ export class KnxLink {
                 connection.connect(this.linkInfo.connectionType, this.linkInfo.layer).then(linkInfo => {
                     this.linkInfo = linkInfo
                 })
+
+            } else if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_RESPONSE) {
+                //
             }
         })
 
@@ -44,6 +47,10 @@ export class KnxLink {
 
     public getLinkInfo(): KnxLinkInfo {
         return Object.assign({}, this.linkInfo)
+    }
+
+    public async disconnect(): Promise<void> {
+        return this.connection.disconnect(this.linkInfo.channel)
     }
 
     public group<T extends IDPT>(address: string, DataPointType: new(address: string, connection: KnxConnection, link: KnxLink, events?: EventEmitter) => T, init?: (dataPoint: T) => void): T {
