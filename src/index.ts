@@ -1,4 +1,4 @@
-import { DPT_ActiveEnergy, DPT_Value_Power, KnxLink, DPT_Value_Temp, DPT_Value_AirQuality, DPT_Switch } from "./knx"
+import { DPT_ActiveEnergy, DPT_Value_Power, KnxLink, DPT_Value_Temp, DPT_Value_AirQuality, DPT_Switch } from "./lib"
 
 KnxLink.connect("192.168.0.8").then(async knx => {
     const linkInfo = knx.getLinkInfo()
@@ -73,7 +73,7 @@ KnxLink.connect("192.168.0.8").then(async knx => {
 
     knx.group("14/6/10", DPT_Switch, dp => {
         dp.addValueListener((value: number, unit: string) => {
-            console.log(`Livingroom LED 1 state is ${value ? 'On' : 'Off'}`)
+            console.log(`Livingroom LED 1 state is ${value ? "On" : "Off"}`)
             setTimeout(() => dp.group("14/6/9", DPT_Switch).write(1 - value), 2000)
         })
 

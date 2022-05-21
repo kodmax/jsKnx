@@ -55,8 +55,8 @@ export class KnxCemiFrame {
     }
 
     public static groupValueRead(code: KnxCemiCode, source: string, target: string): Buffer {
-        const [ sa, sb, sc ] = source.split('.')
-        const [ ta, tb, tc ] = target.split('/')
+        const [ sa, sb, sc ] = source.split(".")
+        const [ ta, tb, tc ] = target.split("/")
 
         const [ sourceHi, sourceLo ] = this.hiLo((+sa << 12) + (+sb << 8) + +sc)
         const [ targetHi, targetLo ] = this.hiLo((+ta << 11) + (+tb << 8) + +tc)
@@ -65,8 +65,8 @@ export class KnxCemiFrame {
     }
 
     public static groupValueWrite(code: KnxCemiCode, source: string, target: string, value: Buffer): Buffer {
-        const [ sa, sb, sc ] = source.split('.')
-        const [ ta, tb, tc ] = target.split('/')
+        const [ sa, sb, sc ] = source.split(".")
+        const [ ta, tb, tc ] = target.split("/")
 
         const [ sourceHi, sourceLo ] = this.hiLo((+sa << 12) + (+sb << 8) + +sc)
         const [ targetHi, targetLo ] = this.hiLo((+ta << 11) + (+tb << 8) + +tc)
@@ -74,9 +74,9 @@ export class KnxCemiFrame {
         return Buffer.concat([Buffer.from([code, 0x00, 0xbc, 0xe0, sourceHi, sourceLo, targetHi, targetLo, value.length, 0x00, 0x80 + (value.readUint8(0) & 0x3f)]), value.slice(1)])
     }
     
-    public static compose(code: KnxCemiCode, source: string, target: string, value: Buffer = Buffer.alloc(0), control: number = 0xbc, drl: number = 0xe0): Buffer {
-        const [ sa, sb, sc ] = source.split('.')
-        const [ ta, tb, tc ] = target.split('/')
+    public static compose(code: KnxCemiCode, source: string, target: string, value: Buffer = Buffer.alloc(0), control = 0xbc, drl = 0xe0): Buffer {
+        const [ sa, sb, sc ] = source.split(".")
+        const [ ta, tb, tc ] = target.split("/")
 
         const [ sourceHi, sourceLo ] = this.hiLo((+sa << 12) + (+sb << 8) + +sc)
         const [ targetHi, targetLo ] = this.hiLo((+ta << 11) + (+tb << 8) + +tc)

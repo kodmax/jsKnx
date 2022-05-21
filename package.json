@@ -1,5 +1,5 @@
 {
-  "name": "knx",
+  "name": "js-knx",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -7,8 +7,8 @@
     "dev": "ts-node src",
     "lint": "eslint . --fix"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Marcin Malinowski <mm.kodmax@gmail.com>",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^17.0.34",
     "@typescript-eslint/eslint-plugin": "^5.25.0",

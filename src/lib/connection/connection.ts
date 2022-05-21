@@ -72,7 +72,7 @@ export class KnxConnection {
                         const address = msg.readUint16BE(18)
                         linkInfo = {
                             gatewayAddress: [address >> 12, (address >> 8) & 0xf, address & 0xff].join("."),
-                            ip: Uint8Array.from(msg.slice(10, 14)).join('.'),
+                            ip: Uint8Array.from(msg.slice(10, 14)).join("."),
                             port: msg.readUint16BE(14),
                             channel: msg.readUint8(6),
                             connectionType,
