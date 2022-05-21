@@ -7,7 +7,7 @@ export abstract class B1 extends DataPointAbstract<number> {
     }
 
     private toBuffer(value: number, buf: Buffer): Buffer {
-        buf.writeUint8((value & 0x01) === 1 ? 0x81 : 0x80, 0)
+        buf.writeUint8((value & 0x01) === 1 ? 0x1 : 0x0, 0)
         return buf
     }
 

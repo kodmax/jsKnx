@@ -11,7 +11,7 @@ export function fromBuffer(buf: Buffer): number {
 
 export function toBuffer(value: number, buf: Buffer): Buffer {
     let m = Math.abs(value * 100)
-    let s = value < 0 ? 1 : 0
+    const s = value < 0 ? 1 : 0
     let e = 0
 
     while(m > 0x07ff) {
@@ -20,7 +20,7 @@ export function toBuffer(value: number, buf: Buffer): Buffer {
     }
 
     if (e > 15) {
-        throw new Error('Float16: Value Out of Range: ' +value)
+        throw new Error("Float16: Value Out of Range: " +value)
     }
 
     buf.writeUint16BE((s << 15) + (e << 11) + m, 1)

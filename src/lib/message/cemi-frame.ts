@@ -4,7 +4,6 @@ import { ACPI } from "../enums"
 function decodeAddress (address: number) {
     return [address >> 12, (address >> 8) & 0xf, address & 0xff]
 }
-type NewType = Buffer
 
 export class KnxCemiFrame {
     public readonly source: string
