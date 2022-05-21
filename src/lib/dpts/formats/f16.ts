@@ -29,6 +29,7 @@ export function toBuffer(value: number, buf: Buffer): Buffer {
 }
 
 export abstract class F16 extends DataPointAbstract<number> {
+    
     protected decode(data: Buffer): number {
         return fromBuffer(data)
     }
