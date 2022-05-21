@@ -26,10 +26,12 @@ export abstract class F16 extends DataPointAbstract<number> {
 
     public removeValueListener(cb: (value: number, unit: string, source: string) => void) {
         this.valueEvent.removeListener("value", cb)
+        this.updateSubscription("value")
     }
 
     public addValueListener(cb: (value: number, unit: string, source: string) => void) {
         this.valueEvent.addListener("value", cb)
+        this.updateSubscription("value")
     }
 }
 

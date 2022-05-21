@@ -32,11 +32,28 @@ export abstract class DataPointAbstract<T> implements IDPT {
         await telegram.send(this.connection.getTunnel())
     }
 
-    public constructor(protected connection: KnxConnection, protected readonly address: string, protected readonly events: EventEmitter, private readonly link: KnxLink) {
-        events.on("tunnel-request", (cemiFrame: KnxCemiFrame) => {
-            if (cemiFrame.target === address) {
-                this.valueEvent.emit("value", this.decode(cemiFrame.value), this.unit, cemiFrame.source)
+    public group<T extends IDPT>(address: string, DataPointType: new(address: string, connection: KnxConnection, link: KnxLink, events?: EventEmitter) => T): T {
+        return new DataPointType(address, this.connection, this.link, this.events)
+    }
+
+    public constructor(protected readonly address: string, protected connection: KnxConnection, private readonly link: KnxLink, private readonly events?: EventEmitter) {
+
+    }
+
+    private eventsListener = (cemiFrame: KnxCemiFrame) => {
+        if (cemiFrame.target === this.address) {
+            this.valueEvent.emit("value", this.decode(cemiFrame.value), this.unit, cemiFrame.source)
+        }
+    }
+
+    protected updateSubscription(eventName: string): void {
+        if (this.events) {
+            if (this.valueEvent.listenerCount(eventName) === 1) {
+                this.events.on("tunnel-request", this.eventsListener)
+
+            } else if (this.valueEvent.listenerCount(eventName) === 0) {
+                this.events.on("tunnel-request", this.eventsListener)
             }
-        })
+        }
     }
 }

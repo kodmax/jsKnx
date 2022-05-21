@@ -46,9 +46,9 @@ export class KnxLink {
         return Object.assign({}, this.linkInfo)
     }
 
-    public getGroup<T extends IDPT>(address: string, DataPointType: new(connection: KnxConnection, address: string, events: EventEmitter, link: KnxLink) => T, init?: (dataPoint: T) => void): T {
-        const dataPoint = new DataPointType(this.connection, address, this.events, this)
-        
+    public group<T extends IDPT>(address: string, DataPointType: new(address: string, connection: KnxConnection, link: KnxLink, events?: EventEmitter) => T, init?: (dataPoint: T) => void): T {
+        const dataPoint = new DataPointType(address, this.connection, this, this.events)
+
         if (init) {
             init(dataPoint)
         }
