@@ -1,6 +1,6 @@
 {
   "name": "js-knx",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "KNX IP/Gateway client",
   "keywords": ["KNX"],
   "main": "dist/index.js",
@@ -22,7 +22,7 @@
     "typescript": "^4.6.4"
   },
   "bin": {
-    "knx-write": "./scripts/write.js",
-    "knx-read": "./scripts/read.js"
+    "knx-write": "./bin/write.js",
+    "knx-read": "./bin/read.js"
   }
 }
