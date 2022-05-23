@@ -63,7 +63,7 @@ export class KnxLink {
         return dataPoint
     }
 
-    public groupFromSchema<T>({ address, dataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
+    public groupFromSchema<T extends IDPT>({ address, dataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
         const dataPoint = new dataType(address, this.connection, this, this.events)
 
         if (init) {
