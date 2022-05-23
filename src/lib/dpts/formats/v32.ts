@@ -35,7 +35,7 @@ export abstract class V32 extends DataPointAbstract<number> {
             return `${this.address} (${this.type})`
 
         } else {
-            return Number(value).toString(10)
+            return `${Number(value).toString(10)} ${this.unit}`
         }
     }
 }

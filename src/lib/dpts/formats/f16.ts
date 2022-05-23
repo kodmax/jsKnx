@@ -53,7 +53,7 @@ export abstract class F16 extends DataPointAbstract<number> {
             return `${this.address} (${this.type})`
 
         } else {
-            return Number(value).toFixed(2)
+            return `${Number(value).toFixed(2)} ${this.unit}`
         }
     }
 }

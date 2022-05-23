@@ -172,7 +172,7 @@ export class DPT_Trigger extends B1 {
     public readonly unit: string = ""
 
     public async trigger(): Promise<void> {
-        return this.write(1)
+        return this.write(0)
     }
 
     public toString(value?: number): string {
