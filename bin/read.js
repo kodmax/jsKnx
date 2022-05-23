@@ -11,7 +11,13 @@ if (!dpts ["DPT_" + dpt]) {
     KnxLink.connect("192.168.0.8").then(async knx => {
         knx.group(address, dpts ["DPT_" + dpt], dp => {
             dp.addValueListener((value, unit) => {
-                console.log(value, unit)
+                if (unit) {
+                    console.log(dp.toString(value), unit)
+
+                } else {
+                    console.log(dp.toString(value))
+                }
+                
                 knx.disconnect().then(() => process.exit(0))
             })
             dp.requestValue()
