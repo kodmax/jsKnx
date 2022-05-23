@@ -22,7 +22,7 @@ export class DPT_DateTime extends DateTime {
 
         const [, h, minutes, s] = time.match(timePattern)
         const [, y, month, d] = date.match(datePattern)
-        console.log(y, month, d, h, minutes, s)
+
         return this.write({
             year: +y,
             month: +month,

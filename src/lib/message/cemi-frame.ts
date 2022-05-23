@@ -1,5 +1,5 @@
-import { KnxCemiCode } from "../enums"
-import { ACPI } from "../enums"
+import { CemiSequenceType, KnxCemiCode, CemiPacketType } from "../enums"
+import { APCI } from "../enums"
 
 function decodeAddress (address: number) {
     return [address >> 12, (address >> 8) & 0xf, address & 0xff]
@@ -51,6 +51,26 @@ export class KnxCemiFrame {
 
     private static hiLo(v: number) {
         return [v >> 8, v & 0xff]
+    }
+
+    public getPacketType(): CemiPacketType {
+        return this.frame.readUint8(9) >> 7 & 0x1
+    }
+
+    public isSequenced(): boolean {
+        return (this.frame.readUint8(9) >> 6 & 0x1) === CemiSequenceType.Sequenced
+    }
+
+    public getSequence(): number {
+        return this.frame.readUint8(9) >> 2 & 0x0f
+    }
+
+    public getService(): APCI {
+        return this.frame.readUint16BE(9) >> 6 & 0x0f
+    }
+
+    public getDataByteZero(): number {
+        return this.frame.readUint8(10) & 0x3f
     }
 
     public static groupValueRead(code: KnxCemiCode, source: string, target: string): Buffer {

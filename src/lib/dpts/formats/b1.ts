@@ -20,13 +20,13 @@ export abstract class B1 extends DataPointAbstract<number> {
     }
 
     public removeValueListener(cb: (value: number, unit: string, source: string) => void) {
-        this.valueEvent.removeListener("value", cb)
-        this.updateSubscription("value")
+        this.valueEvent.removeListener("value-received", cb)
+        this.updateSubscription("value-received")
     }
 
     public addValueListener(cb: (value: number, unit: string, source: string) => void) {
-        this.valueEvent.addListener("value", cb)
-        this.updateSubscription("value")
+        this.valueEvent.addListener("value-received", cb)
+        this.updateSubscription("value-received")
     }
 }
 

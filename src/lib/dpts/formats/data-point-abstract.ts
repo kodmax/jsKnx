@@ -1,12 +1,15 @@
 import EventEmitter from "events"
 import { KnxLink } from "../../connection"
 import { KnxConnection } from "../../connection/connection"
-import { DPT, KnxCemiCode, KnxServiceId } from "../../enums"
+import { APCI, DPT, KnxCemiCode, KnxServiceId } from "../../enums"
 import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from "../../message"
 
 export interface IDPT {}
 export abstract class DataPointAbstract<T> implements IDPT {
+    protected cemiFrameEvent: EventEmitter = new EventEmitter()
     protected valueEvent: EventEmitter = new EventEmitter()
+    protected hasSubscribed = false
+
     public abstract readonly unit: string
     public abstract readonly type: DPT
 
@@ -42,17 +45,28 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
     private eventsListener = (cemiFrame: KnxCemiFrame) => {
         if (cemiFrame.target === this.address) {
-            this.valueEvent.emit("value", this.decode(cemiFrame.value), this.unit, cemiFrame.source)
+            this.cemiFrameEvent.emit(APCI [cemiFrame.getService()], cemiFrame)
+
+            switch (cemiFrame.getService()) {
+            case APCI.APCI_GROUP_VALUE_WRITE: case APCI.APCI_GROUP_VALUE_RESP:
+                this.valueEvent.emit("value-received", this.decode(cemiFrame.value), this.unit, cemiFrame.source)
+                break
+
+            default:
+            }
+
         }
     }
 
     protected updateSubscription(eventName: string): void {
         if (this.events) {
-            if (this.valueEvent.listenerCount(eventName) === 1) {
-                this.events.on("tunnel-request", this.eventsListener)
+            if (this.valueEvent.listenerCount(eventName) === 0 && this.hasSubscribed) {
+                this.events.off("cemi-frame", this.eventsListener)
+                this.hasSubscribed = false
 
-            } else if (this.valueEvent.listenerCount(eventName) === 0) {
-                this.events.on("tunnel-request", this.eventsListener)
+            } else if (this.valueEvent.listenerCount(eventName) === 1 && !this.hasSubscribed) {
+                this.events.on("cemi-frame", this.eventsListener)
+                this.hasSubscribed = true
             }
         }
     }

@@ -84,13 +84,13 @@ export abstract class DateTime extends DataPointAbstract<KnxDateTime> {
     }
 
     public removeValueListener(cb: (value: KnxDateTime, unit: string, source: string) => void) {
-        this.valueEvent.removeListener("value", cb)
-        this.updateSubscription("value")
+        this.valueEvent.removeListener("value-received", cb)
+        this.updateSubscription("value-received")
     }
 
     public addValueListener(cb: (value: KnxDateTime, unit: string, source: string) => void) {
-        this.valueEvent.addListener("value", cb)
-        this.updateSubscription("value")
+        this.valueEvent.addListener("value-received", cb)
+        this.updateSubscription("value-received")
     }
 }
 

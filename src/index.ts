@@ -73,14 +73,14 @@ KnxLink.connect("192.168.0.8").then(async knx => {
     //     dp.write(1)
     // })
 
-    // knx.group("14/6/10", DPT_Switch, dp => {
-    //     dp.addValueListener((value: number, unit: string) => {
-    //         console.log(`Livingroom LED 1 state is ${value ? "On" : "Off"}`)
-    //         setTimeout(() => dp.group("14/6/9", DPT_Switch).write(1 - value), 2000)
-    //     })
+    knx.group("14/6/10", DPT_Switch, dp => {
+        dp.addValueListener((value: number, unit: string) => {
+            console.log(`${dp} Livingroom LED 1 state is "${dp.toString(value)}"`)
+            setTimeout(() => dp.group("14/6/9", DPT_Switch).write(1 - value), 2000)
+        })
 
-    //     dp.requestValue()
-    // })
+        dp.requestValue()
+    })
 
     // knx.group("1/0/1", DPT_DateTime, dp => {
     //     dp.addValueListener((value: KnxDateTime, unit, source) => {
