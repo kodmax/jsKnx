@@ -53,6 +53,10 @@ export class KnxLink {
         return this.connection.disconnect(this.linkInfo.channel)
     }
 
+    public async close(): Promise<void> {
+        return this.connection.close()
+    }
+
     public group<T extends IDPT>(address: string, DataPointType: new(address: string, connection: KnxConnection, link: KnxLink, events?: EventEmitter) => T, init?: (dataPoint: T) => void): T {
         const dataPoint = new DataPointType(address, this.connection, this, this.events)
 
