@@ -57,5 +57,14 @@ export abstract class TimeOfDay extends DataPointAbstract<string> {
         this.valueEvent.addListener("value-received", cb)
         this.updateSubscription("value-received")
     }
+
+    public toString(value?: string): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value
+        }
+    }
 }
 

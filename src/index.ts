@@ -25,13 +25,13 @@ KnxLink.connect("192.168.0.8").then(async knx => {
         // setInterval(() => dp.requestValue(), 1000)
     })
 
-    // knx.group("15/0/3", DPT_Value_AirQuality, dp => {
-    //     dp.addValueListener((value: number, unit: string) => {
-    //         console.log(`Home CO2 level is ${Number(value).toFixed(0)} [${unit}]`)
-    //     })
+    knx.group("15/0/3", DPT_Value_AirQuality, dp => {
+        dp.addValueListener((value: number, unit: string) => {
+            console.log(`Home CO2 level is ${dp.toString(value)} [${unit}]`)
+        })
 
-    //     // setInterval(() => dp.requestValue(), 1000)
-    // })
+        setInterval(() => dp.requestValue(), 1000)
+    })
 
     // knx.group("13/0/2", DPT_Value_Temp, dp => {
     //     dp.addValueListener((value: number, unit: string) => {

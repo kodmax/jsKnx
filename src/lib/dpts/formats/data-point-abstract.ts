@@ -13,6 +13,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
     public abstract readonly unit: string
     public abstract readonly type: DPT
 
+    protected abstract toString(value?: T): string
     protected abstract write(value: T): Promise<void>
     protected abstract decode(data: Buffer): T
 

@@ -47,5 +47,14 @@ export abstract class F16 extends DataPointAbstract<number> {
         this.valueEvent.addListener("value-received", cb)
         this.updateSubscription("value-received")
     }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return Number(value).toFixed(2)
+        }
+    }
 }
 

@@ -92,5 +92,14 @@ export abstract class DateTime extends DataPointAbstract<KnxDateTime> {
         this.valueEvent.addListener("value-received", cb)
         this.updateSubscription("value-received")
     }
+
+    public toString(value?: KnxDateTime): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return `${value.year}-${Number(value.month).toString().padStart(2, "0")}-${Number(value.dayOfMonth).toString().padStart(2, "0")} ${Number(value.hourOfDay).toString().padStart(2, "0")}:${Number(value.minutes).toString().padStart(2, "0")}:${Number(value.seconds).toString().padStart(2, "0")}`
+        }
+    }
 }
 

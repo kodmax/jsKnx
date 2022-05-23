@@ -12,6 +12,15 @@ export class DPT_Switch extends B1 {
     public async off(): Promise<void> {
         return this.write(0)
     }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "on" : "off"
+        }
+    }
 }
 
 export class DPT_Bool extends B1 {
@@ -24,6 +33,15 @@ export class DPT_Bool extends B1 {
 
     public async setFalse(): Promise<void> {
         return this.write(0)
+    }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "true" : "false"
+        }
     }
 }
 
@@ -38,6 +56,15 @@ export class DPT_Enable extends B1 {
     public async disable(): Promise<void> {
         return this.write(0)
     }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "enable" : "disable"
+        }
+    }
 }
 
 export class DPT_UpDown extends B1 {
@@ -51,6 +78,15 @@ export class DPT_UpDown extends B1 {
     public async up(): Promise<void> {
         return this.write(0)
     }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "down" : "up"
+        }
+    }
 }
 export class DPT_OpenClose extends B1 {
     public readonly type: DPT = DPT.OpenClose
@@ -63,6 +99,15 @@ export class DPT_OpenClose extends B1 {
     public async open(): Promise<void> {
         return this.write(0)
     }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "close" : "open"
+        }
+    }
 }
 
 export class DPT_Reset extends B1 {
@@ -71,6 +116,15 @@ export class DPT_Reset extends B1 {
 
     public async reset(): Promise<void> {
         return this.write(1)
+    }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "reset" : "<noop>"
+        }
     }
 }
 
@@ -85,6 +139,15 @@ export class DPT_Start extends B1 {
     public async stop(): Promise<void> {
         return this.write(0)
     }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "start" : "stop"
+        }
+    }
 }
 export class DPT_Ack extends B1 {
     public readonly type: DPT = DPT.Ack
@@ -92,6 +155,15 @@ export class DPT_Ack extends B1 {
 
     public async acknowledge(): Promise<void> {
         return this.write(1)
+    }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "ack" : "<noop>"
+        }
     }
 }
 
@@ -101,6 +173,15 @@ export class DPT_Trigger extends B1 {
 
     public async trigger(): Promise<void> {
         return this.write(1)
+    }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "trigger" : "trigger"
+        }
     }
 }
 
@@ -114,6 +195,15 @@ export class DPT_Occupancy extends B1 {
 
     public async free(): Promise<void> {
         return this.write(0)
+    }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "occupied" : "free"
+        }
     }
 }
 
@@ -132,6 +222,15 @@ export class DPT_Window_Door extends B1 {
     public getUnit(): string {
         return ""
     }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "open" : "closed"
+        }
+    }
 }
 
 export class DPT_DayNight extends B1 {
@@ -144,5 +243,14 @@ export class DPT_DayNight extends B1 {
 
     public async day(): Promise<void> {
         return this.write(0)
+    }
+
+    public toString(value?: number): string {
+        if (value === undefined) {
+            return `${this.address} (${this.type})`
+
+        } else {
+            return value & 0x01 ? "night" : "day"
+        }
     }
 }
