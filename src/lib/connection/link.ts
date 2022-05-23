@@ -62,4 +62,19 @@ export class KnxLink {
 
         return dataPoint
     }
+
+    public groupFromSchema<T>({ address, dataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
+        const dataPoint = new dataType(address, this.connection, this, this.events)
+
+        if (init) {
+            init(dataPoint)
+        }
+
+        return dataPoint
+    }
+}
+
+export type KnxGroupSchema<T> = {
+    dataType: new(address: string, connection: KnxConnection, link: KnxLink, events?: EventEmitter) => T,
+    address: string
 }

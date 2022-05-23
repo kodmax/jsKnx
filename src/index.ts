@@ -1,5 +1,5 @@
 import { DPT_ActiveEnergy, DPT_Value_Power, KnxLink, DPT_Value_Temp, DPT_Value_AirQuality, DPT_Switch, DPT_DateTime, KnxDateTime, DPT_Date, DPT_Time, DPT_Start } from "./lib"
-import { DayOfWeek } from "./lib/dpts/formats/time-of-day"
+import { home } from "./home.knx-schema"
 
 KnxLink.connect("192.168.0.8").then(async knx => {
     const linkInfo = knx.getLinkInfo()
@@ -17,7 +17,7 @@ KnxLink.connect("192.168.0.8").then(async knx => {
     /**
      * Total energy reading
      */
-    knx.group("5/2/3", DPT_ActiveEnergy, dp => {
+    knx.groupFromSchema(home.EnergyTotal, dp => {
         dp.addValueListener((value: number, unit: string) => {
             console.log(`Home total energy reading is ${Number(value).toFixed(0)} [${unit}]`)
         })
@@ -25,7 +25,7 @@ KnxLink.connect("192.168.0.8").then(async knx => {
         // setInterval(() => dp.requestValue(), 1000)
     })
 
-    knx.group("15/0/3", DPT_Value_AirQuality, dp => {
+    knx.groupFromSchema(home.CO2, dp => {
         dp.addValueListener((value: number, unit: string) => {
             console.log(`Home CO2 level is ${dp.toString(value)} [${unit}]`)
         })

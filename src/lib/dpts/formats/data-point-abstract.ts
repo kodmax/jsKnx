@@ -55,7 +55,6 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
             default:
             }
-
         }
     }
 
