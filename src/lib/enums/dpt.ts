@@ -2,6 +2,7 @@ export enum DPT {
     Switch = "1.001",
     Bool = "1.002",
     Enable = "1.003",
+    Alarm = "1.005",
     UpDown = "1.008",
     OpenClose = "1.009",
     Start = "1.010",
