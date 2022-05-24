@@ -5,6 +5,7 @@ import { KnxConnection, KnxLinkInfo } from "./connection"
 import { IDPT } from "../dpts/formats"
 
 import EventEmitter from "events"
+import { DataPointAbstract } from "../dpts/formats/data-point-abstract"
 
 
 export class KnxLink {
@@ -57,17 +58,7 @@ export class KnxLink {
         return this.connection.close()
     }
 
-    public group<T extends IDPT>(address: string, DataPointType: new(address: string, connection: KnxConnection, link: KnxLink, events?: EventEmitter) => T, init?: (dataPoint: T) => void): T {
-        const dataPoint = new DataPointType(address, this.connection, this, this.events)
-
-        if (init) {
-            init(dataPoint)
-        }
-
-        return dataPoint
-    }
-
-    public groupFromSchema<T extends IDPT>({ address, dataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
+    public getDatapoint<T extends IDPT>({ address, dataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
         const dataPoint = new dataType(address, this.connection, this, this.events)
 
         if (init) {
@@ -79,6 +70,6 @@ export class KnxLink {
 }
 
 export type KnxGroupSchema<T> = {
-    dataType: new(address: string, connection: KnxConnection, link: KnxLink, events?: EventEmitter) => T,
+    dataType: new(...args: ConstructorParameters<typeof DataPointAbstract>) => T,
     address: string
 }

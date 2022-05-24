@@ -36,12 +36,8 @@ export abstract class DataPointAbstract<T> implements IDPT {
         await telegram.send(this.connection.getTunnel())
     }
 
-    public group<T extends IDPT>(address: string, DataPointType: new(address: string, connection: KnxConnection, link: KnxLink, events?: EventEmitter) => T): T {
-        return new DataPointType(address, this.connection, this.link, this.events)
-    }
-
-    public groupFromSchema<T extends IDPT>({ address, dataType }: KnxGroupSchema<T>): T {
-        return new dataType(address, this.connection, this.link, this.events)
+    public getLink(): KnxLink {
+        return this.link
     }
 
     public constructor(protected readonly address: string, protected connection: KnxConnection, private readonly link: KnxLink, private readonly events?: EventEmitter) {
