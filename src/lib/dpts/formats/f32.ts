@@ -6,7 +6,6 @@ export function fromBuffer(buf: Buffer): number {
 
 export function  toBuffer(value: number, buf: Buffer, position = 0): Buffer {
     buf.writeFloatBE(value, 1)
-    buf.writeUint8(0x80, 0)
     return buf
 }
 

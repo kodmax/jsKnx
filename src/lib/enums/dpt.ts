@@ -13,16 +13,23 @@ export enum DPT {
     Window_Door = "1.019",
     DayNight = "1.024",
   
-    Value_Power = "14.056",
+    Scaling = "5.001",
+    Angle = "5.003",
+    Percent_U8 = "5.004",
+    Tariff = "5.006",
+    DPT_Value_1_Ucount = "5.010",
   
     Value_Temp = "9.001",
     Value_Humidity = "9.007",
     Value_AirQuality = "9.008",
-  
+
+    Time = "10.001",
+    Date = "11.001",
+
     ActiveEnergy = "13.010",
     
-    Date = "11.001",
-    Time = "10.001",
+    Value_Power = "14.056",
+
     DateTime = "19.001"
   }
   
