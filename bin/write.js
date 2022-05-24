@@ -9,6 +9,6 @@ if (!dpts ["DPT_" + dpt]) {
 
 } else {
     KnxLink.connect("192.168.0.8").then(async knx => {
-        await knx.group(address, dpts ["DPT_" + dpt]).write(value).then(() => knx.disconnect()).then(() => process.exit(0))
+        await knx.getDatapoint({ address, dataType: dpts ["DPT_" + dpt] }).write(value).then(() => knx.disconnect()).then(() => process.exit(0))
     })    
 }

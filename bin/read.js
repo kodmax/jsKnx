@@ -9,7 +9,7 @@ if (!dpts ["DPT_" + dpt]) {
 
 } else {
     KnxLink.connect("192.168.0.8").then(async knx => {
-        knx.group(address, dpts ["DPT_" + dpt], dp => {
+        knx.getDatapoint({ address, dataType: dpts ["DPT_" + dpt] }, dp => {
             dp.addValueListener((value) => {
                 if (unit) {
                     console.log(dp.toString(value))
