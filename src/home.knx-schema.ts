@@ -1,4 +1,5 @@
 import { DPT_ActiveEnergy, DPT_Alarm, DPT_Date, DPT_DateTime, DPT_Start, DPT_Switch, DPT_Time, DPT_Value_AirQuality, DPT_Value_Humidity, DPT_Value_Power, DPT_Value_Temp } from "./lib"
+import { DPT } from "./lib/enums"
 
 export const lights = {
     "Salon i hol": {
@@ -151,8 +152,8 @@ export const energy = {
     "Intermediate Consumption Meter": {
         "Start": { address: "5/2/1", dataType: DPT_Start },
         "Stop": { address: "5/2/4", dataType: DPT_Start },
-        "Status": { address: "5/2/5" },
-        "Reading": { address: "5/2/2" },    
+        "Status": { address: "5/2/5", dataType: DPT_Start },
+        "Reading": { address: "5/2/2", dataType: DPT_ActiveEnergy },    
     }
 }
 

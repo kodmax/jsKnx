@@ -4,6 +4,13 @@ import { KnxConnection } from "../../connection/connection"
 import { APCI, DPT, KnxCemiCode, KnxServiceId } from "../../enums"
 import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from "../../message"
 
+export type KnxReading<T> = {
+    source: string
+    text: string
+    unit: string
+    value: T
+}
+
 export interface IDPT {}
 export abstract class DataPointAbstract<T> implements IDPT {
     protected cemiFrameEvent: EventEmitter = new EventEmitter()
@@ -36,6 +43,28 @@ export abstract class DataPointAbstract<T> implements IDPT {
         await telegram.send(this.connection.getTunnel())
     }
 
+    public async read(): Promise<KnxReading<T>> {
+        await this.requestValue()
+        return await new Promise((resolve, reject) => {
+            const recv = (reading: KnxReading<T>) => {
+                this.valueEvent.removeListener("value-received", recv)
+                this.updateSubscription("value-received")
+                clearTimeout(timeoutId)
+                resolve(reading)
+            }
+
+            this.valueEvent.addListener("value-received", recv)
+            this.updateSubscription("value-received")
+
+            const timeoutId = setTimeout(() => {
+                this.valueEvent.removeListener("value-received", recv)
+                this.updateSubscription("value-received")
+                
+                reject("E_TIMEOUT")
+            }, 2000)
+        })
+    }
+
     public getLink(): KnxLink {
         return this.link
     }
@@ -49,9 +78,17 @@ export abstract class DataPointAbstract<T> implements IDPT {
             this.cemiFrameEvent.emit(APCI [cemiFrame.getService()], cemiFrame)
 
             switch (cemiFrame.getService()) {
-            case APCI.APCI_GROUP_VALUE_WRITE: case APCI.APCI_GROUP_VALUE_RESP:
-                this.valueEvent.emit("value-received", this.decode(cemiFrame.value), this.unit, cemiFrame.source)
+            case APCI.APCI_GROUP_VALUE_WRITE: case APCI.APCI_GROUP_VALUE_RESP: {
+                const value = this.decode(cemiFrame.value)
+                this.valueEvent.emit("value-received", {
+                    text: this.toString(value),
+                    source: cemiFrame.source, 
+                    unit: this.unit, 
+                    value
+                })
+
                 break
+            }
 
             default:
             }

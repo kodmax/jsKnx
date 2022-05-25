@@ -1,4 +1,4 @@
-import { DataPointAbstract } from "./data-point-abstract"
+import { DataPointAbstract, KnxReading } from "./data-point-abstract"
 import { DayOfWeek } from "./time-of-day"
 
 export type KnxDateTime = {
@@ -83,12 +83,12 @@ export abstract class DateTime extends DataPointAbstract<KnxDateTime> {
         return this.send(toBuffer(value, Buffer.alloc(9)))
     }
 
-    public removeValueListener(cb: (value: KnxDateTime, unit: string, source: string) => void) {
+    public removeValueListener(cb: (reading: KnxReading<KnxDateTime>) => void) {
         this.valueEvent.removeListener("value-received", cb)
         this.updateSubscription("value-received")
     }
 
-    public addValueListener(cb: (value: KnxDateTime, unit: string, source: string) => void) {
+    public addValueListener(cb: (reading: KnxReading<KnxDateTime>) => void) {
         this.valueEvent.addListener("value-received", cb)
         this.updateSubscription("value-received")
     }

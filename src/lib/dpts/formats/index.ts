@@ -1,4 +1,4 @@
-export { IDPT } from "./data-point-abstract"
+export { IDPT, KnxReading } from "./data-point-abstract"
 
 export { U8 } from "./u8"
 export { V32 } from "./v32"

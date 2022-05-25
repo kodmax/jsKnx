@@ -1,4 +1,4 @@
-import { DataPointAbstract } from "./data-point-abstract"
+import { DataPointAbstract, KnxReading } from "./data-point-abstract"
 
 export function fromBuffer(buf: Buffer, position = 0): number {
     return buf.readUint8(1)
@@ -19,12 +19,12 @@ export abstract class U8 extends DataPointAbstract<number> {
         return this.send(toBuffer(value, Buffer.alloc(5)))
     }
 
-    public removeValueListener(cb: (value: number, unit: string, source: string) => void) {
+    public removeValueListener(cb: (reading: KnxReading<number>) => void) {
         this.valueEvent.removeListener("value-received", cb)
         this.updateSubscription("value-received")
     }
 
-    public addValueListener(cb: (value: number, unit: string, source: string) => void) {
+    public addValueListener(cb: (reading: KnxReading<number>) => void) {
         this.valueEvent.addListener("value-received", cb)
         this.updateSubscription("value-received")
     }
