@@ -34,7 +34,7 @@ export abstract class U8 extends DataPointAbstract<number> {
             return `${this.address} (${this.type})`
 
         } else {
-            return `${Number(value).toString(10)} ${this.unit}`
+            return `${Number(value).toFixed(0)} ${this.unit}`
         }
     }
 }
