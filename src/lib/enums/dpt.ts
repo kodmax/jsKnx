@@ -28,6 +28,11 @@ export enum DPT {
 
     ActiveEnergy = "13.010",
     
+    Value_Electric_Current = "14.019",
+    Value_Electric_Potential = "14.027",
+    Value_Frequency = "14.031",
+    Value_ApparentPower = "14.080",
+    Value_Power_Factor = "14.057",
     Value_Power = "14.056",
 
     DateTime = "19.001",
