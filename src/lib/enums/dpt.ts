@@ -30,6 +30,8 @@ export enum DPT {
     
     Value_Power = "14.056",
 
-    DateTime = "19.001"
+    DateTime = "19.001",
+
+    StatusGen = "21.001"
   }
   

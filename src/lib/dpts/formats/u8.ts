@@ -16,7 +16,7 @@ export abstract class U8 extends DataPointAbstract<number> {
     }
 
     public async write(value: number): Promise<void> {
-        return this.send(toBuffer(value, Buffer.alloc(5)))
+        return this.send(toBuffer(value, Buffer.alloc(2)))
     }
 
     public removeValueListener(cb: (reading: KnxReading<number>) => void) {
