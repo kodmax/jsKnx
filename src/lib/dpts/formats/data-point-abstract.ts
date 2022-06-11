@@ -3,7 +3,7 @@ import { KnxLink } from "../../connection"
 import { KnxConnection } from "../../connection/connection"
 import { APCI, DPT, KnxCemiCode, KnxServiceId } from "../../enums"
 import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from "../../message"
-import { KnxLinkOptions, KnxReading } from "../../types"
+import { KnxLinkException, KnxLinkExceptionCode, KnxLinkOptions, KnxReading } from "../../types"
 
 export interface IDPT {}
 export abstract class DataPointAbstract<T> implements IDPT {
@@ -56,7 +56,9 @@ export abstract class DataPointAbstract<T> implements IDPT {
                 this.valueEvent.removeListener("value-received", recv)
                 this.updateSubscription("value-received")
                 
-                reject("E_TIMEOUT")
+                reject(new KnxLinkException(`Timeout waiting for ${this.address} response`, KnxLinkExceptionCode.E_READ_TIMEOUT, {
+                    address: this.address
+                }))
             }, 2000)
         })
     }

@@ -43,7 +43,7 @@ export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
     }
 
     public async write(status: KnxStandardStatus): Promise<void> {
-        return this.send(toBuffer([0, 0, 0, +status.AlarmUnAck, +status.InAlarm, , +status.Overridden, +status.Fault, +status.OutOfService], Buffer.alloc(2)))
+        return this.send(toBuffer([0, 0, 0, +status.AlarmUnAck, +status.InAlarm, +status.Overridden, +status.Fault, +status.OutOfService], Buffer.alloc(2)))
     }
 
     public removeValueListener(cb: (reading: KnxReading<KnxStandardStatus>) => void) {
@@ -61,7 +61,7 @@ export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
             return `${this.address} (${this.type})`
 
         } else {
-            return `[${Object.keys(status).filter(attribute => status [attribute]).join(', ')}]`
+            return `[${Object.keys(status).filter(attribute => status [attribute]).join(", ")}]`
         }
     }
 }

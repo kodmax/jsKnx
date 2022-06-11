@@ -2,6 +2,7 @@ import { KnxErrorCode, KnxConnectionType, KnxServiceId, KnxLayer } from "../enum
 import { KnxIpMessage, hpai, cri } from "../message"
 
 import { createSocket, RemoteInfo, Socket } from "dgram"
+import { KnxLinkException, KnxLinkExceptionCode } from "../types"
 
 export type KnxLinkInfo = {
     connectionType: KnxConnectionType
@@ -64,8 +65,11 @@ export class KnxConnection {
                 if (msg.readUInt16BE(2) === KnxServiceId.CONNECTION_RESPONSE) {
                     const error: number = msg.readUint8(7)                
                     if (error) {
-                        reject(new Error("Error Connection to KNX/IP Gateway: " + KnxErrorCode[error]))
                         this.gateway.off("message", cb)
+
+                        reject(new KnxLinkException("Error Connectiong to KNX/IP Gateway: " + KnxErrorCode[error], KnxLinkExceptionCode.E_CONNECTION_ERROR, {
+                            knxErrorCode: KnxErrorCode [KnxErrorCode[error]]
+                        }))
     
                     } else {
                         const address = msg.readUint16BE(18)
@@ -86,7 +90,9 @@ export class KnxConnection {
 
                     const error: number = msg.readUint8(7)
                     if (error) {
-                        reject(new Error("Error Connection to KNX/IP Gateway: " + KnxErrorCode[error]))
+                        reject(new KnxLinkException("Error Connectiong to KNX/IP Gateway: " + KnxErrorCode[error], KnxLinkExceptionCode.E_CONNECTION_ERROR, {
+                            knxErrorCode: KnxErrorCode [KnxErrorCode[error]]
+                        }))
     
                     } else {
                         resolve(linkInfo)

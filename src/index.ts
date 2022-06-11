@@ -7,7 +7,7 @@ KnxLink.connect("192.168.0.8").then(async knx => {
 
     console.log(await knx.getDatapoint(energy.InstantPowerDraw.reading).read())
 
-    console.log(await knx.getDatapoint(energy['Intermediate Consumption Meter'].Status).read())
+    console.log(await knx.getDatapoint(energy["Intermediate Consumption Meter"].Status).read())
 
     await knx.disconnect()
     await knx.close()
