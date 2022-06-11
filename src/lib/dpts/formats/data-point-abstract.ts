@@ -59,7 +59,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                 reject(new KnxLinkException(`Timeout waiting for ${this.address} response`, KnxLinkExceptionCode.E_READ_TIMEOUT, {
                     address: this.address
                 }))
-            }, 2000)
+            }, this.options.readTimeout)
         })
     }
 
