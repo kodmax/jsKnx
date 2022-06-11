@@ -1,5 +1,6 @@
-import { DataPointAbstract, KnxReading } from "./data-point-abstract"
+import { DataPointAbstract } from "./data-point-abstract"
 import { DayOfWeek } from "./time-of-day"
+import { KnxReading } from "../../types"
 
 export type KnxDateTime = {
     year?: number

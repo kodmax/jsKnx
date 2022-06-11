@@ -1,4 +1,5 @@
-import { DataPointAbstract, KnxReading } from "./data-point-abstract"
+import { DataPointAbstract } from "./data-point-abstract"
+import { KnxReading } from "../../types"
 
 export function fromBuffer(buf: Buffer, position = 0): number {
     return buf.readUint8(1)

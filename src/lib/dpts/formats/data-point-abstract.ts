@@ -1,15 +1,9 @@
 import EventEmitter from "events"
-import { KnxGroupSchema, KnxLink } from "../../connection"
+import { KnxLink } from "../../connection"
 import { KnxConnection } from "../../connection/connection"
 import { APCI, DPT, KnxCemiCode, KnxServiceId } from "../../enums"
 import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from "../../message"
-
-export type KnxReading<T> = {
-    source: string
-    text: string
-    unit: string
-    value: T
-}
+import { KnxLinkOptions, KnxReading } from "../../types"
 
 export interface IDPT {}
 export abstract class DataPointAbstract<T> implements IDPT {
@@ -71,7 +65,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
         return this.link
     }
 
-    public constructor(protected readonly address: string, protected connection: KnxConnection, private readonly link: KnxLink, private readonly events?: EventEmitter) {
+    public constructor(protected readonly address: string, protected connection: KnxConnection, private readonly link: KnxLink, private readonly options: KnxLinkOptions) {
 
     }
 
@@ -98,13 +92,13 @@ export abstract class DataPointAbstract<T> implements IDPT {
     }
 
     protected updateSubscription(eventName: string): void {
-        if (this.events) {
+        if (this.options.events) {
             if (this.valueEvent.listenerCount(eventName) === 0 && this.hasSubscribed) {
-                this.events.off("cemi-frame", this.eventsListener)
+                this.options.events.off("cemi-frame", this.eventsListener)
                 this.hasSubscribed = false
 
             } else if (this.valueEvent.listenerCount(eventName) === 1 && !this.hasSubscribed) {
-                this.events.on("cemi-frame", this.eventsListener)
+                this.options.events.on("cemi-frame", this.eventsListener)
                 this.hasSubscribed = true
             }
         }

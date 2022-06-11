@@ -6,12 +6,10 @@ import { IDPT } from "../dpts/formats"
 
 import EventEmitter from "events"
 import { DataPointAbstract } from "../dpts/formats/data-point-abstract"
-
+import { KnxLinkOptions } from "../types"
 
 export class KnxLink {
-    private events: EventEmitter = new EventEmitter()
-
-    public constructor(private linkInfo: KnxLinkInfo, private readonly connection: KnxConnection) {
+    public constructor(private linkInfo: KnxLinkInfo, private readonly connection: KnxConnection, private readonly options: Required<KnxLinkOptions>) {
         const gateway = connection.getGateway()
         gateway.on("message", data => {
             const ipMessage = KnxIpMessage.decode(data)
@@ -34,16 +32,16 @@ export class KnxLink {
 
                 if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
                     const cemiFrame = new KnxCemiFrame(tunneling.getBody())
-                    this.events.emit("cemi-frame", cemiFrame)
+                    this.options.events.emit("cemi-frame", cemiFrame)
                 }
             }
         })
     }
 
-    public static async connect(ip: string, port = 3671): Promise<KnxLink> {
+    public static async connect(ip: string, { port = 3671, readTimeout = 3000, events = new EventEmitter }: KnxLinkOptions = {}): Promise<KnxLink> {
         const connection = await KnxConnection.bind(ip, port)
 
-        return new KnxLink(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection)
+        return new KnxLink(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection, { port, readTimeout, events })
     }
 
     public getLinkInfo(): KnxLinkInfo {
@@ -59,7 +57,7 @@ export class KnxLink {
     }
 
     public getDatapoint<T extends IDPT>({ address, dataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
-        const dataPoint = new dataType(address, this.connection, this, this.events)
+        const dataPoint = new dataType(address, this.connection, this, this.options)
 
         if (init) {
             init(dataPoint)

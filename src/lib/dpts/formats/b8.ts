@@ -1,4 +1,6 @@
-import { DataPointAbstract, KnxReading } from "./data-point-abstract"
+import { DataPointAbstract } from "./data-point-abstract"
+import { KnxReading } from "../../types"
+
 
 function getBit(i: number, octet: number): number {
     return octet & (1 << i) ? 1 : 0

@@ -1,4 +1,5 @@
-import { DataPointAbstract, KnxReading } from "./data-point-abstract"
+import { KnxReading } from "../../types"
+import { DataPointAbstract } from "./data-point-abstract"
 
 export function fromBuffer(buf: Buffer): number {
     const value = buf.readUint16BE(1)
