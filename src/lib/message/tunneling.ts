@@ -27,8 +27,8 @@ export class TunnelingRequest {
         return this.frame.readUint8(2)
     }
 
-    public async ack(tunnel: Socket): Promise<void> {
-        await KnxIpMessage.compose(KnxServiceId.TUNNEL_RESPONSE, [Buffer.from([0x04, this.getChannel(), this.getSequenceNumber(), 0x00])]).send(tunnel)
+    public ack(): KnxIpMessage {
+        return KnxIpMessage.compose(KnxServiceId.TUNNEL_RESPONSE, [Buffer.from([0x04, this.getChannel(), this.getSequenceNumber(), 0x00])])
     }
 
     public getBody(index = 0) {

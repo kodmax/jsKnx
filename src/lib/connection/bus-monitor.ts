@@ -17,7 +17,7 @@ export class BusMonitor {
 
             if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
                 const tunneling = new TunnelingRequest(ipMessage.getBody())
-                tunneling.ack(tunnel)
+                connection.send(tunneling.ack())
                 
                 if ([KnxCemiCode.L_Busmon_Indication].includes(tunneling.getCemiCode())) {
                     const cemiFrame = new KnxCemiFrame(tunneling.getBody(12))

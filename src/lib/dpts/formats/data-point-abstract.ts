@@ -26,8 +26,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
             KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, "0.0.0", this.address, value)
         ])
 
-        await telegram.send(this.connection.getTunnel())
-        
+        await this.connection.send(telegram)      
     }
 
     public async requestValue(): Promise<void> {
@@ -36,7 +35,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
             KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, "0.0.0", this.address)
         ])
         
-        await telegram.send(this.connection.getTunnel())
+        await this.connection.send(telegram)
     }
 
     public async read(): Promise<KnxReading<T>> {

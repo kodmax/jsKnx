@@ -49,13 +49,23 @@ export class KnxConnection {
         return this.tunnel
     }
 
+    private sendTo(socket :Socket, message: KnxIpMessage): Promise<void> {
+        return new Promise((resolve, reject) => {
+            socket.send(message.getBuffer(), error => error ? reject(error) : resolve())
+        })
+    }
+
+    public send(message: KnxIpMessage): Promise<void> {
+        return this.sendTo(this.tunnel, message)
+    }
+
     public close(): void {
         this.gateway.close()
         this.tunnel.close()
     }
 
     public async disconnect(channel: number): Promise<void> {
-        await KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([channel, 0x00]), hpai(this.gateway.address())]).send(this.gateway)
+        this.sendTo(this.gateway, KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([channel, 0x00]), hpai(this.gateway.address())]))
     }
 
     public async connect(connectionType: KnxConnectionType, layer: KnxLayer): Promise<KnxLinkInfo> {        
@@ -82,7 +92,7 @@ export class KnxConnection {
                             layer,
                         }
 
-                        KnxIpMessage.compose(KnxServiceId.CONNECTIONSTATE_REQUEST, [Buffer.from([linkInfo.channel, 0x00]), hpai(this.gateway.address())]).send(this.tunnel)
+                        this.sendTo(this.tunnel, KnxIpMessage.compose(KnxServiceId.CONNECTIONSTATE_REQUEST, [Buffer.from([linkInfo.channel, 0x00]), hpai(this.gateway.address())]))
                     }
 
                 } else if (msg.readUint16BE(2) === KnxServiceId.CONNECTIONSTATE_RESPONSE) {
@@ -100,7 +110,7 @@ export class KnxConnection {
                 }
             }
     
-            KnxIpMessage.compose(KnxServiceId.CONNECTION_REQUEST, [hpai(this.gateway.address()), hpai(this.tunnel.address()), cri(connectionType, layer)]).send(this.gateway)
+            this.sendTo(this.gateway, KnxIpMessage.compose(KnxServiceId.CONNECTION_REQUEST, [hpai(this.gateway.address()), hpai(this.tunnel.address()), cri(connectionType, layer)]))
             this.gateway.on("message", cb)
         })
     }

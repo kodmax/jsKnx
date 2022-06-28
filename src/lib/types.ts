@@ -17,6 +17,12 @@ export type KnxLinkOptions = {
      * Event bus to use internally, may be useful to tap into low level knx messages
      */
     events?: EventEmitter
+
+    /**
+     * Maximum number of retries on IP network failure.
+     * @default +Infinity
+     */
+    maxRetry?: number
 }
 
 export type KnxReading<T> = {

@@ -30,12 +30,6 @@ export class KnxIpMessage {
         return new KnxIpMessage(message)
     }
 
-    public async send(socket: Socket): Promise<number> {
-        return new Promise((resolve, reject) => {
-            socket.send(this.message, (error, bytes) => error ? reject(error) : resolve(bytes))
-        })
-    }
-
     public getBody(index = 0): Buffer {
         return this.message.slice(6 + index)
     }

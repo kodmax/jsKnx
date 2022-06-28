@@ -28,7 +28,7 @@ export class KnxLink {
             const ipMessage = KnxIpMessage.decode(msg)
             if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
                 const tunneling = new TunnelingRequest(ipMessage.getBody())
-                tunneling.ack(tunnel)
+                connection.send(tunneling.ack())
 
                 if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
                     const cemiFrame = new KnxCemiFrame(tunneling.getBody())
@@ -38,10 +38,10 @@ export class KnxLink {
         })
     }
 
-    public static async connect(ip: string, { port = 3671, readTimeout = 3000, events = new EventEmitter }: KnxLinkOptions = {}): Promise<KnxLink> {
+    public static async connect(ip: string, { port = 3671, readTimeout = 3000, events = new EventEmitter, maxRetry = +Infinity }: KnxLinkOptions = {}): Promise<KnxLink> {
         const connection = await KnxConnection.bind(ip, port)
 
-        return new KnxLink(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection, { port, readTimeout, events })
+        return new KnxLink(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection, { port, readTimeout, events, maxRetry })
     }
 
     public getLinkInfo(): KnxLinkInfo {
