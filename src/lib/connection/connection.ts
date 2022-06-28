@@ -1,117 +1,85 @@
-import { KnxErrorCode, KnxConnectionType, KnxServiceId, KnxLayer } from "../enums"
-import { KnxIpMessage, hpai, cri } from "../message"
+import { KnxIpMessage, hpai } from "../message"
+import { KnxConnectionType, KnxLayer, KnxServiceId } from "../enums"
+import connect, { KnxLinkInfo } from "./connect"
 
-import { createSocket, RemoteInfo, Socket } from "dgram"
-import { KnxLinkException, KnxLinkExceptionCode } from "../types"
-
-export type KnxLinkInfo = {
-    connectionType: KnxConnectionType
-    gatewayAddress: string
-    channel: number
-    layer: KnxLayer
-    port: number
-    ip: string
-}
+import { Socket } from "dgram"
+import { KnxLinkOptions } from "../types"
+import { EventEmitter } from "stream"
 
 /**
  * Docs
  * http://www.eb-systeme.de/?page_id=479
  */
 export class KnxConnection {
-    public static async bind(ip: string, port: number): Promise<KnxConnection> {
-        const gateway: Socket = createSocket("udp4")
-        const tunnel: Socket = createSocket("udp4")
+    private linkInfo?: KnxLinkInfo = null
 
-        return new Promise(resolve => {
-            gateway.connect(port, ip, () => {
-                tunnel.connect(port, ip, () => {
-                    resolve(new KnxConnection(gateway, tunnel))
-                })
-            })
-        })
+    public constructor(private readonly options: KnxLinkOptions, private readonly ip: string, private readonly connectionType: KnxConnectionType, private readonly layer: KnxLayer) {
+
     }
 
-    private constructor(private readonly gateway: Socket, private readonly tunnel: Socket) {
-        gateway.on("error", err => {
-            throw err
-        })
+    public async connect(): Promise<void> {
+        for (let attempt = 0; attempt <= this.options.maxRetry; attempt ++) {
+            try {
+                this.terminate()
 
-        tunnel.on("error", err => {
-            throw err
-        })
+                this.linkInfo = await connect(this.options, this.ip, this.connectionType, this.layer)
+                break
+
+            } catch (e) {
+                await new Promise(resolve => setTimeout(resolve, this.options.retryPause))
+            }
+        }
     }
 
-    public getGateway(): Socket {
-        return this.gateway
+    public getLinkInfo(): KnxLinkInfo {
+        return this.linkInfo
     }
 
-    public getTunnel(): Socket {
-        return this.tunnel
+    public async send(message: KnxIpMessage): Promise<void> {
+        for (let attempt = 0; attempt <= this.options.maxRetry; attempt ++) {
+            try {
+                if (!this.linkInfo) {
+                    this.linkInfo = await connect(this.options, this.ip, this.connectionType, this.layer)
+                }
+
+                return await this.sendTo(this.linkInfo.tunnel, message)
+
+            } catch (e) {
+                await new Promise(resolve => setTimeout(resolve, this.options.retryPause))
+            }
+        }
+    }
+
+    /**
+     * Closes network connection without closing the logical knx link.
+     */
+    public terminate(): void {
+        if (this.linkInfo) {
+            this.linkInfo.gateway.close()
+            this.linkInfo.tunnel.close()    
+        }
+    }
+
+    /**
+     * Gracefully close the knx gateway connection
+     */
+    public async disconnect(): Promise<void> {
+        this.sendTo(this.linkInfo.gateway, KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([this.linkInfo.channel, 0x00]), hpai(this.linkInfo.gateway.address())]))
     }
 
     private sendTo(socket :Socket, message: KnxIpMessage): Promise<void> {
         return new Promise((resolve, reject) => {
-            socket.send(message.getBuffer(), error => error ? reject(error) : resolve())
-        })
-    }
+            socket.send(message.getBuffer(), error => {
+                if (error) {
+                    this.terminate()
 
-    public send(message: KnxIpMessage): Promise<void> {
-        return this.sendTo(this.tunnel, message)
-    }
+                    this.linkInfo = null
+                    reject(error)
 
-    public close(): void {
-        this.gateway.close()
-        this.tunnel.close()
-    }
-
-    public async disconnect(channel: number): Promise<void> {
-        this.sendTo(this.gateway, KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([channel, 0x00]), hpai(this.gateway.address())]))
-    }
-
-    public async connect(connectionType: KnxConnectionType, layer: KnxLayer): Promise<KnxLinkInfo> {        
-        let linkInfo: KnxLinkInfo
-        return new Promise((resolve, reject) => {
-            const cb = (msg: Buffer, rinfo: RemoteInfo) => {
-                if (msg.readUInt16BE(2) === KnxServiceId.CONNECTION_RESPONSE) {
-                    const error: number = msg.readUint8(7)                
-                    if (error) {
-                        this.gateway.off("message", cb)
-
-                        reject(new KnxLinkException("Error Connectiong to KNX/IP Gateway: " + KnxErrorCode[error], KnxLinkExceptionCode.E_CONNECTION_ERROR, {
-                            knxErrorCode: KnxErrorCode [KnxErrorCode[error]]
-                        }))
-    
-                    } else {
-                        const address = msg.readUint16BE(18)
-                        linkInfo = {
-                            gatewayAddress: [address >> 12, (address >> 8) & 0xf, address & 0xff].join("."),
-                            ip: Uint8Array.from(msg.slice(10, 14)).join("."),
-                            port: msg.readUint16BE(14),
-                            channel: msg.readUint8(6),
-                            connectionType,
-                            layer,
-                        }
-
-                        this.sendTo(this.tunnel, KnxIpMessage.compose(KnxServiceId.CONNECTIONSTATE_REQUEST, [Buffer.from([linkInfo.channel, 0x00]), hpai(this.gateway.address())]))
-                    }
-
-                } else if (msg.readUint16BE(2) === KnxServiceId.CONNECTIONSTATE_RESPONSE) {
-                    this.gateway.off("message", cb)
-
-                    const error: number = msg.readUint8(7)
-                    if (error) {
-                        reject(new KnxLinkException("Error Connectiong to KNX/IP Gateway: " + KnxErrorCode[error], KnxLinkExceptionCode.E_CONNECTION_ERROR, {
-                            knxErrorCode: KnxErrorCode [KnxErrorCode[error]]
-                        }))
-    
-                    } else {
-                        resolve(linkInfo)
-                    }
+                } else {
+                    resolve()
                 }
-            }
-    
-            this.sendTo(this.gateway, KnxIpMessage.compose(KnxServiceId.CONNECTION_REQUEST, [hpai(this.gateway.address()), hpai(this.tunnel.address()), cri(connectionType, layer)]))
-            this.gateway.on("message", cb)
+            })
         })
     }
 }

@@ -1,59 +1,34 @@
 
 import { KnxIpMessage, TunnelingRequest, KnxCemiFrame } from "../message"
 import { KnxConnectionType, KnxLayer, KnxCemiCode, KnxServiceId, APCI } from "../enums"
-import { KnxConnection, KnxLinkInfo } from "./connection"
+import { KnxConnection } from "./connection"
 import { IDPT } from "../dpts/formats"
 
 import EventEmitter from "events"
 import { DataPointAbstract } from "../dpts/formats/data-point-abstract"
 import { KnxLinkOptions } from "../types"
+import { KnxLinkInfo } from "./connect"
 
+const defaults: Required<Omit<KnxLinkOptions, "events">> = { port: 3671, readTimeout: 3000, retryPause: 3000, maxRetry: +Infinity, connectionTimeout: 5000 }
 export class KnxLink {
-    public constructor(private linkInfo: KnxLinkInfo, private readonly connection: KnxConnection, private readonly options: Required<KnxLinkOptions>) {
-        const gateway = connection.getGateway()
-        gateway.on("message", data => {
-            const ipMessage = KnxIpMessage.decode(data)
-            if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
-                connection.connect(this.linkInfo.connectionType, this.linkInfo.layer).then(linkInfo => {
-                    this.linkInfo = linkInfo
-                })
+    public constructor(private readonly connection: KnxConnection, private readonly options: Required<KnxLinkOptions>) {
 
-            } else if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_RESPONSE) {
-                //
-            }
-        })
-
-        const tunnel = connection.getTunnel()
-        tunnel.on("message", msg => {
-            const ipMessage = KnxIpMessage.decode(msg)
-            if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
-                const tunneling = new TunnelingRequest(ipMessage.getBody())
-                connection.send(tunneling.ack())
-
-                if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
-                    const cemiFrame = new KnxCemiFrame(tunneling.getBody())
-                    this.options.events.emit("cemi-frame", cemiFrame)
-                }
-            }
-        })
     }
 
-    public static async connect(ip: string, { port = 3671, readTimeout = 3000, events = new EventEmitter, maxRetry = +Infinity }: KnxLinkOptions = {}): Promise<KnxLink> {
-        const connection = await KnxConnection.bind(ip, port)
+    public static async connect(ip: string, options: KnxLinkOptions = {}): Promise<KnxLink> {
+        const opts: Required<KnxLinkOptions> = { ...defaults, ...{ events: new EventEmitter }, ...options }
+        const connection = new KnxConnection(opts, ip, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
+        await connection.connect()
 
-        return new KnxLink(await connection.connect(KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER), connection, { port, readTimeout, events, maxRetry })
+        return new KnxLink(connection, opts)
     }
 
     public getLinkInfo(): KnxLinkInfo {
-        return Object.assign({}, this.linkInfo)
+        return Object.assign({}, this.connection.getLinkInfo())
     }
 
     public async disconnect(): Promise<void> {
-        return this.connection.disconnect(this.linkInfo.channel)
-    }
-
-    public async close(): Promise<void> {
-        return this.connection.close()
+        return this.connection.disconnect()
     }
 
     public getDatapoint<T extends IDPT>({ address, dataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {

@@ -23,6 +23,13 @@ export type KnxLinkOptions = {
      * @default +Infinity
      */
     maxRetry?: number
+
+    /**
+     * How long to pause when error occurs
+     */
+    retryPause?: number
+
+    connectionTimeout?: number
 }
 
 export type KnxReading<T> = {
