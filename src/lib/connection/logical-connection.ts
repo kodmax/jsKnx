@@ -16,10 +16,11 @@ const establishLogicalConnection = async (
             gateway.off('message', cb)
 
             if (msg.readUInt16BE(2) === KnxServiceId.CONNECTION_RESPONSE) {
-                const error = (KnxErrorCode[msg.readUint8(7)] ?? KnxErrorCode[KnxErrorCode.UNKNOWN_ERROR]) as keyof typeof KnxErrorCode
-                if (error) {
+                const knxErrorCode = msg.readUint8(7)
+                if (knxErrorCode !== 0) {
+                    const error = (KnxErrorCode[knxErrorCode] ?? KnxErrorCode[KnxErrorCode.UNKNOWN_ERROR]) as keyof typeof KnxErrorCode
                     reject(new KnxLinkException('Error Connectiong to KNX/IP Gateway: ' + error, KnxLinkExceptionCode.E_CONNECTION_ERROR, {
-                        knxErrorCode: KnxErrorCode [error]
+                        knxErrorCode
                     }))
 
                 } else {

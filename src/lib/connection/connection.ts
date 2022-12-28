@@ -30,6 +30,10 @@ export class KnxConnection {
                 break
 
             } catch (e) {
+                if (attempt === this.options.maxRetry) {
+                    throw e
+                }
+                
                 await new Promise(resolve => setTimeout(resolve, this.options.retryPause))
             }
         }
