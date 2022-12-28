@@ -1,10 +1,10 @@
-import { KnxIpMessage, hpai } from "../message"
-import { KnxConnectionType, KnxLayer, KnxServiceId } from "../enums"
-import connect, { KnxLinkInfo } from "./connect"
+import { KnxIpMessage, hpai } from '../message'
+import { KnxConnectionType, KnxLayer, KnxServiceId } from '../enums'
+import connect, { KnxLinkInfo } from './connect'
 
-import { Socket } from "dgram"
-import { KnxLinkOptions } from "../types"
-import { EventEmitter } from "stream"
+import { Socket } from 'dgram'
+import { KnxLinkOptions } from '../types'
+import { EventEmitter } from 'stream'
 
 /**
  * Docs
@@ -13,12 +13,12 @@ import { EventEmitter } from "stream"
 export class KnxConnection {
     private linkInfo?: KnxLinkInfo = null
 
-    public constructor(private readonly options: KnxLinkOptions, private readonly ip: string, private readonly connectionType: KnxConnectionType, private readonly layer: KnxLayer) {
+    public constructor (private readonly options: KnxLinkOptions, private readonly ip: string, private readonly connectionType: KnxConnectionType, private readonly layer: KnxLayer) {
 
     }
 
-    public async connect(): Promise<void> {
-        for (let attempt = 0; attempt <= this.options.maxRetry; attempt ++) {
+    public async connect (): Promise<void> {
+        for (let attempt = 0; attempt <= this.options.maxRetry; attempt++) {
             try {
                 this.terminate()
 
@@ -31,12 +31,12 @@ export class KnxConnection {
         }
     }
 
-    public getLinkInfo(): KnxLinkInfo {
+    public getLinkInfo (): KnxLinkInfo {
         return this.linkInfo
     }
 
-    public async send(message: KnxIpMessage): Promise<void> {
-        for (let attempt = 0; attempt <= this.options.maxRetry; attempt ++) {
+    public async send (message: KnxIpMessage): Promise<void> {
+        for (let attempt = 0; attempt <= this.options.maxRetry; attempt++) {
             try {
                 if (!this.linkInfo) {
                     this.linkInfo = await connect(this.options, this.ip, this.connectionType, this.layer)
@@ -53,21 +53,21 @@ export class KnxConnection {
     /**
      * Closes network connection without closing the logical knx link.
      */
-    public terminate(): void {
+    public terminate (): void {
         if (this.linkInfo) {
             this.linkInfo.gateway.close()
-            this.linkInfo.tunnel.close()    
+            this.linkInfo.tunnel.close()
         }
     }
 
     /**
      * Gracefully close the knx gateway connection
      */
-    public async disconnect(): Promise<void> {
+    public async disconnect (): Promise<void> {
         this.sendTo(this.linkInfo.gateway, KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([this.linkInfo.channel, 0x00]), hpai(this.linkInfo.gateway.address())]))
     }
 
-    private sendTo(socket :Socket, message: KnxIpMessage): Promise<void> {
+    private async sendTo (socket :Socket, message: KnxIpMessage): Promise<void> {
         return new Promise((resolve, reject) => {
             socket.send(message.getBuffer(), error => {
                 if (error) {

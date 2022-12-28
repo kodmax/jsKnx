@@ -28,7 +28,7 @@ export enum KnxErrorCode {
      * The server does not support the requested connection type.
      */
     CONNECTION_TYPE = 0x22,
-    
+
     /**
      * The server does not support the requested connection options.
      */

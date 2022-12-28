@@ -15,26 +15,26 @@ export enum CemiSequenceType {
  * ......?? ??......
  */
 export enum APCI {
-    APCI_GROUP_VALUE_READ           = 0,     // # Multicast.
-    APCI_GROUP_VALUE_RESP           = 1,
-    APCI_GROUP_VALUE_WRITE          = 2,
+    APCI_GROUP_VALUE_READ = 0, // # Multicast.
+    APCI_GROUP_VALUE_RESP = 1,
+    APCI_GROUP_VALUE_WRITE = 2,
 
-    APCI_INDIVIDUAL_ADDRESS_WRITE   = 3,     // # Broadcast.
-    APCI_INDIVIDUAL_ADDRESS_READ    = 4,
-    APCI_INDIVIDUAL_ADDRESS_RESP    = 5,
+    APCI_INDIVIDUAL_ADDRESS_WRITE = 3, // # Broadcast.
+    APCI_INDIVIDUAL_ADDRESS_READ = 4,
+    APCI_INDIVIDUAL_ADDRESS_RESP = 5,
 
-    APCI_ADC_READ                   = 6,     // # P2P-Connection-Oriented.
-    APCI_ADC_RESP                   = 7,
-    APCI_MEMORY_READ                = 8,
-    APCI_MEMORY_RESP                = 9,
-    APCI_MEMORY_WRITE               = 10,
+    APCI_ADC_READ = 6, // # P2P-Connection-Oriented.
+    APCI_ADC_RESP = 7,
+    APCI_MEMORY_READ = 8,
+    APCI_MEMORY_RESP = 9,
+    APCI_MEMORY_WRITE = 10,
 
-    APCI_USER_MSG                   = 11,    // # User-defined Messages.
+    APCI_USER_MSG = 11, // # User-defined Messages.
 
-    APCI_DEVICE_DESCRIPTOR_READ     = 12,    // # P2P-Conection-Less.
-    APCI_DEVICE_DESCRIPTOR_RESP     = 13,
+    APCI_DEVICE_DESCRIPTOR_READ = 12, // # P2P-Conection-Less.
+    APCI_DEVICE_DESCRIPTOR_RESP = 13,
 
-    APCI_RESTART                    = 14,    // # P2P-Connection-Oriented.
+    APCI_RESTART = 14, // # P2P-Connection-Oriented.
 
-    APCI_ESCAPE                     = 15,    // # Others, escape.
+    APCI_ESCAPE = 15, // # Others, escape.
 }

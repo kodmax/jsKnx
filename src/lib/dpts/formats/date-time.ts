@@ -1,6 +1,6 @@
-import { DataPointAbstract } from "./data-point-abstract"
-import { DayOfWeek } from "./time-of-day"
-import { KnxReading } from "../../types"
+import { DataPointAbstract } from './data-point-abstract'
+import { DayOfWeek } from './time-of-day'
+import { KnxReading } from '../../types'
 
 export type KnxDateTime = {
     year?: number
@@ -29,7 +29,7 @@ enum Status {
     CLQ = 0x0080,
     SRC = 0x0040
 }
-export function fromBuffer(data: Buffer): KnxDateTime {
+export function fromBuffer (data: Buffer): KnxDateTime {
     const status: number = data.readUint16BE(6)
 
     return {
@@ -48,8 +48,7 @@ export function fromBuffer(data: Buffer): KnxDateTime {
     }
 }
 
-
-export function toBuffer(dateTime: KnxDateTime, data: Buffer): Buffer {
+export function toBuffer (dateTime: KnxDateTime, data: Buffer): Buffer {
     data.writeUint8(dateTime.year - 1900, 0)
     data.writeUint8(dateTime.month, 1)
     data.writeUint8(dateTime.dayOfMonth, 2)
@@ -69,38 +68,37 @@ export function toBuffer(dateTime: KnxDateTime, data: Buffer): Buffer {
         dateTime.isExternalSync ? Status.CLQ : 0,
         dateTime.isReliable ? Status.SRC : 0
     ]
-    
+
     data.writeUInt16BE(status.reduce((s, f) => s + f, 0), 6)
     return data
 }
 
 export abstract class DateTime extends DataPointAbstract<KnxDateTime> {
 
-    protected decode(data: Buffer): KnxDateTime {
+    protected decode (data: Buffer): KnxDateTime {
         return fromBuffer(data)
     }
 
-    public async write(value: KnxDateTime): Promise<void> {
+    public async write (value: KnxDateTime): Promise<void> {
         return this.send(toBuffer(value, Buffer.alloc(9)))
     }
 
-    public removeValueListener(cb: (reading: KnxReading<KnxDateTime>) => void) {
-        this.valueEvent.removeListener("value-received", cb)
-        this.updateSubscription("value-received")
+    public removeValueListener (cb: (reading: KnxReading<KnxDateTime>) => void) {
+        this.valueEvent.removeListener('value-received', cb)
+        this.updateSubscription('value-received')
     }
 
-    public addValueListener(cb: (reading: KnxReading<KnxDateTime>) => void) {
-        this.valueEvent.addListener("value-received", cb)
-        this.updateSubscription("value-received")
+    public addValueListener (cb: (reading: KnxReading<KnxDateTime>) => void) {
+        this.valueEvent.addListener('value-received', cb)
+        this.updateSubscription('value-received')
     }
 
-    public toString(value?: KnxDateTime): string {
+    public toString (value?: KnxDateTime): string {
         if (value === undefined) {
             return `${this.address} (${this.type})`
 
         } else {
-            return `${value.year}-${Number(value.month).toString().padStart(2, "0")}-${Number(value.dayOfMonth).toString().padStart(2, "0")} ${Number(value.hourOfDay).toString().padStart(2, "0")}:${Number(value.minutes).toString().padStart(2, "0")}:${Number(value.seconds).toString().padStart(2, "0")}`
+            return `${value.year}-${Number(value.month).toString().padStart(2, '0')}-${Number(value.dayOfMonth).toString().padStart(2, '0')} ${Number(value.hourOfDay).toString().padStart(2, '0')}:${Number(value.minutes).toString().padStart(2, '0')}:${Number(value.seconds).toString().padStart(2, '0')}`
         }
     }
 }
-

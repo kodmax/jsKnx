@@ -1,6 +1,6 @@
-import { DateTime, KnxDateTime, Date, TimeOfDay } from "./formats"
-import { DPT } from "../enums"
-import { DayOfWeek } from "./formats/time-of-day"
+import { DateTime, KnxDateTime, Date, TimeOfDay } from './formats'
+import { DPT } from '../enums'
+import { DayOfWeek } from './formats/time-of-day'
 
 export { KnxDateTime }
 
@@ -9,15 +9,15 @@ const datePattern = /^(\d\d\d\d)-(\d\d)-(\d\d)$/
 
 export class DPT_DateTime extends DateTime {
     public readonly type: DPT = DPT.DateTime
-    public readonly unit: string = ""
+    public readonly unit: string = ''
 
-    public async setDateTime(date: string, time: string, DST: boolean, dayOfWeek?: DayOfWeek, isWorkingDay?: boolean) {
+    public async setDateTime (date: string, time: string, DST: boolean, dayOfWeek?: DayOfWeek, isWorkingDay?: boolean) {
         if (!datePattern.test(date)) {
-            throw new Error("Invalid Date: " + date)
+            throw new Error('Invalid Date: ' + date)
         }
 
         if (!timePattern.test(time)) {
-            throw new Error("Invalid Time: " + time)
+            throw new Error('Invalid Time: ' + time)
         }
 
         const [, h, minutes, s] = time.match(timePattern)
@@ -35,11 +35,11 @@ export class DPT_DateTime extends DateTime {
             isFaulty: false,
             isSummerTime: DST,
             dayOfWeek,
-            isWorkingDay,
+            isWorkingDay
         })
     }
 
-    public async setTime(time: string, DST: boolean): Promise<void> {
+    public async setTime (time: string, DST: boolean): Promise<void> {
         if (timePattern.test(time)) {
             const [, h, m, s] = time.match(timePattern)
             return this.write({
@@ -49,15 +49,15 @@ export class DPT_DateTime extends DateTime {
                 isExternalSync: true,
                 isFaulty: false,
                 isReliable: true,
-                isSummerTime: DST,
+                isSummerTime: DST
             })
-    
+
         } else {
-            throw new Error("Invalid Time: " + time)
+            throw new Error('Invalid Time: ' + time)
         }
     }
 
-    public async setDate(date: string, DST: boolean): Promise<void> {
+    public async setDate (date: string, DST: boolean): Promise<void> {
         if (datePattern.test(date)) {
             const [, y, m, d] = date.match(datePattern)
             return this.write({
@@ -67,21 +67,21 @@ export class DPT_DateTime extends DateTime {
                 isExternalSync: true,
                 isReliable: true,
                 isFaulty: false,
-                isSummerTime: DST,
+                isSummerTime: DST
             })
-    
+
         } else {
-            throw new Error("Invalid Date: " + date)
+            throw new Error('Invalid Date: ' + date)
         }
     }
 }
 
 export class DPT_Date extends Date {
     public readonly type: DPT = DPT.Date
-    public readonly unit: string = ""
+    public readonly unit: string = ''
 }
 
 export class DPT_Time extends TimeOfDay {
     public readonly type: DPT = DPT.Time
-    public readonly unit: string = ""
+    public readonly unit: string = ''
 }

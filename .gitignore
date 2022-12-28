@@ -4,4 +4,5 @@ dist
 *.tgz
 package
 .npmrc
-src/schema.json
+/src/schema.json
+/src/index.js
