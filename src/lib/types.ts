@@ -1,10 +1,10 @@
-import EventEmitter from "events"
-import { KnxErrorCode } from "./enums"
+import EventEmitter from 'events'
+import { KnxErrorCode } from './enums'
 
 export type KnxLinkOptions = {
 
     /**
-     * Default 3000ms, applied to read() method. May be increased for busy networks or decreased to tiny ones.
+     * Default 10000ms, applied to read() method. May be increased for busy networks or decreased to tiny ones.
      */
     readTimeout?: number
 
@@ -50,7 +50,7 @@ export enum KnxLinkExceptionCode {
 }
 
 export class KnxLinkException extends Error {
-    public constructor(message: string, public readonly code: KnxLinkExceptionCode, public readonly details: KnxLinkExceptionDetails) {
+    public constructor (message: string, public readonly code: KnxLinkExceptionCode, public readonly details: KnxLinkExceptionDetails) {
         super(`KnxLink Exception: ${code}. ${message}.`)
     }
 }
