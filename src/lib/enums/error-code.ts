@@ -57,7 +57,12 @@ export enum KnxErrorCode {
     /**
      * The requested tunneling layer is not supported by the server.
      */
-    TUNNELING_LAYER = 0x29
+    TUNNELING_LAYER = 0x29,
 
     // CONNSTATE_LOST = 0x15, // eibd/libserver/eibnetserver.cpp:394
+
+    /**
+     * Error code is not recognized.
+     */
+    UNKNOWN_ERROR = 0xff
 }

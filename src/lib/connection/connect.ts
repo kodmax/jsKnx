@@ -1,5 +1,4 @@
 import { createSocket, RemoteInfo, Socket } from 'dgram'
-import EventEmitter from 'events'
 import { KnxCemiCode, KnxConnectionType, KnxErrorCode, KnxLayer, KnxServiceId } from '../enums'
 import { cri, hpai, KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../message'
 import { KnxLinkException, KnxLinkExceptionCode, KnxLinkOptions } from '../types'
@@ -48,10 +47,10 @@ const connect: (options: KnxLinkOptions, ip: string, connectionType: KnxConnecti
             gateway.off('message', cb)
 
             if (msg.readUInt16BE(2) === KnxServiceId.CONNECTION_RESPONSE) {
-                const error: number = msg.readUint8(7)
+                const error = (KnxErrorCode[msg.readUint8(7)] ?? KnxErrorCode[KnxErrorCode.UNKNOWN_ERROR]) as keyof typeof KnxErrorCode
                 if (error) {
-                    reject(new KnxLinkException('Error Connectiong to KNX/IP Gateway: ' + KnxErrorCode[error], KnxLinkExceptionCode.E_CONNECTION_ERROR, {
-                        knxErrorCode: KnxErrorCode [KnxErrorCode[error]]
+                    reject(new KnxLinkException('Error Connectiong to KNX/IP Gateway: ' + error, KnxLinkExceptionCode.E_CONNECTION_ERROR, {
+                        knxErrorCode: KnxErrorCode [error]
                     }))
 
                 } else {

@@ -12,16 +12,18 @@ export class DPT_DateTime extends DateTime {
     public readonly unit: string = ''
 
     public async setDateTime (date: string, time: string, DST: boolean, dayOfWeek?: DayOfWeek, isWorkingDay?: boolean) {
-        if (!datePattern.test(date)) {
+        const dateMatch = date.match(datePattern)
+        if (!dateMatch) {
             throw new Error('Invalid Date: ' + date)
         }
 
-        if (!timePattern.test(time)) {
+        const timeMatch = time.match(timePattern)
+        if (!timeMatch) {
             throw new Error('Invalid Time: ' + time)
         }
 
-        const [, h, minutes, s] = time.match(timePattern)
-        const [, y, month, d] = date.match(datePattern)
+        const [, h, minutes, s] = timeMatch
+        const [, y, month, d] = dateMatch
 
         return this.write({
             year: +y,
@@ -40,8 +42,9 @@ export class DPT_DateTime extends DateTime {
     }
 
     public async setTime (time: string, DST: boolean): Promise<void> {
-        if (timePattern.test(time)) {
-            const [, h, m, s] = time.match(timePattern)
+        const match = time.match(timePattern)
+        if (match) {
+            const [, h, m, s] = match
             return this.write({
                 hourOfDay: +h,
                 minutes: +m,
@@ -58,8 +61,9 @@ export class DPT_DateTime extends DateTime {
     }
 
     public async setDate (date: string, DST: boolean): Promise<void> {
-        if (datePattern.test(date)) {
-            const [, y, m, d] = date.match(datePattern)
+        const match = date.match(datePattern)
+        if (match) {
+            const [, y, m, d] = match
             return this.write({
                 year: +y - 1900,
                 month: +m,

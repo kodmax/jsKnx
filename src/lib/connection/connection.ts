@@ -4,14 +4,13 @@ import connect, { KnxLinkInfo } from './connect'
 
 import { Socket } from 'dgram'
 import { KnxLinkOptions } from '../types'
-import { EventEmitter } from 'stream'
 
 /**
  * Docs
  * http://www.eb-systeme.de/?page_id=479
  */
 export class KnxConnection {
-    private linkInfo?: KnxLinkInfo = null
+    private linkInfo?: KnxLinkInfo
 
     public constructor (private readonly options: KnxLinkOptions, private readonly ip: string, private readonly connectionType: KnxConnectionType, private readonly layer: KnxLayer) {
 
@@ -32,7 +31,12 @@ export class KnxConnection {
     }
 
     public getLinkInfo (): KnxLinkInfo {
-        return this.linkInfo
+        if (this.linkInfo) {
+            return this.linkInfo
+
+        } else {
+            throw new Error('Knx connection not established')
+        }
     }
 
     public async send (message: KnxIpMessage): Promise<void> {
@@ -64,7 +68,18 @@ export class KnxConnection {
      * Gracefully close the knx gateway connection
      */
     public async disconnect (): Promise<void> {
-        this.sendTo(this.linkInfo.gateway, KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([this.linkInfo.channel, 0x00]), hpai(this.linkInfo.gateway.address())]))
+        if (this.linkInfo) {
+            this.sendTo(
+                this.linkInfo.gateway,
+                KnxIpMessage.compose(
+                    KnxServiceId.DISCONNECT_REQUEST,
+                    [
+                        Buffer.from([this.linkInfo.channel, 0x00]),
+                        hpai(this.linkInfo.gateway.address())
+                    ]
+                )
+            )
+        }
     }
 
     private async sendTo (socket :Socket, message: KnxIpMessage): Promise<void> {
@@ -73,7 +88,7 @@ export class KnxConnection {
                 if (error) {
                     this.terminate()
 
-                    this.linkInfo = null
+                    this.linkInfo = void 0
                     reject(error)
 
                 } else {

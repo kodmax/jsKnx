@@ -1,19 +1,18 @@
 import { DPT_ActiveEnergy, DPT_Alarm, DPT_Date, DPT_DateTime, DPT_StatusGen, DPT_Switch, DPT_Time, DPT_Trigger, DPT_Value_AirQuality, DPT_Value_Humidity, DPT_Value_Power, DPT_Value_Temp } from './lib'
-import { DPT } from './lib/enums'
 
 export const lights = {
     'Salon i hol': {
-        command: { address: '14/0/0', dataType: DPT_Switch }
+        command: { address: '14/0/0', DataType: DPT_Switch }
     },
 
     Jadalnia: {
         'Led Ściana': {
-            command: { address: '14/2/1', dataType: DPT_Switch },
-            state: { address: '14/2/2', dataType: DPT_Switch }
+            command: { address: '14/2/1', DataType: DPT_Switch },
+            state: { address: '14/2/2', DataType: DPT_Switch }
         },
         'Led Główny': {
-            command: { address: '14/2/6', dataType: DPT_Switch },
-            state: { address: '14/2/7', dataType: DPT_Switch }
+            command: { address: '14/2/6', DataType: DPT_Switch },
+            state: { address: '14/2/7', DataType: DPT_Switch }
         },
         Lampa: {
             // ?
@@ -22,16 +21,16 @@ export const lights = {
 
     Kuchnia: {
         Cała: {
-            command: { address: '14/3/1', dataType: DPT_Switch },
-            state: { address: '14/3/2', dataType: DPT_Switch }
+            command: { address: '14/3/1', DataType: DPT_Switch },
+            state: { address: '14/3/2', DataType: DPT_Switch }
         },
         'Led A': {
-            command: { address: '14/3/6', dataType: DPT_Switch },
-            state: { address: '14/3/7', dataType: DPT_Switch }
+            command: { address: '14/3/6', DataType: DPT_Switch },
+            state: { address: '14/3/7', DataType: DPT_Switch }
         },
         'Led B': {
-            command: { address: '14/3/8', dataType: DPT_Switch },
-            state: { address: '14/3/9', dataType: DPT_Switch }
+            command: { address: '14/3/8', DataType: DPT_Switch },
+            state: { address: '14/3/9', DataType: DPT_Switch }
         },
         Lampa: {
             // ?
@@ -40,48 +39,48 @@ export const lights = {
 
     Lazienka: {
         Główne: {
-            command: { address: '14/4/2', dataType: DPT_Switch }
+            command: { address: '14/4/2', DataType: DPT_Switch }
         },
         Lustro: {
-            command: { address: '14/4/5', dataType: DPT_Switch }
+            command: { address: '14/4/5', DataType: DPT_Switch }
         },
         Geberit: {
-            command: { address: '14/4/8', dataType: DPT_Switch },
-            state: { address: '14/4/10', dataType: DPT_Switch }
+            command: { address: '14/4/8', DataType: DPT_Switch },
+            state: { address: '14/4/10', DataType: DPT_Switch }
         },
         Prysznic: {
-            command: { address: '14/4/9', dataType: DPT_Switch },
-            state: { address: '14/4/11', dataType: DPT_Switch }
+            command: { address: '14/4/9', DataType: DPT_Switch },
+            state: { address: '14/4/11', DataType: DPT_Switch }
         }
     },
 
     Hol: {
         'Salon Led': {
-            command: { address: '14/5/2', dataType: DPT_Switch },
-            state: { address: '14/5/3', dataType: DPT_Switch }
+            command: { address: '14/5/2', DataType: DPT_Switch },
+            state: { address: '14/5/3', DataType: DPT_Switch }
         },
         Pralka: {
-            command: { address: '14/5/7', dataType: DPT_Switch },
-            state: { address: '14/5/8', dataType: DPT_Switch }
+            command: { address: '14/5/7', DataType: DPT_Switch },
+            state: { address: '14/5/8', DataType: DPT_Switch }
         },
         'Sypialnia Led': {
-            command: { address: '14/5/9', dataType: DPT_Switch },
-            state: { address: '14/5/10', dataType: DPT_Switch }
+            command: { address: '14/5/9', DataType: DPT_Switch },
+            state: { address: '14/5/10', DataType: DPT_Switch }
         }
     },
 
     Salon: {
         Cały: {
-            command: { address: '14/6/4', dataType: DPT_Switch },
-            state: { address: '14/6/5', dataType: DPT_Switch }
+            command: { address: '14/6/4', DataType: DPT_Switch },
+            state: { address: '14/6/5', DataType: DPT_Switch }
         },
         'Led TV': {
-            command: { address: '14/6/9', dataType: DPT_Switch, relatedState: '14/6/10' },
-            state: { address: '14/6/10', dataType: DPT_Switch }
+            command: { address: '14/6/9', DataType: DPT_Switch, relatedState: '14/6/10' },
+            state: { address: '14/6/10', DataType: DPT_Switch }
         },
         'Led Sofa': {
-            command: { address: '14/6/11', dataType: DPT_Switch },
-            state: { address: '14/6/12', dataType: DPT_Switch }
+            command: { address: '14/6/11', DataType: DPT_Switch },
+            state: { address: '14/6/12', DataType: DPT_Switch }
         },
         Lampa: {
             // gdzie jest lampa?
@@ -90,12 +89,12 @@ export const lights = {
 
     Sypialnia: {
         'Led A': {
-            command: { address: '14/7/8', dataType: DPT_Switch },
-            state: { address: '14/7/9', dataType: DPT_Switch }
+            command: { address: '14/7/8', DataType: DPT_Switch },
+            state: { address: '14/7/9', DataType: DPT_Switch }
         },
         'Led B': {
-            command: { address: '14/7/3', dataType: DPT_Switch },
-            state: { address: '14/7/4', dataType: DPT_Switch }
+            command: { address: '14/7/3', DataType: DPT_Switch },
+            state: { address: '14/7/4', DataType: DPT_Switch }
 
         }
     }
@@ -138,7 +137,7 @@ export const energy = {
         command: { address: '5/0/0' } // ??
     },
     InstantPowerDraw: {
-        reading: { address: '5/0/1', dataType: DPT_Value_Power }
+        reading: { address: '5/0/1', DataType: DPT_Value_Power }
     },
     Frequency: {
         reading: { address: '5/1/0' }
@@ -147,46 +146,46 @@ export const energy = {
         command: { address: '5/2/0' }
     },
     Total: {
-        reading: { address: '5/2/3', dataType: DPT_ActiveEnergy }
+        reading: { address: '5/2/3', DataType: DPT_ActiveEnergy }
     },
     'Intermediate Consumption Meter': {
-        Start: { address: '5/2/1', dataType: DPT_Trigger },
-        Stop: { address: '5/2/4', dataType: DPT_Trigger },
-        Status: { address: '5/2/5', dataType: DPT_StatusGen },
-        Reading: { address: '5/2/2', dataType: DPT_ActiveEnergy }
+        Start: { address: '5/2/1', DataType: DPT_Trigger },
+        Stop: { address: '5/2/4', DataType: DPT_Trigger },
+        Status: { address: '5/2/5', DataType: DPT_StatusGen },
+        Reading: { address: '5/2/2', DataType: DPT_ActiveEnergy }
     }
 }
 
 export const temp = {
-    'Podloga lazienka temperatura': { address: '13/0/2', dataType: DPT_Value_Temp },
-    'Tempertura Salon': { address: '15/0/0', dataType: DPT_Value_Temp },
-    Lazienka: { address: '15/0/1', dataType: DPT_Value_Temp },
-    'Sypialnia przy loggi': { address: '15/0/2', dataType: DPT_Value_Temp },
-    'Sypialnia sufit': { address: '15/0/4', dataType: DPT_Value_Temp },
-    'Sypialnia lozko lewa': { address: '15/0/6', dataType: DPT_Value_Temp },
-    'Sypialnia sofa?': { address: '15/0/7', dataType: DPT_Value_Temp },
-    'Lazienka wlacznik': { address: '15/0/8', dataType: DPT_Value_Temp },
-    'Sypialnia hol': { address: '15/0/9', dataType: DPT_Value_Temp }
+    'Podloga lazienka temperatura': { address: '13/0/2', DataType: DPT_Value_Temp },
+    'Tempertura Salon': { address: '15/0/0', DataType: DPT_Value_Temp },
+    Lazienka: { address: '15/0/1', DataType: DPT_Value_Temp },
+    'Sypialnia przy loggi': { address: '15/0/2', DataType: DPT_Value_Temp },
+    'Sypialnia sufit': { address: '15/0/4', DataType: DPT_Value_Temp },
+    'Sypialnia lozko lewa': { address: '15/0/6', DataType: DPT_Value_Temp },
+    'Sypialnia sofa?': { address: '15/0/7', DataType: DPT_Value_Temp },
+    'Lazienka wlacznik': { address: '15/0/8', DataType: DPT_Value_Temp },
+    'Sypialnia hol': { address: '15/0/9', DataType: DPT_Value_Temp }
 }
 
 export const airQuality = {
     CO2: {
-        reading: { address: '15/0/3', dataType: DPT_Value_AirQuality },
-        alarmLevel1: { address: '15/1/0', dataType: DPT_Alarm },
-        alarmLevel2: { address: '15/1/1', dataType: DPT_Alarm },
-        alarmLevel3: { address: '15/1/2', dataType: DPT_Alarm }
+        reading: { address: '15/0/3', DataType: DPT_Value_AirQuality },
+        alarmLevel1: { address: '15/1/0', DataType: DPT_Alarm },
+        alarmLevel2: { address: '15/1/1', DataType: DPT_Alarm },
+        alarmLevel3: { address: '15/1/2', DataType: DPT_Alarm }
     },
     Wilgotność: {
-        reading: { address: '15/0/5', dataType: DPT_Value_Humidity },
-        alertHigh: { address: '15/1/3', dataType: DPT_Alarm },
-        alertLow: { address: '15/1/4', dataType: DPT_Alarm }
+        reading: { address: '15/0/5', DataType: DPT_Value_Humidity },
+        alertHigh: { address: '15/1/3', DataType: DPT_Alarm },
+        alertLow: { address: '15/1/4', DataType: DPT_Alarm }
     }
 }
 
 export const heatings = {
     'Podłoga Łazienka': {
-        command: { address: '13/0/0', dataType: DPT_Switch },
-        state: { address: '13/0/1', dataType: DPT_Switch },
+        command: { address: '13/0/0', DataType: DPT_Switch },
+        state: { address: '13/0/1', DataType: DPT_Switch },
         setPWM: { address: '13/0/3' },
         getPWM: { address: '13/0/4' }
     },
@@ -212,25 +211,25 @@ export const heatings = {
 export const venting = {
     Wentylatorki: {
         Lazienka: {
-            command: { address: '11/0/0', dataType: DPT_Switch },
-            state: { address: '11/0/1', dataType: DPT_Switch }
+            command: { address: '11/0/0', DataType: DPT_Switch },
+            state: { address: '11/0/1', DataType: DPT_Switch }
         },
         Kuchnia: {
-            command: { address: '11/1/0', dataType: DPT_Switch },
-            state: { address: '11/1/1', dataType: DPT_Switch }
+            command: { address: '11/1/0', DataType: DPT_Switch },
+            state: { address: '11/1/1', DataType: DPT_Switch }
         }
     },
     Śmigła: {
         'Pokój dzienny': {
-            command: { address: '12/0/0', dataType: DPT_Switch },
-            state: { address: '12/0/1', dataType: DPT_Switch }
+            command: { address: '12/0/0', DataType: DPT_Switch },
+            state: { address: '12/0/1', DataType: DPT_Switch }
 
         },
         Sypialnia: {
-            command: { address: '12/1/0', dataType: DPT_Switch },
-            state: { address: '12/1/1', dataType: DPT_Switch },
-            command2: { address: '14/7/15', dataType: DPT_Switch },
-            state2: { address: '14/7/16', dataType: DPT_Switch }
+            command: { address: '12/1/0', DataType: DPT_Switch },
+            state: { address: '12/1/1', DataType: DPT_Switch },
+            command2: { address: '14/7/15', DataType: DPT_Switch },
+            state2: { address: '14/7/16', DataType: DPT_Switch }
         }
     }
 }
@@ -255,7 +254,7 @@ export const sockets = {
 }
 
 export const time = {
-    'Now.DateTime.Set': { address: '1/0/1', dataType: DPT_DateTime },
-    'Now.Date.Set': { address: '1/0/2', dataType: DPT_Date },
-    'Now.Time.Set': { address: '1/0/3', dataType: DPT_Time }
+    'Now.DateTime.Set': { address: '1/0/1', DataType: DPT_DateTime },
+    'Now.Date.Set': { address: '1/0/2', DataType: DPT_Date },
+    'Now.Time.Set': { address: '1/0/3', DataType: DPT_Time }
 }

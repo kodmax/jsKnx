@@ -61,7 +61,10 @@ export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
             return `${this.address} (${this.type})`
 
         } else {
-            return `[${Object.keys(status).filter(attribute => status [attribute]).join(', ')}]`
+            const attributes = (Object.keys(status) as Array<keyof KnxStandardStatus>)
+
+            // filter the truthful attribures and list their names
+            return `[${attributes.filter(attribute => status [attribute]).join(', ')}]`
         }
     }
 }

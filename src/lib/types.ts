@@ -6,30 +6,30 @@ export type KnxLinkOptions = {
     /**
      * Default 10000ms, applied to read() method. May be increased for busy networks or decreased to tiny ones.
      */
-    readTimeout?: number
+    readTimeout: number
 
     /**
      * When not specified, standard 3671 is used
      */
-    port?: number
+    port: number
 
     /**
      * Event bus to use internally, may be useful to tap into low level knx messages
      */
-    events?: EventEmitter
+    events: EventEmitter
 
     /**
      * Maximum number of retries on IP network failure.
      * @default +Infinity
      */
-    maxRetry?: number
+    maxRetry: number
 
     /**
      * How long to pause when error occurs
      */
-    retryPause?: number
+    retryPause: number
 
-    connectionTimeout?: number
+    connectionTimeout: number
 }
 
 export type KnxReading<T> = {

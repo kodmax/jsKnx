@@ -49,12 +49,12 @@ export function fromBuffer (data: Buffer): KnxDateTime {
 }
 
 export function toBuffer (dateTime: KnxDateTime, data: Buffer): Buffer {
-    data.writeUint8(dateTime.year - 1900, 0)
-    data.writeUint8(dateTime.month, 1)
-    data.writeUint8(dateTime.dayOfMonth, 2)
-    data.writeUint8(((dateTime.dayOfWeek || 0) << 5) + (dateTime.hourOfDay || 0), 3)
-    data.writeUint8(dateTime.minutes, 4)
-    data.writeUint8(dateTime.seconds, 5)
+    data.writeUint8(dateTime.year ?? 0 - 1900, 0)
+    data.writeUint8(dateTime.month ?? 0, 1)
+    data.writeUint8(dateTime.dayOfMonth ?? 0, 2)
+    data.writeUint8(((dateTime.dayOfWeek ?? 0) << 5) + (dateTime.hourOfDay || 0), 3)
+    data.writeUint8(dateTime.minutes ?? 0, 4)
+    data.writeUint8(dateTime.seconds ?? 0, 5)
 
     const status = [
         dateTime.isFaulty ? Status.F : 0,
