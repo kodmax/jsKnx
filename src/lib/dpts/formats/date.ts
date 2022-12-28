@@ -11,8 +11,9 @@ export function fromBuffer (data: Buffer): number[] {
 const pattern = /^(\d\d\d\d)-(\d\d)-(\d\d)$/
 
 export function toBuffer (value: string, data: Buffer): Buffer {
-    if (pattern.test(value)) {
-        const [, y, m, d] = value.match(pattern)
+    const match = value.match(pattern)
+    if (match) {
+        const [, y, m, d] = match
 
         data.writeUint8(+d, 1)
         data.writeUint8(+m, 2)

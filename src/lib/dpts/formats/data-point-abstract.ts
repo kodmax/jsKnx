@@ -17,7 +17,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
     protected abstract write(value: T): Promise<void>
     protected abstract decode(data: Buffer): T
 
-    public abstract addValueListener(cb: (reading: KnxReading<T>) => void)
+    public abstract addValueListener(cb: (reading: KnxReading<T>) => void): void
     public abstract toString(value?: T): string
 
     protected async send (value: Buffer): Promise<void> {
@@ -28,7 +28,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
         await this.connection.send(telegram)
     }
-s
+
     public async requestValue (): Promise<void> {
         const linkInfo = this.link.getLinkInfo()
         const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(linkInfo.channel),
@@ -106,7 +106,7 @@ s
     protected updateSubscription (eventName: 'value-received' | 'resp-received'): void {
         if (this.options.events) {
             const lc = this.valueEvent.listenerCount('value-received') + this.valueEvent.listenerCount('resp-received')
-            
+
             if (lc === 0 && this.hasSubscribed) {
                 this.options.events.off('cemi-frame', this.eventsListener)
                 this.hasSubscribed = false

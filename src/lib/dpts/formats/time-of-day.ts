@@ -12,7 +12,6 @@ export enum DayOfWeek {
     Sun = 7
 }
 
-const pattern = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun) )?(2[0-4]|[01]?[0-9]):([0-5]?[0-9])(?::([0-5]?[0-9]))?$/
 export function fromBuffer (data: Buffer): number[] {
     const d = (data.readUint8(1) & 0xe0) >> 5
     const h = data.readUint8(1) & 0x1f
@@ -22,11 +21,15 @@ export function fromBuffer (data: Buffer): number[] {
     return [d, h, m, s]
 }
 
+const pattern = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun) )?(2[0-4]|[01]?[0-9]):([0-5]?[0-9])(?::([0-5]?[0-9]))?$/
 export function toBuffer (value: string, data: Buffer): Buffer {
-    if (pattern.test(value)) {
-        const [, d, h, m, s] = value.match(pattern)
-
-        data.writeUint8((DayOfWeek[d || ''] << 5) + +h, 1)
+    const match = value.match(pattern)
+    if (match) {
+        const [, d, h, m, s] = match
+        
+        const dayNumber = DayOfWeek[(d ?? '') as keyof typeof DayOfWeek]
+        data.writeUint8((dayNumber << 5) + +h, 1)
+        
         data.writeUint8(+m, 2)
         data.writeUint8(+s || 0, 3)
 

@@ -3,7 +3,8 @@ const path = require('path')
 module.exports = {
     env: {
         browser: true,
-        es2021: true
+        es2021: true,
+        jest: true
     },
     extends: [
         'standard'
@@ -20,15 +21,16 @@ module.exports = {
     },
     overrides: [
         {
-            files: ['*.ts', '!*.spec.ts'],
+            files: ['*.ts'],
             extends: [],
             parserOptions: {
-                project: ['./tsconfig.json'],
+                project: ['./tsconfig.spec.json'],
                 ecmaVersion: 'latest',
                 sourceType: 'module',
                 tsconfigRootDir: path.resolve(__dirname)
             },
             rules: {
+                'no-useless-constructor': 'off',
                 indent: ['warn', 4, { SwitchCase: 1 }],
                 quotes: ['warn', 'single'],
                 'no-trailing-spaces': 'warn',

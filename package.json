@@ -2,10 +2,12 @@
   "name": "js-knx",
   "version": "2.3.0",
   "description": "KNX IP/Gateway client",
-  "keywords": ["KNX"],
+  "keywords": [
+    "KNX"
+  ],
   "main": "dist/index.js",
   "scripts": {
-    "test": "npx jest",
+    "test": "jest",
     "dev": "ts-node src",
     "lint": "eslint . --fix"
   },
@@ -22,6 +24,7 @@
     "eslint-plugin-n": "^15.6.0",
     "eslint-plugin-node": "11",
     "eslint-plugin-promise": "^6.1.1",
+    "jest": "28",
     "ts-jest": "^28.0.2",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.4"
