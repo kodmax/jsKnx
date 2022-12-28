@@ -66,7 +66,12 @@ export abstract class DataPointAbstract<T> implements IDPT {
         return this.link
     }
 
-    public constructor (protected readonly address: string, protected connection: KnxConnection, private readonly link: KnxLink, private readonly options: KnxLinkOptions) {
+    public constructor (
+        protected readonly address: string,
+        protected readonly connection: KnxConnection,
+        private readonly link: KnxLink,
+        private readonly options: KnxLinkOptions
+    ) {
 
     }
 
@@ -103,7 +108,8 @@ export abstract class DataPointAbstract<T> implements IDPT {
         }
     }
 
-    protected updateSubscription (eventName: 'value-received' | 'resp-received'): void {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected updateSubscription (_eventName: 'value-received' | 'resp-received'): void {
         if (this.options.events) {
             const lc = this.valueEvent.listenerCount('value-received') + this.valueEvent.listenerCount('resp-received')
 

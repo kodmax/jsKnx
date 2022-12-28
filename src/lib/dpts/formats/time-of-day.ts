@@ -26,10 +26,10 @@ export function toBuffer (value: string, data: Buffer): Buffer {
     const match = value.match(pattern)
     if (match) {
         const [, d, h, m, s] = match
-        
+
         const dayNumber = DayOfWeek[(d ?? '') as keyof typeof DayOfWeek]
         data.writeUint8((dayNumber << 5) + +h, 1)
-        
+
         data.writeUint8(+m, 2)
         data.writeUint8(+s || 0, 3)
 

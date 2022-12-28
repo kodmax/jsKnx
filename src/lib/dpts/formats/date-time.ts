@@ -98,7 +98,15 @@ export abstract class DateTime extends DataPointAbstract<KnxDateTime> {
             return `${this.address} (${this.type})`
 
         } else {
-            return `${value.year}-${Number(value.month).toString().padStart(2, '0')}-${Number(value.dayOfMonth).toString().padStart(2, '0')} ${Number(value.hourOfDay).toString().padStart(2, '0')}:${Number(value.minutes).toString().padStart(2, '0')}:${Number(value.seconds).toString().padStart(2, '0')}`
+            const dayOfMonth = Number(value.dayOfMonth).toString().padStart(2, '0')
+            const month = Number(value.month).toString().padStart(2, '0')
+            const year = value.year
+
+            const hourOfDay = Number(value.hourOfDay).toString().padStart(2, '0')
+            const minutes = Number(value.minutes).toString().padStart(2, '0')
+            const seconds = Number(value.seconds).toString().padStart(2, '0')
+
+            return `${year}-${month}-${dayOfMonth} ${hourOfDay}:${minutes}:${seconds}`
         }
     }
 }

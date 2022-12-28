@@ -1,4 +1,17 @@
-import { DPT_ActiveEnergy, DPT_Alarm, DPT_Date, DPT_DateTime, DPT_StatusGen, DPT_Switch, DPT_Time, DPT_Trigger, DPT_Value_AirQuality, DPT_Value_Humidity, DPT_Value_Power, DPT_Value_Temp } from './lib'
+import {
+    DPT_ActiveEnergy,
+    DPT_Alarm,
+    DPT_Date,
+    DPT_DateTime,
+    DPT_StatusGen,
+    DPT_Switch,
+    DPT_Time,
+    DPT_Trigger,
+    DPT_Value_AirQuality,
+    DPT_Value_Humidity,
+    DPT_Value_Power,
+    DPT_Value_Temp
+} from './lib'
 
 export const lights = {
     'Salon i hol': {

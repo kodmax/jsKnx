@@ -12,7 +12,12 @@ import { KnxLinkOptions } from '../types'
 export class KnxConnection {
     private linkInfo?: KnxLinkInfo
 
-    public constructor (private readonly options: KnxLinkOptions, private readonly ip: string, private readonly connectionType: KnxConnectionType, private readonly layer: KnxLayer) {
+    public constructor (
+        private readonly options: KnxLinkOptions,
+        private readonly ip: string,
+        private readonly connectionType: KnxConnectionType,
+        private readonly layer: KnxLayer
+    ) {
 
     }
 

@@ -21,7 +21,7 @@ export class KnxLink {
     public static async connect (ip: string, options: Partial<KnxLinkOptions> = {}): Promise<KnxLink> {
         const opts: KnxLinkOptions = {
             events: new EventEmitter(),
-            
+
             connectionTimeout: 5000,
             maxRetry: +Infinity,
             readTimeout: 10000,

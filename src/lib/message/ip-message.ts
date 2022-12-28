@@ -1,5 +1,4 @@
 import { KnxServiceId } from '../enums'
-import { Socket } from 'dgram'
 
 export class KnxIpMessage {
     private readonly serviceId: KnxServiceId

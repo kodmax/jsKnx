@@ -1,4 +1,3 @@
-import { Socket } from 'dgram'
 import { AddressInfo } from 'net'
 
 export enum KnxIpProtocol {

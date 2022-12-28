@@ -1,8 +1,8 @@
 import { CemiSequenceType, KnxCemiCode, CemiPacketType, APCI } from '../enums'
 
-function decodeAddress (address: number) {
-    return [address >> 12, (address >> 8) & 0xf, address & 0xff]
-}
+// function decodeAddress (address: number) {
+//     return [address >> 12, (address >> 8) & 0xf, address & 0xff]
+// }
 
 export class KnxCemiFrame {
     public readonly source: string
@@ -89,7 +89,10 @@ export class KnxCemiFrame {
         const [sourceHi, sourceLo] = this.hiLo((+sa << 12) + (+sb << 8) + +sc)
         const [targetHi, targetLo] = this.hiLo((+ta << 11) + (+tb << 8) + +tc)
 
-        return Buffer.concat([Buffer.from([code, 0x00, 0xbc, 0xe0, sourceHi, sourceLo, targetHi, targetLo, value.length, 0x00, 0x80 + (value.readUint8(0) & 0x3f)]), value.slice(1)])
+        return Buffer.concat([
+            Buffer.from([code, 0x00, 0xbc, 0xe0, sourceHi, sourceLo, targetHi, targetLo, value.length, 0x00, 0x80 + (value.readUint8(0) & 0x3f)]),
+            value.slice(1)
+        ])
     }
 
     public static compose (code: KnxCemiCode, source: string, target: string, value: Buffer = Buffer.alloc(0), control = 0xbc, drl = 0xe0): Buffer {
