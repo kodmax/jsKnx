@@ -1,11 +1,11 @@
 {
   "name": "js-knx",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "KNX IP/Gateway client",
   "keywords": [
     "KNX"
   ],
-  "main": "dist/index.js",
+  "main": "dist/lib/index.js",
   "scripts": {
     "test": "jest",
     "dev": "ts-node src",
