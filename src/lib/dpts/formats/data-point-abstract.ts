@@ -85,6 +85,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                     this.valueEvent.emit('value-received', {
                         text: this.toString(value),
                         source: cemiFrame.source,
+                        target: cemiFrame.target,
                         unit: this.unit,
                         value
                     })
@@ -96,6 +97,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                     this.valueEvent.emit('resp-received', {
                         text: this.toString(value),
                         source: cemiFrame.source,
+                        target: cemiFrame.target,
                         unit: this.unit,
                         value
                     })

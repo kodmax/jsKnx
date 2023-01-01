@@ -1,19 +1,13 @@
-import { KnxLink } from './lib'
-import { energy } from './home.knx-schema'
+import { DPT_Value_Temp, KnxLink } from './lib'
+import { temp } from './home.knx-schema'
 
 KnxLink.connect('192.168.0.8').then(async knx => {
     const linkInfo = knx.getLinkInfo()
     console.log(`KNX Link established. Gateway address: ${linkInfo.gatewayAddress}, channel: ${Number(linkInfo.channel).toString(16)}.`)
 
-    console.log(await knx.getDatapoint(energy.InstantPowerDraw.reading).read())
+    const temps: DPT_Value_Temp[] = (Object.keys(temp) as Array<keyof typeof temp>).map(name => knx.getDatapoint(temp[name]))
 
-    console.log(await knx.getDatapoint(energy['Intermediate Consumption Meter'].Status).read())
-
-    await knx.getDatapoint(energy.InstantPowerDraw.reading, dp => {
-        dp.addValueListener(reading => {
-            console.log('insta power', reading)
-        })
-    })
+    await Promise.all(temps.map(dp => dp.read().then(reading => console.log(reading.target))))
 
     // await knx.disconnect()
     process.on('SIGINT', () => {
