@@ -17,7 +17,7 @@ export enum DPT {
     Angle = '5.003',
     Percent_U8 = '5.004',
     Tariff = '5.006',
-    DPT_Value_1_Ucount = '5.010',
+    Value_1_Ucount = '5.010',
 
     Value_Temp = '9.001',
     Value_Humidity = '9.007',
@@ -36,6 +36,18 @@ export enum DPT {
     Value_Power = '14.056',
 
     DateTime = '19.001',
+
+    HVAC_HVACMode = '20.102',
+    HVAC_HVACContrMode = '20.105',
+    HVAC_HVACEmergMode = '20.106',
+    HVAC_ChangeoverMode = '20.107',
+    HVAC_ValveMode = '20.108',
+    HVAC_DamperMode = '20.109',
+    HVAC_HeaterMode = '20.110',
+    HVAC_HumDehumMode = '20.115',
+    HVAC_ADAType = '20.120',
+    HVAC_BackupMode = '20.121',
+    HVAC_StartSynchronization = '20.122',
 
     StatusGen = '21.001'
 }
