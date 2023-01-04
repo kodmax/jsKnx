@@ -2,7 +2,7 @@ import EventEmitter from 'events'
 import { KnxLink } from '../../connection'
 import { KnxConnection } from '../../connection/connection'
 import { APCI, DPT, KnxCemiCode, KnxServiceId } from '../../enums'
-import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../../message'
+import { KnxCemiFrame, KnxIpMessage } from '../../message'
 import { KnxLinkException, KnxLinkExceptionCode, KnxLinkOptions, KnxReading } from '../../types'
 
 export interface IDPT {}
@@ -21,19 +21,23 @@ export abstract class DataPointAbstract<T> implements IDPT {
     public abstract toString(value?: T): string
 
     protected async send (value: Buffer): Promise<void> {
-        const linkInfo = this.link.getLinkInfo()
-        const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(linkInfo.channel),
-            KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value)
-        ])
+        const telegram = KnxIpMessage.compose(
+            KnxServiceId.TUNNEL_REQUEST, [
+                this.link.getNextTunnelRequestHeader(),
+                KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value)
+            ]
+        )
 
         await this.connection.send(telegram)
     }
 
     public async requestValue (): Promise<void> {
-        const linkInfo = this.link.getLinkInfo()
-        const telegram = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(linkInfo.channel),
-            KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', this.address)
-        ])
+        const telegram = KnxIpMessage.compose(
+            KnxServiceId.TUNNEL_REQUEST, [
+                this.link.getNextTunnelRequestHeader(),
+                KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', this.address)
+            ]
+        )
 
         return this.connection.send(telegram)
     }

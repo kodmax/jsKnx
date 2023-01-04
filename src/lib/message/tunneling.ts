@@ -2,7 +2,6 @@ import { KnxCemiCode, KnxServiceId } from '../enums'
 import { KnxIpMessage } from './ip-message'
 
 export class TunnelingRequest {
-    private static seq: Record<number, number> = {}
 
     public constructor (private readonly frame: Buffer) {
         if (frame.readUint8(0) !== 0x4 || frame.readUint8(3) !== 0x0) {
@@ -10,9 +9,8 @@ export class TunnelingRequest {
         }
     }
 
-    public static compose (channel: number): Buffer {
-        this.seq[channel] = ((this.seq[channel] ?? 255) + 1) & 0xff
-        return Buffer.from([0x04, channel, this.seq[channel], 0x00])
+    public static compose (channel: number, seq: number): Buffer {
+        return Buffer.from([0x04, channel, seq, 0x00])
     }
 
     public getChannel () {

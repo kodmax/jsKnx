@@ -33,7 +33,7 @@ export class KnxConnection {
                 if (attempt === this.options.maxRetry) {
                     throw e
                 }
-                
+
                 await new Promise(resolve => setTimeout(resolve, this.options.retryPause))
             }
         }
@@ -93,6 +93,7 @@ export class KnxConnection {
 
     private async sendTo (socket :Socket, message: KnxIpMessage): Promise<void> {
         return new Promise((resolve, reject) => {
+
             socket.send(message.getBuffer(), error => {
                 if (error) {
                     this.terminate()

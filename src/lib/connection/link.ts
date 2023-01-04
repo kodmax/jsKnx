@@ -6,7 +6,7 @@ import { IDPT } from '../dpts/formats'
 import EventEmitter from 'events'
 import { DataPointAbstract } from '../dpts/formats/data-point-abstract'
 import { KnxLinkOptions } from '../types'
-import { KnxLinkInfo } from './connect'
+import { LinkInfo } from './connect'
 
 export type KnxGroupSchema<T> = {
     DataType: new(...args: ConstructorParameters<typeof DataPointAbstract>) => T
@@ -37,8 +37,21 @@ export class KnxLink {
         return new KnxLink(connection, opts)
     }
 
-    public getLinkInfo (): KnxLinkInfo {
-        return Object.assign({}, this.connection.getLinkInfo())
+    public getLinkInfo (): LinkInfo {
+        const linkInfo = this.connection.getLinkInfo()
+
+        return {
+            connectionType: linkInfo.connectionType,
+            gatewayAddress: linkInfo.gatewayAddress,
+            channel: linkInfo.channel,
+            layer: linkInfo.layer,
+            port: linkInfo.port,
+            ip: linkInfo.ip
+        }
+    }
+
+    public getNextTunnelRequestHeader (): Buffer {
+        return this.connection.getLinkInfo().getTunnelRequestHeader()
     }
 
     public async disconnect (): Promise<void> {

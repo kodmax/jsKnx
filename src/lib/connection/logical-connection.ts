@@ -4,6 +4,7 @@ import { KnxCemiCode, KnxErrorCode, KnxServiceId } from '../enums'
 import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../message'
 import { KnxLinkException, KnxLinkExceptionCode } from '../types'
 import { KnxLinkInfo } from './connect'
+import { sequence } from './sequence'
 
 const establishLogicalConnection = async (
     gateway: Socket,
@@ -24,6 +25,7 @@ const establishLogicalConnection = async (
                     }))
 
                 } else {
+                    const ackTimeouts: Map<number, ReturnType<typeof setTimeout>> = new Map()
 
                     gateway.on('message', data => {
                         const ipMessage = KnxIpMessage.decode(data)
@@ -47,15 +49,40 @@ const establishLogicalConnection = async (
                                 const cemiFrame = new KnxCemiFrame(tunneling.getBody())
                                 events.emit('cemi-frame', cemiFrame)
                             }
+
+                        } else if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_RESPONSE) {
+                            const tunneling = new TunnelingRequest(ipMessage.getBody())
+                            const seq = tunneling.getSequenceNumber()
+
+                            if (ackTimeouts.has(seq)) {
+                                clearTimeout(ackTimeouts.get(seq))
+                                ackTimeouts.delete(seq)
+                            }
                         }
                     })
 
                     const address = msg.readUint16BE(18)
+                    const channel = msg.readUint8(6)
+                    const nextSeq = sequence()
+
                     resolve({
+                        getTunnelRequestHeader: () => {
+                            const seq = nextSeq()
+                            const message = TunnelingRequest.compose(channel, seq)
+
+                            ackTimeouts.set(seq, setTimeout(() => {
+                                console.warn('Tunnel request not acknowledged')
+                                tunnel.send(message)
+                            }, 1000))
+
+                            return message
+                        },
+
                         gatewayAddress: [address >> 12, (address >> 8) & 0xf, address & 0xff].join('.'),
                         ip: Uint8Array.from(msg.slice(10, 14)).join('.'),
                         port: msg.readUint16BE(14),
-                        channel: msg.readUint8(6),
+
+                        channel,
                         gateway,
                         tunnel
                     })

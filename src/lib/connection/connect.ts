@@ -5,6 +5,7 @@ import { KnxLinkOptions } from '../types'
 import { establishLogicalConnection } from './logical-connection'
 
 export type KnxLinkInfo = {
+    getTunnelRequestHeader: () => Buffer
     connectionType: KnxConnectionType
     gatewayAddress: string
     channel: number
@@ -12,6 +13,15 @@ export type KnxLinkInfo = {
 
     gateway: Socket
     tunnel: Socket
+    port: number
+    ip: string
+}
+
+export type LinkInfo = {
+    connectionType: KnxConnectionType
+    gatewayAddress: string
+    layer: KnxLayer
+    channel: number
     port: number
     ip: string
 }

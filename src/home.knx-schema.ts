@@ -85,15 +85,15 @@ export const lights = {
     Salon: {
         Cały: {
             command: { address: '14/6/4', DataType: DPT_Switch },
-            state: { address: '14/6/5', DataType: DPT_Switch }
+            state: { address: '14/6/4', DataType: DPT_Switch }
         },
         'Led TV': {
             command: { address: '14/6/9', DataType: DPT_Switch, relatedState: '14/6/10' },
-            state: { address: '14/6/10', DataType: DPT_Switch }
+            state: { address: '14/6/9', DataType: DPT_Switch }
         },
         'Led Sofa': {
             command: { address: '14/6/11', DataType: DPT_Switch },
-            state: { address: '14/6/12', DataType: DPT_Switch }
+            state: { address: '14/6/11', DataType: DPT_Switch }
         },
         Lampa: {
             // gdzie jest lampa?
@@ -103,11 +103,11 @@ export const lights = {
     Sypialnia: {
         'Led A': {
             command: { address: '14/7/8', DataType: DPT_Switch },
-            state: { address: '14/7/9', DataType: DPT_Switch }
+            state: { address: '14/7/8', DataType: DPT_Switch }
         },
         'Led B': {
             command: { address: '14/7/3', DataType: DPT_Switch },
-            state: { address: '14/7/4', DataType: DPT_Switch }
+            state: { address: '14/7/3', DataType: DPT_Switch }
 
         }
     }
@@ -132,11 +132,6 @@ export const dimming = {
     'Hol.Salon Hol LED Jasnosc absolutna': { address: '14/5/5' },
     'Hol.Salon Hol LED Jasnosc odczyt': { address: '14/5/6' },
     'Hol.Sypialnia LED Hol Sciemnianie': { address: '14/5/11' },
-    'Salon LED B Jasnosc absolutna ': { address: '14/6/2' },
-    'Salon LED B Jasnosc absolutna stan': { address: '14/6/3' },
-    'Caly Salon LED Sciemnianie': { address: '14/6/6' },
-    'Caly Salon LED Jasnosc absolutna': { address: '14/6/7' },
-    'Caly Salon LED Jasnosc Odczyt': { address: '14/6/8' },
     'Sypialnia.Sypialnia LED B Sciemnianie': { address: '14/7/5' },
     'Sypialnia.Sypialnia LED B Jasnosc Absolutna': { address: '14/7/6' },
     'Sypialnia.Sypialnia LED B Jasnosc Odczyt': { address: '14/7/7' },
@@ -248,22 +243,14 @@ export const venting = {
 }
 
 export const sockets = {
+    'Jadalnia Prawe On/Off': { address: '10/0/0' },
+    'Jadalnia Lewe On/Off': { address: '10/0/6' },
     'Salon Lewe On/Off': { address: '10/0/1' },
-    'Salon Lewe Stan': { address: '10/0/2' },
     'Salon Prawe On/Off': { address: '10/0/3' },
-    'Salon Prawe Stan': { address: '10/0/4' },
-    'Jadalnia Lewe On/Off': { address: '10/0/0' },
-    'Jadalnia Lewe stan': { address: '10/0/5' },
-    'Jadalnia Prawe On/Off': { address: '10/0/6' },
-    'Jadalnia Prawe stan': { address: '10/0/7' },
-    'Sypialnia Lozko Prawe On/Off': { address: '10/1/0' },
-    'Sypialnia Lozko Prawe Stan': { address: '10/1/1' },
-    'Sypialnia Lozko Lewe On/Off': { address: '10/1/2' },
-    'Sypialnia Lozko Lewe Stan': { address: '10/1/3' },
-    'Sypialnia TV Lewe On/Off': { address: '10/1/4' },
-    'Sypialnia TV Lewe Stan': { address: '10/1/5' },
-    'Sypialnia TV Prawe On/Off': { address: '10/1/6' },
-    'Sypialnia TV Prawe Stan': { address: '10/1/7' }
+    'Sypialnia Lozko Lewe On/Off': { address: '10/1/4' },
+    'Sypialnia Lozko Prawe On/Off': { address: '10/1/6' },
+    'Sypialnia Okno Prawe On/Off': { address: '10/1/0' },
+    'Sypialnia Okno Lewe On/Off': { address: '10/1/2' }
 }
 
 export const time = {
