@@ -6,6 +6,7 @@ export enum DPT {
     UpDown = '1.008',
     OpenClose = '1.009',
     Start = '1.010',
+    State = '1.011',
     Reset = '1.015',
     Ack = '1.016',
     Trigger = '1.017',
