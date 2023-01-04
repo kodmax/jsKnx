@@ -30,13 +30,51 @@ KnxLink.connect('192.168.0.8').then(async knx => {
     console.log(`KNX Link established. Gateway address: ${linkInfo.gatewayAddress}, channel: ${Number(linkInfo.channel).toString(16)}.`)
 
     for (const address of temps) {
-        console.log('read temp', address)
         knx.getDatapoint({ address, DataType: DPT_Value_Temp }).read().then(reading => {
             console.log('temp', reading.target, reading.value)
         })
     }
     for (const address of leds) {
-        console.log('read led', address)
+        knx.getDatapoint({ address, DataType: DPT_Switch }).read().then(reading => {
+            console.log('led', reading.target, reading.value)
+        })
+    }
+    for (const address of temps) {
+        knx.getDatapoint({ address, DataType: DPT_Value_Temp }).read().then(reading => {
+            console.log('temp', reading.target, reading.value)
+        })
+    }
+    for (const address of leds) {
+        knx.getDatapoint({ address, DataType: DPT_Switch }).read().then(reading => {
+            console.log('led', reading.target, reading.value)
+        })
+    }
+    for (const address of temps) {
+        knx.getDatapoint({ address, DataType: DPT_Value_Temp }).read().then(reading => {
+            console.log('temp', reading.target, reading.value)
+        })
+    }
+    for (const address of leds) {
+        knx.getDatapoint({ address, DataType: DPT_Switch }).read().then(reading => {
+            console.log('led', reading.target, reading.value)
+        })
+    }
+    for (const address of temps) {
+        knx.getDatapoint({ address, DataType: DPT_Value_Temp }).read().then(reading => {
+            console.log('temp', reading.target, reading.value)
+        })
+    }
+    for (const address of leds) {
+        knx.getDatapoint({ address, DataType: DPT_Switch }).read().then(reading => {
+            console.log('led', reading.target, reading.value)
+        })
+    }
+    for (const address of temps) {
+        knx.getDatapoint({ address, DataType: DPT_Value_Temp }).read().then(reading => {
+            console.log('temp', reading.target, reading.value)
+        })
+    }
+    for (const address of leds) {
         knx.getDatapoint({ address, DataType: DPT_Switch }).read().then(reading => {
             console.log('led', reading.target, reading.value)
         })

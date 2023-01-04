@@ -1,36 +1,4 @@
-import EventEmitter from 'events'
-import { KnxErrorCode } from './enums'
-
-export type KnxLinkOptions = {
-
-    /**
-     * Default 10000ms, applied to read() method. May be increased for busy networks or decreased to tiny ones.
-     */
-    readTimeout: number
-
-    /**
-     * When not specified, standard 3671 is used
-     */
-    port: number
-
-    /**
-     * Event bus to use internally, may be useful to tap into low level knx messages
-     */
-    events: EventEmitter
-
-    /**
-     * Maximum number of retries on IP network failure.
-     * @default +Infinity
-     */
-    maxRetry: number
-
-    /**
-     * How long to pause when error occurs
-     */
-    retryPause: number
-
-    connectionTimeout: number
-}
+import { KnxErrorCode, KnxServiceId } from './enums'
 
 export type KnxReading<T> = {
     target: string
@@ -42,10 +10,13 @@ export type KnxReading<T> = {
 
 export type KnxLinkExceptionDetails = {
     knxErrorCode?: KnxErrorCode
+    serviceId?: KnxServiceId
     address?: string
 }
 
 export enum KnxLinkExceptionCode {
+    E_NOT_A_CONNECTION_RESPONSE,
+    E_CONNECTION_TIMEOUT,
     E_CONNECTION_ERROR,
     E_READ_TIMEOUT
 }

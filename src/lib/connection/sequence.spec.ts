@@ -1,7 +1,7 @@
 import { sequence } from './sequence'
 
 describe('Tunneling', () => {
-    const nextSeq = sequence()
+    const nextSeq = sequence(255)
 
     it('sequence must start from 0', () => {
         expect(nextSeq()).toEqual(0)

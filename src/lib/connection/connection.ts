@@ -1,16 +1,17 @@
 import { KnxIpMessage, hpai } from '../message'
 import { KnxConnectionType, KnxLayer, KnxServiceId } from '../enums'
-import connect, { KnxLinkInfo } from './connect'
+import connect from './connect'
 
 import { Socket } from 'dgram'
-import { KnxLinkOptions } from '../types'
+import { InternalLinkInfo } from './LinkInfo'
+import { KnxLinkOptions } from './LinkOptions'
 
 /**
  * Docs
  * http://www.eb-systeme.de/?page_id=479
  */
 export class KnxConnection {
-    private linkInfo?: KnxLinkInfo
+    private linkInfo?: InternalLinkInfo
 
     public constructor (
         private readonly options: KnxLinkOptions,
@@ -39,27 +40,12 @@ export class KnxConnection {
         }
     }
 
-    public getLinkInfo (): KnxLinkInfo {
+    public getLinkInfo (): InternalLinkInfo {
         if (this.linkInfo) {
             return this.linkInfo
 
         } else {
             throw new Error('Knx connection not established')
-        }
-    }
-
-    public async send (message: KnxIpMessage): Promise<void> {
-        for (let attempt = 0; attempt <= this.options.maxRetry; attempt++) {
-            try {
-                if (!this.linkInfo) {
-                    this.linkInfo = await connect(this.options, this.ip, this.connectionType, this.layer)
-                }
-
-                return await this.sendTo(this.linkInfo.tunnel, message)
-
-            } catch (e) {
-                await new Promise(resolve => setTimeout(resolve, this.options.retryPause))
-            }
         }
     }
 

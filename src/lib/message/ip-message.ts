@@ -35,4 +35,8 @@ export class KnxIpMessage {
     public getBuffer (): Buffer {
         return this.message
     }
+
+    public getSequence (): number {
+        return this.message.readUInt8(8)
+    }
 }

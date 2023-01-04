@@ -2,7 +2,7 @@ import { sequence } from '../connection/sequence'
 import { TunnelingRequest } from './tunneling'
 
 describe('Tunneling', () => {
-    const nextSeq = sequence()
+    const nextSeq = sequence(255)
 
     it('sequence must match', () => {
         expect(TunnelingRequest.compose(65, 241).readUint8(2)).toEqual(241)

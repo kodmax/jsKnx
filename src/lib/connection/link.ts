@@ -5,8 +5,8 @@ import { IDPT } from '../dpts/formats'
 
 import EventEmitter from 'events'
 import { DataPointAbstract } from '../dpts/formats/data-point-abstract'
-import { KnxLinkOptions } from '../types'
-import { LinkInfo } from './connect'
+import { LinkInfo } from './LinkInfo'
+import { KnxLinkOptions } from './LinkOptions'
 
 export type KnxGroupSchema<T> = {
     DataType: new(...args: ConstructorParameters<typeof DataPointAbstract>) => T
@@ -22,10 +22,12 @@ export class KnxLink {
         const opts: KnxLinkOptions = {
             events: new EventEmitter(),
 
+            maxTelegramsPerSecond: 50,
+            maxConcurrentMessages: 16,
             connectionTimeout: 5000,
-            maxRetry: +Infinity,
-            readTimeout: 10000,
+            readTimeout: 3000,
             retryPause: 3000,
+            maxRetry: 31,
             port: 3671,
 
             ...options
@@ -50,8 +52,8 @@ export class KnxLink {
         }
     }
 
-    public getNextTunnelRequestHeader (): Buffer {
-        return this.connection.getLinkInfo().getTunnelRequestHeader()
+    public async sendCemiFrame (cemiFrame: Buffer): Promise<void> {
+        return this.connection.getLinkInfo().sendCemiFrame(cemiFrame)
     }
 
     public async disconnect (): Promise<void> {

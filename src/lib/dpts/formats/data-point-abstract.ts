@@ -1,9 +1,10 @@
 import EventEmitter from 'events'
 import { KnxLink } from '../../connection'
 import { KnxConnection } from '../../connection/connection'
-import { APCI, DPT, KnxCemiCode, KnxServiceId } from '../../enums'
-import { KnxCemiFrame, KnxIpMessage } from '../../message'
-import { KnxLinkException, KnxLinkExceptionCode, KnxLinkOptions, KnxReading } from '../../types'
+import { KnxLinkOptions } from '../../connection/LinkOptions'
+import { APCI, DPT, KnxCemiCode } from '../../enums'
+import { KnxCemiFrame } from '../../message'
+import { KnxLinkException, KnxLinkExceptionCode, KnxReading } from '../../types'
 
 export interface IDPT {}
 export abstract class DataPointAbstract<T> implements IDPT {
@@ -21,25 +22,15 @@ export abstract class DataPointAbstract<T> implements IDPT {
     public abstract toString(value?: T): string
 
     protected async send (value: Buffer): Promise<void> {
-        const telegram = KnxIpMessage.compose(
-            KnxServiceId.TUNNEL_REQUEST, [
-                this.link.getNextTunnelRequestHeader(),
-                KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value)
-            ]
+        await this.link.sendCemiFrame(
+            KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value)
         )
-
-        await this.connection.send(telegram)
     }
 
     public async requestValue (): Promise<void> {
-        const telegram = KnxIpMessage.compose(
-            KnxServiceId.TUNNEL_REQUEST, [
-                this.link.getNextTunnelRequestHeader(),
-                KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', this.address)
-            ]
+        await this.link.sendCemiFrame(
+            KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', this.address)
         )
-
-        return this.connection.send(telegram)
     }
 
     public async read (): Promise<KnxReading<T>> {

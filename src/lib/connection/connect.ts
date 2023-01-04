@@ -1,70 +1,39 @@
-import { createSocket, Socket } from 'dgram'
-import { KnxConnectionType, KnxLayer, KnxServiceId } from '../enums'
-import { cri, hpai, KnxIpMessage } from '../message'
-import { KnxLinkOptions } from '../types'
-import { establishLogicalConnection } from './logical-connection'
+import { KnxConnectionType, KnxLayer } from '../enums'
+import { tunnelRequest } from './tunnel-request'
+import { messageHandler } from './message-handler'
+import { connectSockets } from './connect-sockets'
+import { InternalLinkInfo } from './LinkInfo'
+import { KnxLinkOptions } from './LinkOptions'
 
-export type KnxLinkInfo = {
-    getTunnelRequestHeader: () => Buffer
-    connectionType: KnxConnectionType
-    gatewayAddress: string
-    channel: number
-    layer: KnxLayer
+type Connect = (options: KnxLinkOptions, ip: string, connectionType: KnxConnectionType, layer: KnxLayer) => Promise<InternalLinkInfo>
 
-    gateway: Socket
-    tunnel: Socket
-    port: number
-    ip: string
-}
+const connect: Connect = async (options, ip, connectionType, layer): Promise<InternalLinkInfo> => {
+    const [gateway, tunnel] = await connectSockets(ip, options.port)
 
-export type LinkInfo = {
-    connectionType: KnxConnectionType
-    gatewayAddress: string
-    layer: KnxLayer
-    channel: number
-    port: number
-    ip: string
-}
-
-type Connect = (options: KnxLinkOptions, ip: string, connectionType: KnxConnectionType, layer: KnxLayer) => Promise<KnxLinkInfo>
-const connect: Connect = async (options, ip, connectionType, layer): Promise<KnxLinkInfo> => {
-    const gateway: Socket = createSocket('udp4')
-    const tunnel: Socket = createSocket('udp4')
-
-    await new Promise((resolve, reject) => {
-        gateway.connect(options.port, ip)
-        gateway.on('error', err => {
-            reject(err)
-        })
-
-        gateway.on('connect', () => {
-            tunnel.connect(options.port, ip)
-            tunnel.on('error', err => {
-                reject(err)
-            })
-
-            tunnel.on('connect', () => {
-                resolve(void 0)
-            })
-        })
-    })
-
-    const connRequest = KnxIpMessage.compose(
-        KnxServiceId.CONNECTION_REQUEST,
-        [
-            hpai(gateway.address()),
-            hpai(tunnel.address()),
-            cri(connectionType, layer)
-        ]
+    const connectionInfo: Buffer = await tunnelRequest(
+        gateway,
+        tunnel.address(),
+        options.connectionTimeout,
+        connectionType,
+        layer
     )
 
-    await new Promise((resolve, reject) => {
-        gateway.send(connRequest.getBuffer(), error => error ? reject(error) : resolve(void 0))
-    })
+    const address = connectionInfo.readUint16BE(18)
+    const channel = connectionInfo.readUint8(6)
 
     return {
-        ...await establishLogicalConnection(gateway, tunnel, options.events, options.connectionTimeout),
+        sendCemiFrame: messageHandler(tunnel, channel, options.maxConcurrentMessages, options.maxTelegramsPerSecond, cemiFrame => {
+            options.events.emit('cemi-frame', cemiFrame)
+        }),
+
+        gatewayAddress: [address >> 12, (address >> 8) & 0xf, address & 0xff].join('.'),
+        ip: Uint8Array.from(connectionInfo.slice(10, 14)).join('.'),
+        port: connectionInfo.readUint16BE(14),
+
         connectionType,
+        gateway,
+        channel,
+        tunnel,
         layer
     }
 }

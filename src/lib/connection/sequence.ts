@@ -1,9 +1,11 @@
 type SequenceCounter = () => number
 
-const sequence: () => SequenceCounter = () => {
-    let seq = 255
+const sequence: (max: number) => SequenceCounter = max => {
+    let seq = -1
+    ++max
+
     return () => {
-        seq = seq + 1 & 0xff
+        seq = (seq + 1) % max
         return seq
     }
 }
