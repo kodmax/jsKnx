@@ -22,10 +22,10 @@ export class KnxLink {
         const opts: KnxLinkOptions = {
             events: new EventEmitter(),
 
-            maxTelegramsPerSecond: 50,
+            maxTelegramsPerSecond: 24,
             maxConcurrentMessages: 16,
             connectionTimeout: 5000,
-            readTimeout: 3000,
+            readTimeout: 5000,
             retryPause: 3000,
             maxRetry: 31,
             port: 3671,
