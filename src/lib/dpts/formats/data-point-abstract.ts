@@ -1,10 +1,8 @@
-import EventEmitter from 'events'
-import { KnxLink } from '../../connection'
-import { KnxConnection } from '../../connection/connection'
-import { KnxLinkOptions } from '../../connection/LinkOptions'
+import { KnxLinkException, KnxLinkExceptionCode, KnxReading } from '../../types'
+import { KnxLink, KnxConnection, KnxLinkOptions } from '../../connection'
 import { APCI, DPT, KnxCemiCode } from '../../enums'
 import { KnxCemiFrame } from '../../message'
-import { KnxLinkException, KnxLinkExceptionCode, KnxReading } from '../../types'
+import EventEmitter from 'events'
 
 export interface IDPT {}
 export abstract class DataPointAbstract<T> implements IDPT {

@@ -1,6 +1,6 @@
-import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../message'
-import { KnxLinkException, KnxLinkExceptionCode } from '../types'
-import { KnxCemiCode, KnxServiceId } from '../enums'
+import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../../message'
+import { KnxLinkException, KnxLinkExceptionCode } from '../../types'
+import { KnxCemiCode, KnxServiceId } from '../../enums'
 import { sequence } from './sequence'
 import { Socket } from 'dgram'
 

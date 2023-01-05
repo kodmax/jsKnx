@@ -1,12 +1,14 @@
 
-import { KnxConnectionType, KnxLayer } from '../enums'
-import { KnxConnection } from './connection'
-import { IDPT } from '../dpts/formats'
+import { KnxConnectionType, KnxLayer } from '../../enums'
+import { KnxConnection } from '..'
+import { IDPT } from '../../dpts/formats'
 
 import EventEmitter from 'events'
-import { DataPointAbstract } from '../dpts/formats/data-point-abstract'
+import { DataPointAbstract } from '../../dpts/formats/data-point-abstract'
 import { LinkInfo } from './LinkInfo'
 import { KnxLinkOptions } from './LinkOptions'
+
+export { KnxLinkOptions, LinkInfo }
 
 export type KnxGroupSchema<T> = {
     DataType: new(...args: ConstructorParameters<typeof DataPointAbstract>) => T
@@ -24,7 +26,7 @@ export class KnxLink {
 
             maxTelegramsPerSecond: 24,
             maxConcurrentMessages: 16,
-            readTimeout: 5000,
+            readTimeout: 10000,
 
             connectionTimeout: 10000,
             maxRetry: +Infinity,

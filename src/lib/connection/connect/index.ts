@@ -1,9 +1,9 @@
-import { KnxConnectionType, KnxLayer } from '../enums'
-import { tunnelRequest } from './tunnel-request'
+import { KnxConnectionType, KnxLayer } from '../../enums'
+import { InternalLinkInfo, LinkInfo } from '../link/LinkInfo'
 import { messageHandler } from './message-handler'
 import { connectSockets } from './connect-sockets'
-import { InternalLinkInfo } from './LinkInfo'
-import { KnxLinkOptions } from './LinkOptions'
+import { tunnelRequest } from './tunnel-request'
+import { KnxLinkOptions } from '../link/LinkOptions'
 
 type Connect = (options: KnxLinkOptions, ip: string, connectionType: KnxConnectionType, layer: KnxLayer) => Promise<InternalLinkInfo>
 
@@ -38,4 +38,5 @@ const connect: Connect = async (options, ip, connectionType, layer): Promise<Int
     }
 }
 
+export type { KnxLinkOptions, InternalLinkInfo, LinkInfo }
 export default connect
