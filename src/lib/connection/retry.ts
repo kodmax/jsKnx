@@ -12,7 +12,7 @@ const retry = async (maxRetry: number, msPause: number, cb: () => Promise<void>)
             if (attempt === maxRetry) {
                 throw e
             }
-            console.log(e)
+
             await pause(msPause)
         }
     }
