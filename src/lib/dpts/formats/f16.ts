@@ -2,17 +2,20 @@ import { KnxReading } from '../../types'
 import { DataPointAbstract } from './data-point-abstract'
 
 export function fromBuffer (buf: Buffer): number {
-    const value = buf.readUint16BE(1)
-    const e = (value >> 11) & 0x0f
-    const m = value & 0x07ff
-    const s = value & 0x8000
+    const f16 = buf.readUint16BE(1)
+    const s = (f16 & 0x8000)
 
-    return 0.01 * m * 2 ** e * (s ? -1 : 1)
+    const m = s ? (f16 & 0x07ff) - 0x0800 : (f16 & 0x07ff)
+    const e = 1 << ((f16 >> 11) & 0x0f)
+
+    return m * e * 0.01
 }
 
 export function toBuffer (value: number, buf: Buffer): Buffer {
-    let m = Math.abs(value * 100)
     const s = value < 0 ? 1 : 0
+    value = Math.abs(value)
+
+    let m = Math.abs(value * 100)
     let e = 0
 
     while (m > 0x07ff) {
@@ -24,7 +27,7 @@ export function toBuffer (value: number, buf: Buffer): Buffer {
         throw new Error('Float16: Value Out of Range: ' + value)
     }
 
-    buf.writeUint16BE((s << 15) + (e << 11) + m, 1)
+    buf.writeUint16BE((s << 15) + (e << 11) + Math.round(s ? 2048 - m : m), 1)
     return buf
 }
 
