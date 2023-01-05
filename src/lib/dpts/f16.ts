@@ -1,6 +1,11 @@
 import { F16 } from './formats'
 import { DPT } from '../enums'
 
+export class DPT_Generic_F16 extends F16 {
+    public readonly type: DPT = DPT.Generic_F16
+    public readonly unit: string = ''
+}
+
 export class DPT_Value_Temp extends F16 {
     public readonly type: DPT = DPT.Value_Temp
     public readonly unit: string = '°C'

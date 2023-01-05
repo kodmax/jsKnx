@@ -1,6 +1,11 @@
 import { F32 } from './formats'
 import { DPT } from '../enums'
 
+export class DPT_Generic_F32 extends F32 {
+    public readonly type: DPT = DPT.Generic_F32
+    public readonly unit: string = ''
+}
+
 export class DPT_Value_Power extends F32 {
     public readonly type: DPT = DPT.Value_Power
     public readonly unit: string = 'W'

@@ -1,6 +1,11 @@
 import { B1 } from './formats'
 import { DPT } from '../enums'
 
+export class DPT_Generic_B1 extends B1 {
+    public readonly type: DPT = DPT.Generic_B1
+    public readonly unit: string = ''
+}
+
 export class DPT_Switch extends B1 {
     public readonly type: DPT = DPT.Switch
     public readonly unit: string = ''

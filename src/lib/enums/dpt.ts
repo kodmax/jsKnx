@@ -1,4 +1,9 @@
 export enum DPT {
+    Generic_B1,
+    Generic_F16,
+    Generic_F32,
+    Generic_U8,
+    Generic_V32,
     Switch = '1.001',
     Bool = '1.002',
     Enable = '1.003',

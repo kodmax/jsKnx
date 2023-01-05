@@ -1,6 +1,11 @@
 import { U8 } from './formats'
 import { DPT } from '../enums'
 
+export class DPT_Generic_U8 extends U8 {
+    public readonly type: DPT = DPT.Generic_U8
+    public readonly unit: string = ''
+}
+
 export class DPT_Scaling extends U8 {
     public readonly type: DPT = DPT.Scaling
     public readonly unit: string = ''
