@@ -1,4 +1,5 @@
 import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../message'
+import { KnxLinkException, KnxLinkExceptionCode } from '../types'
 import { KnxCemiCode, KnxServiceId } from '../enums'
 import { sequence } from './sequence'
 import { Socket } from 'dgram'
@@ -17,6 +18,7 @@ type MessageHandler = (
 const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, maxTelegramsPerSecond, onCemiFrame) => {
     const ackTimeouts: Map<number, ReturnType<typeof setTimeout>> = new Map()
     const nextSeq = sequence(255)
+    let isClosed = false
 
     const msPause = 1000 / maxTelegramsPerSecond * maxConcurrentMessages
     let pauseId: ReturnType<typeof setTimeout> | undefined
@@ -24,8 +26,13 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
     const pendingMessages: Array<KnxIpMessage> = []
     let concurrectMessagesCounter = 0
 
+    tunnel.on('close', () => {
+        isClosed = true
+    })
+
     tunnel.on('message', msg => {
         const ipMessage = KnxIpMessage.decode(msg)
+
         if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
             const tunneling = new TunnelingRequest(ipMessage.getBody())
             tunnel.send(tunneling.ack().getBuffer())
@@ -59,6 +66,11 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
     const send = (message: KnxIpMessage): void => {
         ackTimeouts.set(message.getSequence(), setTimeout(() => {
             tunnel.send(message.getBuffer())
+
+            ackTimeouts.set(message.getSequence(), setTimeout(() => {
+                pendingMessages.splice(0, pendingMessages.length)
+                tunnel.close()
+            }, 1000))
         }, 1000))
 
         tunnel.send(message.getBuffer())
@@ -66,18 +78,25 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
     }
 
     return async (cemiFrame: Buffer) => {
-        const message = KnxIpMessage.compose(
-            KnxServiceId.TUNNEL_REQUEST, [
-                TunnelingRequest.compose(channel, nextSeq()),
-                cemiFrame
-            ]
-        )
+        if (!isClosed) {
+            const message = KnxIpMessage.compose(
+                KnxServiceId.TUNNEL_REQUEST, [
+                    TunnelingRequest.compose(channel, nextSeq()),
+                    cemiFrame
+                ]
+            )
 
-        if (concurrectMessagesCounter < maxConcurrentMessages && pendingMessages.length === 0) {
-            send(message)
+            if (concurrectMessagesCounter < maxConcurrentMessages && pendingMessages.length === 0) {
+                send(message)
+
+            } else {
+                pendingMessages.push(message)
+            }
 
         } else {
-            pendingMessages.push(message)
+            throw new KnxLinkException('Connection already closed', KnxLinkExceptionCode.E_CONNECTION_ALREADY_CLOSED, {
+                channel
+            })
         }
     }
 }

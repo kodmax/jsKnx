@@ -24,10 +24,12 @@ export class KnxLink {
 
             maxTelegramsPerSecond: 24,
             maxConcurrentMessages: 16,
-            connectionTimeout: 5000,
             readTimeout: 5000,
+
+            connectionTimeout: 10000,
+            maxRetry: +Infinity,
             retryPause: 3000,
-            maxRetry: 31,
+
             port: 3671,
 
             ...options

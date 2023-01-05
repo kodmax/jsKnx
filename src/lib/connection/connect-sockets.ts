@@ -8,24 +8,27 @@ const connectSockets = async (ip: string, port: number): Promise<[gateway: Socke
 
     await new Promise((resolve, reject) => {
         gateway.connect(port, ip)
-        gateway.on('error', err => {
-            reject(err)
-        })
 
         gateway.on('connect', () => {
             tunnel.connect(port, ip)
-            tunnel.on('error', err => {
-                reject(err)
-            })
 
             tunnel.on('connect', () => {
                 resolve(void 0)
             })
+
+            tunnel.on('error', err => {
+                reject(err)
+            })
+        })
+
+        gateway.on('error', err => {
+            reject(err)
         })
     })
 
     gateway.on('message', data => {
         const ipMessage = KnxIpMessage.decode(data)
+
         if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
             gateway.close()
             tunnel.close()
