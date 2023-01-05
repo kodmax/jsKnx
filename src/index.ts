@@ -1,18 +1,17 @@
-import { DPT_HVACMode, DPT_State, KnxLink } from './lib'
+import { DPT_State, KnxLink } from './lib'
 
-KnxLink.connect('192.168.0.8').then(async knx => {
+KnxLink.connect('192.168.0.8', { readTimeout: 500 }).then(async knx => {
     const linkInfo = knx.getLinkInfo()
     console.log(`KNX Link established. Gateway address: ${linkInfo.gatewayAddress}, channel: ${Number(linkInfo.channel).toString(16)}.`)
 
-    knx.getDatapoint({ address: '2/0/3', DataType: DPT_HVACMode }).read().then(reading => {
-        console.log(reading.value, DPT_HVACMode.MODE[reading.value])
-    })
-    knx.getDatapoint({ address: '2/0/4', DataType: DPT_HVACMode }).read().then(reading => {
-        console.log(reading.value, DPT_HVACMode.MODE[reading.value])
-    })
-    knx.getDatapoint({ address: '2/0/5', DataType: DPT_State }).read().then(reading => {
-        console.log(reading.value, reading.text)
-    })
+    setInterval(() => {
+        knx.getDatapoint({ address: '2/0/5', DataType: DPT_State }).read().then(reading => {
+            console.log(reading.value, reading.text)
+        }, e => {
+            console.log('read error', e.message)
+        })
+
+    }, 1000)
 
     // await knx.disconnect()
     process.on('SIGINT', () => {

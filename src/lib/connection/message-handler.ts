@@ -94,7 +94,7 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
             }
 
         } else {
-            throw new KnxLinkException('Connection already closed', KnxLinkExceptionCode.E_CONNECTION_ALREADY_CLOSED, {
+            throw new KnxLinkException('No connection', KnxLinkExceptionCode.E_NO_CONNECTION, {
                 channel
             })
         }

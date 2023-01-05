@@ -5,12 +5,14 @@ import connect from './connect'
 import { Socket } from 'dgram'
 import { InternalLinkInfo } from './LinkInfo'
 import { KnxLinkOptions } from './LinkOptions'
+import { retry } from './retry'
 
 /**
  * Docs
  * http://www.eb-systeme.de/?page_id=479
  */
 export class KnxConnection {
+    private noReconnection: boolean = false
     private linkInfo?: InternalLinkInfo
 
     public constructor (
@@ -23,21 +25,37 @@ export class KnxConnection {
     }
 
     public async connect (): Promise<void> {
-        for (let attempt = 0; attempt <= this.options.maxRetry; attempt++) {
-            try {
-                this.terminate()
+        await retry(this.options.maxRetry, this.options.retryPause, async () => {
+            this.terminate()
 
+            if (!this.noReconnection) {
                 this.linkInfo = await connect(this.options, this.ip, this.connectionType, this.layer)
-                break
+                this.linkInfo.gateway.once('close', () => {
+                    setTimeout(() => {
+                        this.connect().catch(() => {
+                            // ignore
+                        })
+                    }, this.options.retryPause)
+                })
 
-            } catch (e) {
-                if (attempt === this.options.maxRetry) {
-                    throw e
-                }
+                this.linkInfo.tunnel.once('close', () => {
+                    this.terminate()
+                })
 
-                await new Promise(resolve => setTimeout(resolve, this.options.retryPause))
+                this.linkInfo.gateway.on('message', data => {
+                    const ipMessage = KnxIpMessage.decode(data)
+
+                    if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
+                        this.terminate()
+                        this.connect()
+
+                    } else if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_RESPONSE) {
+                        this.noReconnection = true
+                        this.terminate()
+                    }
+                })
             }
-        }
+        })
     }
 
     public getLinkInfo (): InternalLinkInfo {
@@ -49,13 +67,21 @@ export class KnxConnection {
         }
     }
 
-    /**
-     * Closes network connection without closing the logical knx link.
-     */
-    public terminate (): void {
+    private terminate (): void {
         if (this.linkInfo) {
-            this.linkInfo.gateway.close()
-            this.linkInfo.tunnel.close()
+            try {
+                this.linkInfo.gateway.close()
+
+            } catch (e) {
+                // ignore
+            }
+
+            try {
+                this.linkInfo.tunnel.close()
+
+            } catch (e) {
+                // ignore
+            }
         }
     }
 
@@ -63,6 +89,8 @@ export class KnxConnection {
      * Gracefully close the knx gateway connection
      */
     public async disconnect (): Promise<void> {
+        this.noReconnection = true
+
         if (this.linkInfo) {
             this.sendTo(
                 this.linkInfo.gateway,

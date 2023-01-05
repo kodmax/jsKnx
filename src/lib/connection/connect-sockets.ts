@@ -1,6 +1,4 @@
 import { createSocket, Socket } from 'dgram'
-import { KnxServiceId } from '../enums'
-import { KnxIpMessage } from '../message'
 
 const connectSockets = async (ip: string, port: number): Promise<[gateway: Socket, tunnel: Socket]> => {
     const gateway: Socket = createSocket('udp4')
@@ -24,19 +22,6 @@ const connectSockets = async (ip: string, port: number): Promise<[gateway: Socke
         gateway.on('error', err => {
             reject(err)
         })
-    })
-
-    gateway.on('message', data => {
-        const ipMessage = KnxIpMessage.decode(data)
-
-        if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
-            gateway.close()
-            tunnel.close()
-
-        } else if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_RESPONSE) {
-            gateway.close()
-            tunnel.close()
-        }
     })
 
     return [gateway, tunnel]

@@ -17,9 +17,9 @@ export type KnxLinkExceptionDetails = {
 
 export enum KnxLinkExceptionCode {
     E_NOT_A_CONNECTION_RESPONSE,
-    E_CONNECTION_ALREADY_CLOSED,
     E_CONNECTION_TIMEOUT,
     E_CONNECTION_ERROR,
+    E_NO_CONNECTION,
     E_READ_TIMEOUT
 }
 

@@ -5,7 +5,7 @@ export type KnxLinkOptions = {
     /**
      * Maximum number of cemi frames to sent before waiting for gateway acknowledgement.
      */
-    maxConcurrentMessages: number;
+    maxConcurrentMessages: number
     /**
      * Maximum telegrams per second rate.
      * Decrease if there are readValue timeouts.
