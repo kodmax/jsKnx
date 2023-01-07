@@ -1,6 +1,7 @@
 import { DateTime, KnxDateTime, Date, TimeOfDay } from './formats'
 import { DPT } from '../enums'
 import { DayOfWeek } from './formats/time-of-day'
+import { KnxLinkException } from '../types'
 
 export { KnxDateTime }
 
@@ -14,12 +15,16 @@ export class DPT_DateTime extends DateTime {
     public async setDateTime (date: string, time: string, DST: boolean, dayOfWeek?: DayOfWeek, isWorkingDay?: boolean) {
         const dateMatch = date.match(datePattern)
         if (!dateMatch) {
-            throw new Error('Invalid Date: ' + date)
+            throw new KnxLinkException('INVALID_VALUE', 'Invalid Date: ' + date, {
+                value: date
+            })
         }
 
         const timeMatch = time.match(timePattern)
         if (!timeMatch) {
-            throw new Error('Invalid Time: ' + time)
+            throw new KnxLinkException('INVALID_VALUE', 'Invalid Time: ' + time, {
+                value: time
+            })
         }
 
         const [, h, minutes, s] = timeMatch
@@ -56,7 +61,9 @@ export class DPT_DateTime extends DateTime {
             })
 
         } else {
-            throw new Error('Invalid Time: ' + time)
+            throw new KnxLinkException('INVALID_VALUE', 'Invalid Time: ' + time, {
+                value: time
+            })
         }
     }
 
@@ -75,7 +82,9 @@ export class DPT_DateTime extends DateTime {
             })
 
         } else {
-            throw new Error('Invalid Date: ' + date)
+            throw new KnxLinkException('INVALID_VALUE', 'Invalid Date: ' + date, {
+                value: date
+            })
         }
     }
 }

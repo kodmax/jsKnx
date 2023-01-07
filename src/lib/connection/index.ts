@@ -4,6 +4,7 @@ import connect, { InternalLinkInfo, KnxLinkOptions } from './connect'
 
 import { Socket } from 'dgram'
 import { retry } from './retry'
+import { KnxLinkException } from '../types'
 
 export * from './link'
 
@@ -63,7 +64,7 @@ export class KnxConnection {
             return this.linkInfo
 
         } else {
-            throw new Error('Knx connection not established')
+            throw new KnxLinkException('NO_CONNECTION', 'Gateway connection not established', {})
         }
     }
 

@@ -1,5 +1,5 @@
 import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../../message'
-import { KnxLinkException, KnxLinkExceptionCode } from '../../types'
+import { KnxLinkException } from '../../types'
 import { KnxCemiCode, KnxServiceId } from '../../enums'
 import { sequence } from './sequence'
 import { Socket } from 'dgram'
@@ -94,9 +94,7 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
             }
 
         } else {
-            throw new KnxLinkException(KnxLinkExceptionCode.E_NO_CONNECTION, 'No connection', {
-                channel
-            })
+            throw new KnxLinkException('NO_CONNECTION', 'No connection', {})
         }
     }
 }

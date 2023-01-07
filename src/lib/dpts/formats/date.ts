@@ -1,4 +1,4 @@
-import { KnxReading } from '../../types'
+import { KnxLinkException, KnxReading } from '../../types'
 import { DataPointAbstract } from './data-point-abstract'
 
 export function fromBuffer (data: Buffer): number[] {
@@ -26,13 +26,17 @@ export function toBuffer (value: string, data: Buffer): Buffer {
             data.writeUint8(yy - 1900, 3)
 
         } else {
-            throw new Error('Invalid Date Year: ' + y)
+            throw new KnxLinkException('INVALID_VALUE', 'Invalid Date Year: ' + y, {
+                value: y
+            })
         }
 
         return data
 
     } else {
-        throw new Error('Invalid Date string: ' + value)
+        throw new KnxLinkException('INVALID_VALUE', 'Invalid Date string: ' + value, {
+            value
+        })
     }
 }
 

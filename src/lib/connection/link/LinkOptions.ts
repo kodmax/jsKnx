@@ -1,4 +1,21 @@
 import EventEmitter from 'events'
+import { KnxCemiFrame } from '../../message'
+import { KnxLinkException } from '../../types'
+
+export type CemiFrameEventArguments = [KnxCemiFrame]
+export type ErrorEventArguments = [KnxLinkException]
+
+export interface KnxEventEmitter extends EventEmitter {
+    addListener(eventName: 'error', listener: (...args: ErrorEventArguments) => void): this
+    once(eventName: 'error', listener: (...args: ErrorEventArguments) => void): this
+    on(eventName: 'error', listener: (...args: ErrorEventArguments) => void): this
+    emit(eventName: 'error', ...args: ErrorEventArguments): boolean
+
+    addListener(eventName: 'cemi-frame', listener: (...args: CemiFrameEventArguments) => void): this
+    once(eventName: 'cemi-frame', listener: (...args: CemiFrameEventArguments) => void): this
+    on(eventName: 'cemi-frame', listener: (...args: CemiFrameEventArguments) => void): this
+    emit(eventName: 'cemi-frame', ...args: CemiFrameEventArguments): boolean
+}
 
 export type KnxLinkOptions = {
 
@@ -25,7 +42,7 @@ export type KnxLinkOptions = {
     /**
      * Event bus to use internally, may be useful to tap into low level knx messages
      */
-    events: EventEmitter
+    events: KnxEventEmitter
 
     /**
      * Maximum number of retries on IP network failure.

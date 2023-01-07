@@ -1,5 +1,5 @@
 import { DataPointAbstract } from './data-point-abstract'
-import { KnxReading } from '../../types'
+import { KnxLinkException, KnxReading } from '../../types'
 
 export enum DayOfWeek {
     '' = 0,
@@ -36,7 +36,9 @@ export function toBuffer (value: string, data: Buffer): Buffer {
         return data
 
     } else {
-        throw new Error('Invalid TimeOfDay string: ' + value)
+        throw new KnxLinkException('INVALID_VALUE', 'Invalid TimeOfDay string: ' + value, {
+            value
+        })
     }
 }
 

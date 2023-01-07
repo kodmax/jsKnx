@@ -1,4 +1,4 @@
-import { KnxReading } from '../../types'
+import { KnxLinkException, KnxReading } from '../../types'
 import { DataPointAbstract } from './data-point-abstract'
 
 export function fromBuffer (buf: Buffer): number {
@@ -24,7 +24,9 @@ export function toBuffer (value: number, buf: Buffer): Buffer {
     }
 
     if (e > 15) {
-        throw new Error('Float16: Value Out of Range: ' + value)
+        throw new KnxLinkException('INVALID_VALUE', 'Float16: Value Out of Range: ' + value, {
+            value
+        })
     }
 
     buf.writeUint16BE((s << 15) + (e << 11) + Math.round(s ? 2048 - m : m), 1)

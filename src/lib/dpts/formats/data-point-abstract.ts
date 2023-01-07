@@ -1,4 +1,4 @@
-import { KnxLinkException, KnxLinkExceptionCode, KnxReading } from '../../types'
+import { KnxLinkException, KnxReading } from '../../types'
 import { KnxLink, KnxConnection, KnxLinkOptions } from '../../connection'
 import { APCI, DPT, KnxCemiCode } from '../../enums'
 import { KnxCemiFrame } from '../../message'
@@ -20,14 +20,19 @@ export abstract class DataPointAbstract<T> implements IDPT {
     public abstract addValueListener(cb: (reading: KnxReading<T>) => void): void
     public abstract toString(value?: T): string
 
-    protected checkCemiFrameValueByteLength (cemiFrame: KnxCemiFrame): void {
+    protected isCemiFrameValueByteLengthOk (cemiFrame: KnxCemiFrame): boolean {
         if (cemiFrame.value.byteLength !== this.valueByteLength) {
-            throw new KnxLinkException(KnxLinkExceptionCode.E_DATA_LENGTH_MISMATCH, 'Data length mismatch for: ' + this.address, {
+            this.options.events.emit('error', new KnxLinkException('DATA_LENGTH_MISMATCH', 'Data length mismatch for: ' + this.address, {
+                actualDataLength: cemiFrame.value.byteLength,
                 expectedDataType: this.type,
-                dataLength: cemiFrame.value.byteLength,
                 source: cemiFrame.source,
                 address: this.address
-            })
+            }))
+
+            return false
+
+        } else {
+            return true
         }
     }
 
@@ -60,7 +65,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                 this.valueEvent.removeListener('resp-received', recv)
                 this.updateSubscription('resp-received')
 
-                reject(new KnxLinkException(KnxLinkExceptionCode.E_READ_TIMEOUT, `Timeout waiting for ${this.address} response`, {
+                reject(new KnxLinkException('READ_TIMEOUT', `Timeout waiting for ${this.address} response`, {
                     address: this.address
                 }))
             }, this.options.readTimeout)
@@ -81,9 +86,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
     }
 
     private eventsListener = (cemiFrame: KnxCemiFrame) => {
-        if (cemiFrame.target === this.address) {
-            this.checkCemiFrameValueByteLength(cemiFrame)
-
+        if (cemiFrame.target === this.address && this.isCemiFrameValueByteLengthOk(cemiFrame)) {
             this.cemiFrameEvent.emit(APCI [cemiFrame.getService()], cemiFrame)
 
             switch (cemiFrame.getService()) {
