@@ -82,6 +82,8 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
     private eventsListener = (cemiFrame: KnxCemiFrame) => {
         if (cemiFrame.target === this.address) {
+            this.checkCemiFrameValueByteLength(cemiFrame)
+
             this.cemiFrameEvent.emit(APCI [cemiFrame.getService()], cemiFrame)
 
             switch (cemiFrame.getService()) {
