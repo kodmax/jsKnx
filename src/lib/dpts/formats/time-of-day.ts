@@ -41,6 +41,7 @@ export function toBuffer (value: string, data: Buffer): Buffer {
 }
 
 export abstract class TimeOfDay extends DataPointAbstract<string> {
+    protected valueByteLength: number = 4
 
     protected decode (data: Buffer): string {
         const [d, h, m, s] = fromBuffer(data)
@@ -49,7 +50,7 @@ export abstract class TimeOfDay extends DataPointAbstract<string> {
     }
 
     public async write (value: string): Promise<void> {
-        return this.send(toBuffer(value, Buffer.alloc(4)))
+        return this.send(toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 
     public removeValueListener (cb: (reading: KnxReading<string>) => void) {

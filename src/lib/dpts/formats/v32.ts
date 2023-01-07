@@ -11,13 +11,14 @@ export function toBuffer (value: number, buf: Buffer): Buffer {
 }
 
 export abstract class V32 extends DataPointAbstract<number> {
+    protected valueByteLength: number = 5
 
     protected decode (data: Buffer): number {
         return fromBuffer(data)
     }
 
     public async write (value: number): Promise<void> {
-        return this.send(toBuffer(value, Buffer.alloc(5)))
+        return this.send(toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 
     public removeValueListener (cb: (reading: KnxReading<number>) => void) {

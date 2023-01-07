@@ -10,22 +10,23 @@ export abstract class DataPointAbstract<T> implements IDPT {
     protected valueEvent: EventEmitter = new EventEmitter()
     protected hasSubscribed = false
 
+    protected abstract valueByteLength: number
     public abstract readonly unit: string
     public abstract readonly type: DPT
 
+    protected abstract decode(data: Buffer, cemiFrame: KnxCemiFrame): T
     protected abstract write(value: T): Promise<void>
-    protected abstract decode(data: Buffer): T
 
     public abstract addValueListener(cb: (reading: KnxReading<T>) => void): void
     public abstract toString(value?: T): string
 
-    protected expectCemiFrameValueByteLength (length: number, cemiFrame: KnxCemiFrame): void {
-        if (cemiFrame.value.byteLength !== length) {
+    protected checkCemiFrameValueByteLength (cemiFrame: KnxCemiFrame): void {
+        if (cemiFrame.value.byteLength !== this.valueByteLength) {
             throw new KnxLinkException(KnxLinkExceptionCode.E_DATA_LENGTH_MISMATCH, 'Data length mismatch for: ' + this.address, {
                 expectedDataType: this.type,
                 dataLength: cemiFrame.value.byteLength,
                 source: cemiFrame.source,
-                address: this.address,
+                address: this.address
             })
         }
     }
@@ -85,7 +86,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
             switch (cemiFrame.getService()) {
                 case APCI.APCI_GROUP_VALUE_WRITE: {
-                    const value = this.decode(cemiFrame.value)
+                    const value = this.decode(cemiFrame.value, cemiFrame)
                     this.valueEvent.emit('value-received', {
                         text: this.toString(value),
                         source: cemiFrame.source,
@@ -97,7 +98,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                     break
                 }
                 case APCI.APCI_GROUP_VALUE_RESP: {
-                    const value = this.decode(cemiFrame.value)
+                    const value = this.decode(cemiFrame.value, cemiFrame)
                     this.valueEvent.emit('resp-received', {
                         text: this.toString(value),
                         source: cemiFrame.source,

@@ -74,13 +74,14 @@ export function toBuffer (dateTime: KnxDateTime, data: Buffer): Buffer {
 }
 
 export abstract class DateTime extends DataPointAbstract<KnxDateTime> {
+    protected valueByteLength: number = 9
 
     protected decode (data: Buffer): KnxDateTime {
         return fromBuffer(data)
     }
 
     public async write (value: KnxDateTime): Promise<void> {
-        return this.send(toBuffer(value, Buffer.alloc(9)))
+        return this.send(toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 
     public removeValueListener (cb: (reading: KnxReading<KnxDateTime>) => void) {

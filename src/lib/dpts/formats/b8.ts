@@ -19,13 +19,14 @@ export function toBuffer (bits: number[], buf: Buffer): Buffer {
 }
 
 export abstract class B8 extends DataPointAbstract<number[]> {
+    protected valueByteLength: number = 2
 
     protected decode (data: Buffer): number[] {
         return fromBuffer(data)
     }
 
     public async write (bits: number[]): Promise<void> {
-        return this.send(toBuffer(bits, Buffer.alloc(2)))
+        return this.send(toBuffer(bits, Buffer.alloc(this.valueByteLength)))
     }
 
     public removeValueListener (cb: (reading: KnxReading<number[]>) => void) {

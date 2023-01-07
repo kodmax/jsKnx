@@ -30,6 +30,7 @@ export type KnxStandardStatus = {
 }
 
 export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
+    protected valueByteLength: number = 2
 
     protected decode (data: Buffer): KnxStandardStatus {
         const octet = fromBuffer(data)
@@ -43,7 +44,16 @@ export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
     }
 
     public async write (status: KnxStandardStatus): Promise<void> {
-        return this.send(toBuffer([0, 0, 0, +status.AlarmUnAck, +status.InAlarm, +status.Overridden, +status.Fault, +status.OutOfService], Buffer.alloc(2)))
+        return this.send(toBuffer([
+            0,
+            0,
+            0,
+            +status.AlarmUnAck,
+            +status.InAlarm,
+            +status.Overridden,
+            +status.Fault,
+            +status.OutOfService
+        ], Buffer.alloc(this.valueByteLength)))
     }
 
     public removeValueListener (cb: (reading: KnxReading<KnxStandardStatus>) => void) {
