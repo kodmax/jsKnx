@@ -19,6 +19,17 @@ export abstract class DataPointAbstract<T> implements IDPT {
     public abstract addValueListener(cb: (reading: KnxReading<T>) => void): void
     public abstract toString(value?: T): string
 
+    protected expectCemiFrameValueByteLength (length: number, cemiFrame: KnxCemiFrame): void {
+        if (cemiFrame.value.byteLength !== length) {
+            throw new KnxLinkException(KnxLinkExceptionCode.E_DATA_LENGTH_MISMATCH, 'Data length mismatch for: ' + this.address, {
+                expectedDataType: this.type,
+                dataLength: cemiFrame.value.byteLength,
+                source: cemiFrame.source,
+                address: this.address,
+            })
+        }
+    }
+
     protected async send (value: Buffer): Promise<void> {
         await this.link.sendCemiFrame(
             KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value)
@@ -48,7 +59,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                 this.valueEvent.removeListener('resp-received', recv)
                 this.updateSubscription('resp-received')
 
-                reject(new KnxLinkException(`Timeout waiting for ${this.address} response`, KnxLinkExceptionCode.E_READ_TIMEOUT, {
+                reject(new KnxLinkException(KnxLinkExceptionCode.E_READ_TIMEOUT, `Timeout waiting for ${this.address} response`, {
                     address: this.address
                 }))
             }, this.options.readTimeout)

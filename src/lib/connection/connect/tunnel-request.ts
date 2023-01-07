@@ -39,16 +39,16 @@ const tunnelRequest: TunnelRequest = async (gateway, tunnelAddress, connectionTi
                 } else {
                     const error = (KnxErrorCode[knxErrorCode] ?? KnxErrorCode[KnxErrorCode.UNKNOWN_ERROR]) as keyof typeof KnxErrorCode
                     reject(new KnxLinkException(
-                        'Error Connectiong to KNX/IP Gateway: ' + error,
                         KnxLinkExceptionCode.E_CONNECTION_ERROR,
+                        'Error Connectiong to KNX/IP Gateway: ' + error,
                         { knxErrorCode }
                     ))
                 }
 
             } else {
                 reject(new KnxLinkException(
-                    'Error Connectiong to KNX/IP Gateway',
                     KnxLinkExceptionCode.E_NOT_A_CONNECTION_RESPONSE,
+                    'Error Connectiong to KNX/IP Gateway',
                     { serviceId }
                 ))
             }
@@ -56,8 +56,8 @@ const tunnelRequest: TunnelRequest = async (gateway, tunnelAddress, connectionTi
 
         setTimeout(() => {
             reject(new KnxLinkException(
-                'Knx IP Gateway connection timeout',
                 KnxLinkExceptionCode.E_CONNECTION_TIMEOUT,
+                'Knx IP Gateway connection timeout',
                 {}
             ))
         }, connectionTimeout)

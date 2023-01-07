@@ -94,7 +94,7 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
             }
 
         } else {
-            throw new KnxLinkException('No connection', KnxLinkExceptionCode.E_NO_CONNECTION, {
+            throw new KnxLinkException(KnxLinkExceptionCode.E_NO_CONNECTION, 'No connection', {
                 channel
             })
         }
