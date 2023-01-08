@@ -32,7 +32,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                         source: cemiFrame.source,
                         data: cemiFrame.value,
                         target: this.address
-                })
+                    })
             )
 
             return false
@@ -96,31 +96,35 @@ export abstract class DataPointAbstract<T> implements IDPT {
     }
 
     private eventsListener = (cemiFrame: KnxCemiFrame) => {
-        if (cemiFrame.target === this.address && this.isCemiFrameValueByteLengthOk(cemiFrame)) {
+        if (cemiFrame.target === this.address) {
             this.cemiFrameEvent.emit(APCI [cemiFrame.getService()], cemiFrame)
 
             switch (cemiFrame.getService()) {
                 case APCI.APCI_GROUP_VALUE_WRITE: {
-                    const value = this.decode(cemiFrame.value, cemiFrame)
-                    this.valueEvent.emit('value-received', {
-                        text: this.toString(value),
-                        source: cemiFrame.source,
-                        target: cemiFrame.target,
-                        unit: this.unit,
-                        value
-                    })
+                    if (this.isCemiFrameValueByteLengthOk(cemiFrame)) {
+                        const value = this.decode(cemiFrame.value, cemiFrame)
+                        this.valueEvent.emit('value-received', {
+                            text: this.toString(value),
+                            source: cemiFrame.source,
+                            target: cemiFrame.target,
+                            unit: this.unit,
+                            value
+                        })
+                    }
 
                     break
                 }
                 case APCI.APCI_GROUP_VALUE_RESP: {
-                    const value = this.decode(cemiFrame.value, cemiFrame)
-                    this.valueEvent.emit('resp-received', {
-                        text: this.toString(value),
-                        source: cemiFrame.source,
-                        target: cemiFrame.target,
-                        unit: this.unit,
-                        value
-                    })
+                    if (this.isCemiFrameValueByteLengthOk(cemiFrame)) {
+                        const value = this.decode(cemiFrame.value, cemiFrame)
+                        this.valueEvent.emit('resp-received', {
+                            text: this.toString(value),
+                            source: cemiFrame.source,
+                            target: cemiFrame.target,
+                            unit: this.unit,
+                            value
+                        })
+                    }
 
                     break
                 }
