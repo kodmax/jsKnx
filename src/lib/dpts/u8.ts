@@ -20,11 +20,11 @@ export class DPT_Scaling extends U8 {
     }
 
     protected decode (data: Buffer): number {
-        return U8.fromBuffer(data)
+        return DPT_Scaling.fromBuffer(data)
     }
 
     public async write (value: number): Promise<void> {
-        return this.send(U8.toBuffer(value, Buffer.alloc(this.valueByteLength)))
+        return this.send(DPT_Scaling.toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 }
 
@@ -32,12 +32,21 @@ export class DPT_Angle extends U8 {
     public readonly type: DPT = DPT.Angle
     public readonly unit: string = ''
 
-    public async setAngle (angle: number): Promise<void> {
-        return this.write(Math.floor(angle / 360 * 255))
+    public static fromBuffer (buf: Buffer): number {
+        return Math.round(buf.readUint8(1) / 255 * 360)
     }
 
-    public getAngle (value: number): number {
-        return Math.floor(value / 255 * 360)
+    public static toBuffer (value: number, buf: Buffer): Buffer {
+        buf.writeUint8(Math.round(value / 360 * 255), 1)
+        return buf
+    }
+
+    protected decode (data: Buffer): number {
+        return DPT_Angle.fromBuffer(data)
+    }
+
+    public async write (value: number): Promise<void> {
+        return this.send(DPT_Angle.toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 
     public toString (value?: number): string {
@@ -45,7 +54,7 @@ export class DPT_Angle extends U8 {
             return `${this.address} (${this.type})`
 
         } else {
-            return `${Number(this.getAngle(value)).toString(10)} °`
+            return `${Number(value).toString(10)} °`
         }
     }
 }
