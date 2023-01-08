@@ -20,15 +20,8 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
     const nextSeq = sequence(255)
     let isClosed = false
 
-    const msPause = 1000 / maxTelegramsPerSecond * maxConcurrentMessages
-    let pauseId: ReturnType<typeof setTimeout> | undefined
-
     const pendingMessages: Array<KnxIpMessage> = []
     let concurrectMessagesCounter = 0
-
-    tunnel.on('close', () => {
-        isClosed = true
-    })
 
     tunnel.on('message', msg => {
         const ipMessage = KnxIpMessage.decode(msg)
@@ -50,16 +43,6 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
                 clearTimeout(ackTimeouts.get(seq))
                 ackTimeouts.delete(seq)
             }
-
-            if (concurrectMessagesCounter === 0 && pendingMessages.length > 0 && !pauseId) {
-                pauseId = setTimeout(() => {
-                    for (const message of pendingMessages.splice(0, maxConcurrentMessages)) {
-                        send(message)
-                    }
-
-                    pauseId = void 0
-                }, msPause)
-            }
         }
     })
 
@@ -77,24 +60,32 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
         ++concurrectMessagesCounter
     }
 
+    const sendInterval = setInterval(() => {
+        if (concurrectMessagesCounter < maxConcurrentMessages) {
+            const message = pendingMessages.shift()
+
+            if (message) {
+                send(message)
+            }
+        }
+    }, 1000 / maxTelegramsPerSecond)
+
+    tunnel.on('close', () => {
+        clearInterval(sendInterval)
+        isClosed = true
+    })
+
     return async (cemiFrame: Buffer) => {
-        if (!isClosed) {
-            const message = KnxIpMessage.compose(
+        if (isClosed) {
+            throw new KnxLinkException('NO_CONNECTION', 'No connection', {})
+
+        } else {
+            pendingMessages.push(KnxIpMessage.compose(
                 KnxServiceId.TUNNEL_REQUEST, [
                     TunnelingRequest.compose(channel, nextSeq()),
                     cemiFrame
                 ]
-            )
-
-            if (concurrectMessagesCounter < maxConcurrentMessages && pendingMessages.length === 0) {
-                send(message)
-
-            } else {
-                pendingMessages.push(message)
-            }
-
-        } else {
-            throw new KnxLinkException('NO_CONNECTION', 'No connection', {})
+            ))
         }
     }
 }

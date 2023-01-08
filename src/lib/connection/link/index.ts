@@ -6,7 +6,7 @@ import { IDPT } from '../../dpts/formats'
 import EventEmitter from 'events'
 import { DataPointAbstract } from '../../dpts/formats/data-point-abstract'
 import { LinkInfo } from './LinkInfo'
-import { KnxLinkOptions } from './LinkOptions'
+import { KnxEventEmitter, KnxLinkOptions } from './LinkOptions'
 
 export { KnxLinkOptions, LinkInfo }
 
@@ -16,8 +16,10 @@ export type KnxGroupSchema<T> = {
 }
 
 export class KnxLink {
-    public constructor (private readonly connection: KnxConnection, private readonly options: Required<KnxLinkOptions>) {
+    public readonly events: KnxEventEmitter
 
+    public constructor (private readonly connection: KnxConnection, private readonly options: Required<KnxLinkOptions>) {
+        this.events = this.options.events
     }
 
     public static async connect (ip: string, options: Partial<KnxLinkOptions> = {}): Promise<KnxLink> {

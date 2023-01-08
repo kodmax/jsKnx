@@ -3,14 +3,20 @@ import {
     DPT_Alarm,
     DPT_Date,
     DPT_DateTime,
-    DPT_StatusGen,
+    DPT_Start,
     DPT_Switch,
     DPT_Time,
-    DPT_Trigger,
     DPT_Value_AirQuality,
     DPT_Value_Humidity,
     DPT_Value_Power,
-    DPT_Value_Temp
+    DPT_Value_Temp,
+    DPT_Value_Frequency,
+    DPT_Value_Electric_Current,
+    DPT_Value_Power_Factor,
+    DPT_Value_Electric_Potential,
+    DPT_Value_ApparentPower,
+    DPT_State,
+    DPT_Scaling
 } from './lib'
 
 export const lights = {
@@ -85,15 +91,15 @@ export const lights = {
     Salon: {
         Cały: {
             command: { address: '14/6/4', DataType: DPT_Switch },
-            state: { address: '14/6/4', DataType: DPT_Switch }
+            state: { address: '14/6/5', DataType: DPT_Switch }
         },
         'Led TV': {
             command: { address: '14/6/9', DataType: DPT_Switch, relatedState: '14/6/10' },
-            state: { address: '14/6/9', DataType: DPT_Switch }
+            state: { address: '14/6/10', DataType: DPT_Switch }
         },
         'Led Sofa': {
             command: { address: '14/6/11', DataType: DPT_Switch },
-            state: { address: '14/6/11', DataType: DPT_Switch }
+            state: { address: '14/6/12', DataType: DPT_Switch }
         },
         Lampa: {
             // gdzie jest lampa?
@@ -103,11 +109,11 @@ export const lights = {
     Sypialnia: {
         'Led A': {
             command: { address: '14/7/8', DataType: DPT_Switch },
-            state: { address: '14/7/8', DataType: DPT_Switch }
+            state: { address: '14/7/9', DataType: DPT_Switch }
         },
         'Led B': {
             command: { address: '14/7/3', DataType: DPT_Switch },
-            state: { address: '14/7/3', DataType: DPT_Switch }
+            state: { address: '14/7/4', DataType: DPT_Switch }
 
         }
     }
@@ -132,6 +138,11 @@ export const dimming = {
     'Hol.Salon Hol LED Jasnosc absolutna': { address: '14/5/5' },
     'Hol.Salon Hol LED Jasnosc odczyt': { address: '14/5/6' },
     'Hol.Sypialnia LED Hol Sciemnianie': { address: '14/5/11' },
+    'Salon LED B Jasnosc absolutna ': { address: '14/6/2' },
+    'Salon LED B Jasnosc absolutna stan': { address: '14/6/3' },
+    'Caly Salon LED Sciemnianie': { address: '14/6/6' },
+    'Caly Salon LED Jasnosc absolutna': { address: '14/6/7' },
+    'Caly Salon LED Jasnosc Odczyt': { address: '14/6/8' },
     'Sypialnia.Sypialnia LED B Sciemnianie': { address: '14/7/5' },
     'Sypialnia.Sypialnia LED B Jasnosc Absolutna': { address: '14/7/6' },
     'Sypialnia.Sypialnia LED B Jasnosc Odczyt': { address: '14/7/7' },
@@ -147,9 +158,6 @@ export const energy = {
     InstantPowerDraw: {
         reading: { address: '5/0/1', DataType: DPT_Value_Power }
     },
-    Frequency: {
-        reading: { address: '5/1/0' }
-    },
     'Request Readings': {
         command: { address: '5/2/0' }
     },
@@ -157,22 +165,39 @@ export const energy = {
         reading: { address: '5/2/3', DataType: DPT_ActiveEnergy }
     },
     'Intermediate Consumption Meter': {
-        Start: { address: '5/2/1', DataType: DPT_Trigger },
-        Stop: { address: '5/2/4', DataType: DPT_Trigger },
-        Status: { address: '5/2/5', DataType: DPT_StatusGen },
+        Start: { address: '5/2/1', DataType: DPT_Start },
+        Stop: { address: '5/2/4', DataType: DPT_Start },
+        Status: { address: '5/2/5', DataType: DPT_Start },
         Reading: { address: '5/2/2', DataType: DPT_ActiveEnergy }
+    },
+    Frequency: {
+        reading: { address: '5/0/2', DataType: DPT_Value_Frequency }
+    },
+    Voltage: {
+        reading: { address: '5/0/3', DataType: DPT_Value_Electric_Potential }
+    },
+    Current: {
+        reading: { address: '5/0/4', DataType: DPT_Value_Electric_Current }
+    },
+    'Power Factor tg φ': {
+        reading: { address: '5/0/5', DataType: DPT_Value_Power_Factor }
+    },
+    'Crest Factor': {
+        reading: { address: '5/0/6', DataType: DPT_Value_Power_Factor }
+    },
+    'Passive Power': {
+        reading: { address: '5/0/7', DataType: DPT_Value_ApparentPower }
     }
 }
 
 export const temp = {
     'Podloga lazienka temperatura': { address: '13/0/2', DataType: DPT_Value_Temp },
     'Tempertura Salon': { address: '15/0/0', DataType: DPT_Value_Temp },
-    Lazienka: { address: '15/0/1', DataType: DPT_Value_Temp },
-    'Sypialnia przy loggi': { address: '15/0/2', DataType: DPT_Value_Temp },
     'Sypialnia sufit': { address: '15/0/4', DataType: DPT_Value_Temp },
-    'Sypialnia lozko lewa': { address: '15/0/6', DataType: DPT_Value_Temp },
-    'Sypialnia sofa?': { address: '15/0/7', DataType: DPT_Value_Temp },
-    'Lazienka wlacznik': { address: '15/0/8', DataType: DPT_Value_Temp },
+    'Sypialnia przy loggi': { address: '15/0/6', DataType: DPT_Value_Temp },
+    'Salon sofa': { address: '15/0/7', DataType: DPT_Value_Temp },
+    Lazienka: { address: '15/0/8', DataType: DPT_Value_Temp },
+    Jadalnia: { address: '15/0/11', DataType: DPT_Value_Temp },
     'Sypialnia hol': { address: '15/0/9', DataType: DPT_Value_Temp }
 }
 
@@ -187,30 +212,26 @@ export const airQuality = {
         reading: { address: '15/0/5', DataType: DPT_Value_Humidity },
         alertHigh: { address: '15/1/3', DataType: DPT_Alarm },
         alertLow: { address: '15/1/4', DataType: DPT_Alarm }
+    },
+    'Punkt rosy': {
+        reading: { address: '15/0/10', DataType: DPT_Value_Temp }
     }
 }
 
-export const heatings = {
+export const heating = {
     'Podłoga Łazienka': {
         command: { address: '13/0/0', DataType: DPT_Switch },
-        state: { address: '13/0/1', DataType: DPT_Switch },
-        setPWM: { address: '13/0/3' },
-        getPWM: { address: '13/0/4' }
+        state: { address: '13/0/1', DataType: DPT_State }
     },
     'Grzejniki wodne': {
-        'Salon ustawienie': { address: '13/1/0' },
-        'Salon odczyt': { address: '13/1/1' },
-        'Jadalnia ustawienie': { address: '13/1/2' },
-        'Jadalnia odczyt': { address: '13/1/3' },
-        'Sypialnia ustawienie': { address: '13/1/4' },
-        'Sypialnia odczyt': { address: '13/1/5' },
-        'Lazienka ustawienie': { address: '13/1/6' },
-        'Lazienka odczyt': { address: '13/1/7' },
-        'Pokoj dzienny Oba ustawienie': { address: '13/1/9' }
-    },
-    'Grzejniki elektryczne (gniazdka)': {
-        'Grzejniki elektryczne.Grzejniki Elektryczne Salon On/Off': { address: '13/2/0' },
-        'Grzejniki elektryczne.Grzejnik elektryczny sypialnia on/off': { address: '13/2/1' }
+        'Salon ustawienie': { address: '13/1/9', DataType: DPT_Scaling },
+        'Salon stan': { address: '13/1/1', DataType: DPT_State },
+        'Jadalnia ustawienie': { address: '13/1/9', DataType: DPT_Scaling },
+        'Jadalnia stan': { address: '13/1/3', DataType: DPT_State },
+        'Sypialnia ustawienie': { address: '13/1/4', DataType: DPT_Scaling },
+        'Sypialnia stan': { address: '13/1/5', DataType: DPT_State },
+        'Lazienka ustawienie': { address: '13/1/6', DataType: DPT_Scaling },
+        'Lazienka stan': { address: '13/1/7', DataType: DPT_State }
     },
     'Obecnosc sypialnia': { address: '13/4/0' },
     'Heating/Cooling Status': { address: '13/4/1' }
@@ -243,14 +264,22 @@ export const venting = {
 }
 
 export const sockets = {
-    'Jadalnia Prawe On/Off': { address: '10/0/0' },
-    'Jadalnia Lewe On/Off': { address: '10/0/6' },
     'Salon Lewe On/Off': { address: '10/0/1' },
+    'Salon Lewe Stan': { address: '10/0/2' },
     'Salon Prawe On/Off': { address: '10/0/3' },
-    'Sypialnia Lozko Lewe On/Off': { address: '10/1/4' },
-    'Sypialnia Lozko Prawe On/Off': { address: '10/1/6' },
-    'Sypialnia Okno Prawe On/Off': { address: '10/1/0' },
-    'Sypialnia Okno Lewe On/Off': { address: '10/1/2' }
+    'Salon Prawe Stan': { address: '10/0/4' },
+    'Jadalnia Lewe On/Off': { address: '10/0/0' },
+    'Jadalnia Lewe stan': { address: '10/0/5' },
+    'Jadalnia Prawe On/Off': { address: '10/0/6' },
+    'Jadalnia Prawe stan': { address: '10/0/7' },
+    'Sypialnia Lozko Prawe On/Off': { address: '10/1/0' },
+    'Sypialnia Lozko Prawe Stan': { address: '10/1/1' },
+    'Sypialnia Lozko Lewe On/Off': { address: '10/1/2' },
+    'Sypialnia Lozko Lewe Stan': { address: '10/1/3' },
+    'Sypialnia TV Lewe On/Off': { address: '10/1/4' },
+    'Sypialnia TV Lewe Stan': { address: '10/1/5' },
+    'Sypialnia TV Prawe On/Off': { address: '10/1/6' },
+    'Sypialnia TV Prawe Stan': { address: '10/1/7' }
 }
 
 export const time = {
