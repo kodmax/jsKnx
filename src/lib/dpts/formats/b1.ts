@@ -1,24 +1,24 @@
 import { DataPointAbstract } from './data-point-abstract'
 import { KnxReading } from '../../types'
 
-export function fromBuffer (buf: Buffer): number {
-    return buf.readUint8(0) & 0x01
-}
-
-export function toBuffer (value: number, buf: Buffer): Buffer {
-    buf.writeUint8((value & 0x01) === 1 ? 0x1 : 0x0, 0)
-    return buf
-}
-
 export abstract class B1 extends DataPointAbstract<number> {
     protected valueByteLength: number = 1
 
+    public static fromBuffer (buf: Buffer): number {
+        return buf.readUint8(0) & 0x01
+    }
+
+    public static toBuffer (value: number, buf: Buffer): Buffer {
+        buf.writeUint8((value & 0x01) === 1 ? 0x1 : 0x0, 0)
+        return buf
+    }
+
     protected decode (data: Buffer): number {
-        return fromBuffer(data)
+        return B1.fromBuffer(data)
     }
 
     public async write (value: number): Promise<void> {
-        return this.send(toBuffer(value, Buffer.alloc(this.valueByteLength)))
+        return this.send(B1.toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 
     public removeValueListener (cb: (reading: KnxReading<number>) => void) {

@@ -10,21 +10,21 @@ export class DPT_Scaling extends U8 {
     public readonly type: DPT = DPT.Scaling
     public readonly unit: string = ''
 
-    public async setPercent (percent: number): Promise<void> {
-        return this.write(Math.floor(percent / 100 * 255))
+    public static fromBuffer (buf: Buffer): number {
+        return Math.round(buf.readUint8(1) / 255 * 100)
     }
 
-    public getPercent (value: number): number {
-        return Math.floor(value / 255)
+    public static toBuffer (value: number, buf: Buffer): Buffer {
+        buf.writeUint8(Math.round(value / 100 * 255), 1)
+        return buf
     }
 
-    public toString (value?: number): string {
-        if (value === undefined) {
-            return `${this.address} (${this.type})`
+    protected decode (data: Buffer): number {
+        return U8.fromBuffer(data)
+    }
 
-        } else {
-            return `${Number(this.getPercent(value)).toString(10)} %`
-        }
+    public async write (value: number): Promise<void> {
+        return this.send(U8.toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 }
 

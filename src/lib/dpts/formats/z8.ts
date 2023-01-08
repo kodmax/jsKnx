@@ -1,5 +1,5 @@
 import { DataPointAbstract } from './data-point-abstract'
-import { fromBuffer, toBuffer } from './b8'
+import { B8 } from './b8'
 import { KnxReading } from '../../types'
 
 export type KnxStandardStatus = {
@@ -33,7 +33,7 @@ export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
     protected valueByteLength: number = 2
 
     protected decode (data: Buffer): KnxStandardStatus {
-        const octet = fromBuffer(data)
+        const octet = B8.fromBuffer(data)
         return {
             OutOfService: !!octet [0],
             AlarmUnAck: !!octet [4],
@@ -44,7 +44,7 @@ export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
     }
 
     public async write (status: KnxStandardStatus): Promise<void> {
-        return this.send(toBuffer([
+        return this.send(B8.toBuffer([
             0,
             0,
             0,
