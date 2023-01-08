@@ -36,7 +36,7 @@ export abstract class V32 extends DataPointAbstract<number> {
             return `${this.address} (${this.type})`
 
         } else {
-            return `${Number(value).toFixed(0)} ${this.unit}`
+            return this.unit ? `${Number(value).toFixed(0)} ${this.unit}` : Number(value).toFixed(0)
         }
     }
 }

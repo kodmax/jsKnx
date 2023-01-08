@@ -30,7 +30,7 @@ export class DPT_Scaling extends U8 {
 
 export class DPT_Angle extends U8 {
     public readonly type: DPT = DPT.Angle
-    public readonly unit: string = ''
+    public readonly unit: string = '°'
 
     public static fromBuffer (buf: Buffer): number {
         return Math.round(buf.readUint8(1) / 255 * 360)
@@ -47,15 +47,6 @@ export class DPT_Angle extends U8 {
 
     public async write (value: number): Promise<void> {
         return this.send(DPT_Angle.toBuffer(value, Buffer.alloc(this.valueByteLength)))
-    }
-
-    public toString (value?: number): string {
-        if (value === undefined) {
-            return `${this.address} (${this.type})`
-
-        } else {
-            return `${Number(value).toString(10)} °`
-        }
     }
 }
 
