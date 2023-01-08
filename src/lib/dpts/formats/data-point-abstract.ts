@@ -22,12 +22,18 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
     protected isCemiFrameValueByteLengthOk (cemiFrame: KnxCemiFrame): boolean {
         if (cemiFrame.value.byteLength !== this.valueByteLength) {
-            this.options.events.emit('error', new KnxLinkException('DATA_LENGTH_MISMATCH', 'Data length mismatch for: ' + this.address, {
-                actualDataLength: cemiFrame.value.byteLength,
-                expectedDataType: this.type,
-                source: cemiFrame.source,
-                address: this.address
-            }))
+            this.options.events.emit(
+                'error',
+                new KnxLinkException(
+                    'DATA_LENGTH_MISMATCH',
+                    `Invalid cEMI frame data length for group <${cemiFrame.target}> received from <${cemiFrame.source}>`, {
+                        actualDataLength: cemiFrame.value.byteLength,
+                        expectedDataType: this.type,
+                        source: cemiFrame.source,
+                        data: cemiFrame.value,
+                        target: this.address
+                })
+            )
 
             return false
 

@@ -14,9 +14,11 @@ export type KnxLinkExceptionDetails = {
     knxErrorCode: KnxErrorCode
     serviceId: KnxServiceId
     address: string
+    target: string
     channel: number
     source: string
     value: any
+    data: Buffer
 }
 
 export type KnxLinkExceptionCode = 'NOT_A_CONNECTION_RESPONSE'
@@ -35,8 +37,9 @@ export class KnxLinkException extends Error {
     public constructor(code: 'DATA_LENGTH_MISMATCH', message: string, details: {
         actualDataLength: number
         expectedDataType: DPT
-        address: string
+        target: string
         source: string
+        data: Buffer
     })
 
     public constructor(code: 'CONNECTION_ERROR', message: string, details: { knxErrorCode: KnxErrorCode })
