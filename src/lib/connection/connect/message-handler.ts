@@ -52,7 +52,15 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
 
             ackTimeouts.set(message.getSequence(), setTimeout(() => {
                 pendingMessages.splice(0, pendingMessages.length)
-                tunnel.close()
+                try {
+                    if (!isClosed) {
+                        isClosed = true
+                        tunnel.close()
+                    }
+
+                } catch (e) {
+                    // ignore
+                }
             }, 1000))
         }, 1000))
 
