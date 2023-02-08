@@ -15,12 +15,18 @@ type MessageHandler = (
     onCemiFrame: OnCemiFrame
 ) => SendCemiFrame
 
+type PendingMessage = {
+    packet: KnxIpMessage
+    resolve: () => void
+    reject: () => void
+}
+
 const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, maxTelegramsPerSecond, onCemiFrame) => {
-    const ackTimeouts: Map<number, ReturnType<typeof setTimeout>> = new Map()
+    const acknowledge: Map<number, { timeoutId: ReturnType<typeof setTimeout>, ack: () => void }> = new Map()
     const nextSeq = sequence(255)
     let isClosed = false
 
-    const pendingMessages: Array<KnxIpMessage> = []
+    const pendingMessages: PendingMessage[] = []
     let concurrectMessagesCounter = 0
 
     tunnel.on('message', msg => {
@@ -39,33 +45,42 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
             const seq = tunneling.getSequenceNumber()
             --concurrectMessagesCounter
 
-            if (ackTimeouts.has(seq)) {
-                clearTimeout(ackTimeouts.get(seq))
-                ackTimeouts.delete(seq)
+            if (acknowledge.has(seq)) {
+                const pendingMessage = acknowledge.get(seq)!
+                clearTimeout(pendingMessage.timeoutId)
+                acknowledge.delete(seq)
+                pendingMessage.ack()
             }
         }
     })
 
-    const send = (message: KnxIpMessage): void => {
-        ackTimeouts.set(message.getSequence(), setTimeout(() => {
-            tunnel.send(message.getBuffer())
-
-            ackTimeouts.set(message.getSequence(), setTimeout(() => {
-                pendingMessages.splice(0, pendingMessages.length)
-                try {
-                    if (!isClosed) {
-                        isClosed = true
-                        tunnel.close()
-                    }
-
-                } catch (e) {
-                    // ignore
-                }
-            }, 1000))
-        }, 1000))
-
-        tunnel.send(message.getBuffer())
+    const send = (message: PendingMessage): void => {
+        tunnel.send(message.packet.getBuffer())
         ++concurrectMessagesCounter
+
+        acknowledge.set(message.packet.getSequence(), {
+            ack: message.resolve,
+            timeoutId: setTimeout(() => {
+                tunnel.send(message.packet.getBuffer()) // retry one time
+
+                acknowledge.set(message.packet.getSequence(), {
+                    ack: message.resolve,
+                    timeoutId: setTimeout(() => {
+                        pendingMessages.splice(0, pendingMessages.length)
+                        try {
+                            if (!isClosed) {
+                                isClosed = true
+                                tunnel.close()
+                            }
+
+                        } catch (e) {
+                            // ignore
+                        }
+                        message.reject()
+                    }, 1000)
+                })
+            }, 1000)
+        })
     }
 
     const sendInterval = setInterval(() => {
@@ -88,12 +103,18 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
             throw new KnxLinkException('NO_CONNECTION', 'No connection', {})
 
         } else {
-            pendingMessages.push(KnxIpMessage.compose(
-                KnxServiceId.TUNNEL_REQUEST, [
-                    TunnelingRequest.compose(channel, nextSeq()),
-                    cemiFrame
-                ]
-            ))
+            return new Promise((resolve, reject) => {
+                pendingMessages.push({
+                    packet: KnxIpMessage.compose(
+                        KnxServiceId.TUNNEL_REQUEST, [
+                            TunnelingRequest.compose(channel, nextSeq()),
+                            cemiFrame
+                        ]
+                    ),
+                    resolve,
+                    reject
+                })
+            })
         }
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "js-knx",
-  "version": "2.14.4",
+  "version": "2.15.0",
   "description": "KNX IP/Gateway client",
   "keywords": [
     "KNX"
