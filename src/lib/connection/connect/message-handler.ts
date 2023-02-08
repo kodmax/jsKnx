@@ -22,7 +22,7 @@ type PendingMessage = {
 }
 
 const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, maxTelegramsPerSecond, onCemiFrame) => {
-    const acknowledge: Map<number, { timeoutId: ReturnType<typeof setTimeout>, ack: () => void }> = new Map()
+    const acknowledge: Map<number, { timeoutId: ReturnType<typeof setTimeout>; ack: () => void }> = new Map()
     const nextSeq = sequence(255)
     let isClosed = false
 

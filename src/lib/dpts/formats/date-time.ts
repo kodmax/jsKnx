@@ -10,66 +10,54 @@ export type KnxDateTime = {
     hourOfDay?: number
     minutes?: number
     seconds?: number
-    isFaulty: boolean
-    isWorkingDay?: boolean
-    isSummerTime: boolean
-    isExternalSync: boolean
-    isReliable: boolean
+    status: number
 }
 
-enum Status {
+export enum DTStatus {
+    /** Faulty */
     F = 0x8000,
+    /** Working day / Bank holiday */
     WD = 0x4000,
+    /** Working day not valid */
     NWD = 0x2000,
+    /** Year not valid */
     NY = 0x1000,
+    /** Month and day of months not valid */
     ND = 0x0800,
+    /** Day of week not valid */
     NDoW = 0x0400,
+    /** Hour, minute and second not valid */
     NT = 0x0200,
+    /** Daylight saving time UT+X+1 */
     SUTI = 0x0100,
+    /** Is external sync clock */
     CLQ = 0x0080,
+    /** Is reliable */
     SRC = 0x0040
 }
-export function fromBuffer (data: Buffer): KnxDateTime {
-    const status: number = data.readUint16BE(6)
 
+export function fromBuffer (data: Buffer): KnxDateTime {
     return {
-        year: status & Status.NY ? undefined : data.readInt8(0) + 1900,
-        month: status & Status.ND ? undefined : data.readUint8(1),
-        dayOfMonth: status & Status.ND ? undefined : data.readUint8(2),
-        dayOfWeek: status & Status.NDoW ? undefined : (data.readUint8(3) & 0xe0) >> 5,
-        hourOfDay: status & Status.NT ? undefined : data.readUint8(3) & 0x1f,
-        minutes: status & Status.NT ? undefined : data.readUint8(4),
-        seconds: status & Status.NT ? undefined : data.readUint8(5),
-        isFaulty: !!(status & Status.F),
-        isWorkingDay: status & Status.NWD ? undefined : !!(status & Status.WD),
-        isSummerTime: !!(status & Status.SUTI),
-        isExternalSync: !!(status & Status.CLQ),
-        isReliable: !!(status & Status.SRC)
+        year: data.readInt8(1) + 1900,
+        month: data.readUint8(2),
+        dayOfMonth: data.readUint8(3),
+        dayOfWeek: (data.readUint8(4) & 0xe0) >> 5,
+        hourOfDay: data.readUint8(4) & 0x1f,
+        minutes: data.readUint8(5),
+        seconds: data.readUint8(6),
+        status: data.readUint16BE(7)
     }
 }
 
 export function toBuffer (dateTime: KnxDateTime, data: Buffer): Buffer {
-    data.writeUint8((dateTime.year ?? 0) - 1900, 0)
-    data.writeUint8(dateTime.month ?? 0, 1)
-    data.writeUint8(dateTime.dayOfMonth ?? 0, 2)
-    data.writeUint8(((dateTime.dayOfWeek ?? 0) << 5) + (dateTime.hourOfDay || 0), 3)
-    data.writeUint8(dateTime.minutes ?? 0, 4)
-    data.writeUint8(dateTime.seconds ?? 0, 5)
+    data.writeUint8((dateTime.year ?? 1900) - 1900, 1)
+    data.writeUint8(dateTime.month ?? 0, 2)
+    data.writeUint8(dateTime.dayOfMonth ?? 0, 3)
+    data.writeUint8(((dateTime.dayOfWeek ?? 0) << 5) + (dateTime.hourOfDay || 0), 4)
+    data.writeUint8(dateTime.minutes ?? 0, 5)
+    data.writeUint8(dateTime.seconds ?? 0, 6)
+    data.writeUInt16BE(dateTime.status, 7)
 
-    const status = [
-        dateTime.isFaulty ? Status.F : 0,
-        dateTime.isWorkingDay ? Status.WD : 0,
-        dateTime.isWorkingDay === undefined ? Status.NWD : 0,
-        dateTime.year === undefined ? Status.NY : 0,
-        (dateTime.month === undefined || dateTime.dayOfMonth === undefined) ? Status.ND : 0,
-        dateTime.dayOfWeek === undefined ? Status.NDoW : 0,
-        (dateTime.hourOfDay === undefined || dateTime.minutes === undefined || dateTime.seconds === undefined) ? Status.NT : 0,
-        dateTime.isSummerTime ? Status.SUTI : 0,
-        dateTime.isExternalSync ? Status.CLQ : 0,
-        dateTime.isReliable ? Status.SRC : 0
-    ]
-
-    data.writeUInt16BE(status.reduce((s, f) => s + f, 0), 6)
     return data
 }
 

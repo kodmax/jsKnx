@@ -10,4 +10,5 @@ export { B1 } from './b1'
 
 export { TimeOfDay } from './time-of-day'
 export { Date } from './date'
-export { DateTime, KnxDateTime } from './date-time'
+export { DateTime, DTStatus } from './date-time'
+export type { KnxDateTime } from './date-time'

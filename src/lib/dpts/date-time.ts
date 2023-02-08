@@ -1,9 +1,9 @@
-import { DateTime, KnxDateTime, Date, TimeOfDay } from './formats'
+import { DateTime, KnxDateTime, DTStatus, Date as KnxDate, TimeOfDay } from './formats'
 import { DPT } from '../enums'
-import { DayOfWeek } from './formats/time-of-day'
 import { KnxLinkException } from '../types'
 
-export { KnxDateTime }
+export { DTStatus }
+export type { KnxDateTime }
 
 const timePattern = /^(2[0-4]|[01]?[0-9]):([0-5]?[0-9])(?::([0-5]?[0-9]))?$/
 const datePattern = /^(\d\d\d\d)-(\d\d)-(\d\d)$/
@@ -12,7 +12,14 @@ export class DPT_DateTime extends DateTime {
     public readonly type: DPT = DPT.DateTime
     public readonly unit: string = ''
 
-    public async setDateTime (date: string, time: string, DST: boolean, dayOfWeek?: DayOfWeek, isWorkingDay?: boolean) {
+    public static isDST = (date: Date): boolean => {
+        return date.getTimezoneOffset() < Math.max(
+            new Date(date.getFullYear(), 0, 1).getTimezoneOffset(),
+            new Date(date.getFullYear(), 6, 1).getTimezoneOffset()
+        )
+    }
+
+    public static setDateTime (date: string, time: string, isDST: boolean): KnxDateTime {
         const dateMatch = date.match(datePattern)
         if (!dateMatch) {
             throw new KnxLinkException('INVALID_VALUE', 'Invalid Date: ' + date, {
@@ -30,35 +37,28 @@ export class DPT_DateTime extends DateTime {
         const [, h, minutes, s] = timeMatch
         const [, y, month, d] = dateMatch
 
-        return this.write({
+        return {
+            status: DTStatus.NWD + DTStatus.NDoW + (isDST ? DTStatus.SUTI : 0) + DTStatus.CLQ + DTStatus.SRC,
             year: +y,
             month: +month,
             dayOfMonth: +d,
             hourOfDay: +h,
             minutes: +minutes,
-            seconds: +s,
-            isExternalSync: true,
-            isReliable: true,
-            isFaulty: false,
-            isSummerTime: DST,
-            dayOfWeek,
-            isWorkingDay
-        })
+            seconds: +s
+        }
     }
 
-    public async setTime (time: string, DST: boolean): Promise<void> {
+    public static setTime (time: string, isDST: boolean): KnxDateTime {
         const match = time.match(timePattern)
         if (match) {
             const [, h, m, s] = match
-            return this.write({
+
+            return {
+                status: DTStatus.NWD + DTStatus.NDoW + (isDST ? DTStatus.SUTI : 0) + DTStatus.CLQ + DTStatus.SRC + DTStatus.ND + DTStatus.NY,
                 hourOfDay: +h,
                 minutes: +m,
-                seconds: +s,
-                isExternalSync: true,
-                isFaulty: false,
-                isReliable: true,
-                isSummerTime: DST
-            })
+                seconds: +s
+            }
 
         } else {
             throw new KnxLinkException('INVALID_VALUE', 'Invalid Time: ' + time, {
@@ -67,19 +67,17 @@ export class DPT_DateTime extends DateTime {
         }
     }
 
-    public async setDate (date: string, DST: boolean): Promise<void> {
+    public static setDate (date: string, isDST: boolean): KnxDateTime {
         const match = date.match(datePattern)
         if (match) {
             const [, y, m, d] = match
-            return this.write({
+
+            return {
+                status: DTStatus.NWD + DTStatus.NDoW + (isDST ? DTStatus.SUTI : 0) + DTStatus.CLQ + DTStatus.SRC + DTStatus.NT,
                 year: +y - 1900,
                 month: +m,
-                dayOfMonth: +d,
-                isExternalSync: true,
-                isReliable: true,
-                isFaulty: false,
-                isSummerTime: DST
-            })
+                dayOfMonth: +d
+            }
 
         } else {
             throw new KnxLinkException('INVALID_VALUE', 'Invalid Date: ' + date, {
@@ -89,7 +87,7 @@ export class DPT_DateTime extends DateTime {
     }
 }
 
-export class DPT_Date extends Date {
+export class DPT_Date extends KnxDate {
     public readonly type: DPT = DPT.Date
     public readonly unit: string = ''
 }
