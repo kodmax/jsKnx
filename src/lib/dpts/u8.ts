@@ -66,25 +66,30 @@ export class DPT_Tariff extends U8 {
 }
 
 enum HVACMode {
-    Auto = 0,
+    FrostProtection = 4,
     Comfort = 1,
     Standby = 2,
     Economy = 3,
-    FrostProtection = 4
+    Auto = 0
 }
 
 export class DPT_HVACMode extends U8 {
     public readonly type: DPT = DPT.HVAC_HVACMode
     public readonly unit: string = ''
 
-    public static readonly MODE: typeof HVACMode = HVACMode
+    public static readonly FROST_PROTECION = 4
+    public static readonly ECONOMY = 3
+    public static readonly STANDBY = 2
+    public static readonly COMFORT = 1
+    public static readonly AUTO = 0
 
-    public async setMode (mode: HVACMode): Promise<void> {
-        return this.write(mode)
-    }
+    public toString (value?: number): string {
+        if (value === undefined) {
+            return super.toString()
 
-    public async readMode (): Promise<HVACMode> {
-        return (await this.read()).value as HVACMode
+        } else {
+            return HVACMode[value]
+        }
     }
 }
 

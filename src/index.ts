@@ -1,4 +1,4 @@
-import { DPT_Date, DPT_DateTime, DPT_Time, KnxLink } from './lib'
+import { DPT_HVACMode, KnxLink } from './lib'
 
 console.log('Connecting ...')
 KnxLink.connect('192.168.0.8', { readTimeout: 500 }).then(async knx => {
@@ -13,14 +13,13 @@ KnxLink.connect('192.168.0.8', { readTimeout: 500 }).then(async knx => {
         console.log(frame.target, frame.getDataByteZero(), frame.value, frame.value.length)
     })
 
-    const now = new Date()
-    const date = now.toISOString().substring(0, 10)
-    const time = now.toString().substring(16, 24)
-    console.log(date, time)
+    const livingroom = await knx.getDatapoint({ DataType: DPT_HVACMode, address: '2/0/4' }).read()
+    const bathroom = await knx.getDatapoint({ DataType: DPT_HVACMode, address: '2/1/4' }).read()
+    const bedroom = await knx.getDatapoint({ DataType: DPT_HVACMode, address: '2/2/4' }).read()
 
-    await knx.getDatapoint({ address: '1/0/1', DataType: DPT_DateTime }).write(DPT_DateTime.setDateTime(date, time, DPT_DateTime.isDST(now)))
-    await knx.getDatapoint({ address: '1/0/2', DataType: DPT_Date }).write(date)
-    await knx.getDatapoint({ address: '1/0/3', DataType: DPT_Time }).write(time)
+    console.log(livingroom)
+    console.log(bathroom)
+    console.log(bedroom)
 
     process.on('SIGINT', () => {
         knx.disconnect().then(() => process.exit(0))
