@@ -25,9 +25,3 @@ KnxLink.connect('192.168.0.8', { readTimeout: 500 }).then(async knx => {
         knx.disconnect().then(() => process.exit(0))
     })
 })
-
-KnxLink.connect('192.168.0.8').then(async knx => {
-
-    await knx.disconnect()
-    process.exit(0)
-})

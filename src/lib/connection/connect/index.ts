@@ -1,17 +1,15 @@
 import { KnxConnectionType, KnxLayer } from '../../enums'
 import { InternalLinkInfo, LinkInfo } from '../link/LinkInfo'
 import { messageHandler } from './message-handler'
-import { connectSockets } from './connect-sockets'
 import { tunnelRequest } from './tunnel-request'
 import { KnxLinkOptions } from '../link/LinkOptions'
 import { KnxLinkException } from '../../types'
+import { Socket } from 'dgram'
 
-type Connect = (options: KnxLinkOptions, ip: string, connectionType: KnxConnectionType, layer: KnxLayer) => Promise<InternalLinkInfo>
+type Connect = (options: KnxLinkOptions, gateway: Socket, tunnel: Socket, connectionType: KnxConnectionType, layer: KnxLayer) => Promise<InternalLinkInfo>
 
-const connect: Connect = async (options, ip, connectionType, layer): Promise<InternalLinkInfo> => {
+const connect: Connect = async (options, gateway, tunnel, connectionType, layer): Promise<InternalLinkInfo> => {
     try {
-        const [gateway, tunnel] = await connectSockets(ip, options.port)
-
         const connectionInfo: Buffer = await tunnelRequest(
             gateway,
             tunnel.address(),

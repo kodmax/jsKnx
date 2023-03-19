@@ -5,6 +5,7 @@ import connect, { InternalLinkInfo, KnxLinkOptions } from './connect'
 import { Socket } from 'dgram'
 import { retry } from './retry'
 import { KnxLinkException } from '../types'
+import { connectSockets } from './connect/connect-sockets'
 
 export * from './link'
 
@@ -26,11 +27,10 @@ export class KnxConnection {
     }
 
     public async connect (): Promise<void> {
+        const [gateway, tunnel] = await connectSockets(this.ip, this.options.port)
         await retry(this.options.maxRetry, this.options.retryPause, async () => {
-            this.terminate()
-
             if (!this.noReconnection) {
-                this.linkInfo = await connect(this.options, this.ip, this.connectionType, this.layer)
+                this.linkInfo = await connect(this.options, gateway, tunnel, this.connectionType, this.layer)
                 this.linkInfo.gateway.once('close', () => {
                     setTimeout(() => {
                         this.connect().catch(() => {
