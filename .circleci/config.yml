@@ -1,0 +1,41 @@
+version: 2.1
+
+commands:
+  yarn-install:
+    steps:
+      - restore_cache:
+          name: Restore Node Modules
+          keys:
+            - node-modules-{{ checksum "yarn.lock" }}
+
+      - run: |
+          yarn install
+
+      - save_cache:
+          name: Cache Node Modules
+          key: node-modules-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules/
+
+  build:
+    steps:
+      - run: |
+          yarn test
+          yarn eslint .
+          yarn tsc
+
+jobs:
+  build:
+    docker:
+      - image: cimg/node:16.18.1
+
+    steps:
+      - checkout
+      - yarn-install
+      - build
+
+workflows:
+  build-deploy:
+    jobs:
+      - build:
+          name: build
