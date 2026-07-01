@@ -28,6 +28,8 @@ export type KnxLinkExceptionCode = 'NOT_A_CONNECTION_RESPONSE'
 | 'INVALID_VALUE'
 | 'NO_CONNECTION'
 | 'READ_TIMEOUT'
+| 'CONNECTION_ALREADY_ESTABLISHED'
+| 'CONNECTION_IN_PROGRESS'
 
 export class KnxLinkException extends Error {
     public constructor(code: 'NOT_A_CONNECTION_RESPONSE', message: string, details: {
@@ -47,6 +49,8 @@ export class KnxLinkException extends Error {
     public constructor(code: 'INVALID_VALUE', message: string, details: { value: any })
     public constructor(code: 'CONNECTION_TIMEOUT', message: string, details: {})
     public constructor(code: 'NO_CONNECTION', message: string, details: {})
+    public constructor(code: 'CONNECTION_ALREADY_ESTABLISHED', message: string, details: {})
+    public constructor(code: 'CONNECTION_IN_PROGRESS', message: string, details: {})
     public constructor (public readonly code: KnxLinkExceptionCode, message: string, public readonly details: Partial<KnxLinkExceptionDetails>) {
         super(`KnxLink Exception: ${message}`)
     }

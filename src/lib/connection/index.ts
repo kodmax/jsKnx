@@ -6,16 +6,24 @@ import { Socket } from 'dgram'
 import { retry } from './retry'
 import { KnxLinkException } from '../types'
 import { connectSockets } from './connect/connect-sockets'
+import { ConnectionSockets } from './link/LinkInfo'
 
 export * from './link'
+
+const DISCONNECT_RESPONSE_TIMEOUT_MS = 30_000
 
 /**
  * Docs
  * http://www.eb-systeme.de/?page_id=479
  */
 export class KnxConnection {
-    private noReconnection: boolean = false
     private linkInfo?: InternalLinkInfo
+    private connecting: boolean = false
+    private explicitDisconnect: boolean = false
+    private tearingDown: boolean = false
+    private disconnectTimeoutId?: ReturnType<typeof setTimeout>
+    private reconnectTimeoutId?: ReturnType<typeof setTimeout>
+    private pendingDisconnectResolve?: () => void
 
     public constructor (
         private readonly options: KnxLinkOptions,
@@ -27,36 +35,55 @@ export class KnxConnection {
     }
 
     public async connect (): Promise<void> {
-        const [gateway, tunnel] = await connectSockets(this.ip, this.options.port)
-        await retry(this.options.maxRetry, this.options.retryPause, async () => {
-            if (!this.noReconnection) {
+        if (this.linkInfo) {
+            throw new KnxLinkException('CONNECTION_ALREADY_ESTABLISHED', 'Connection is already established', {})
+        }
+
+        if (this.connecting) {
+            throw new KnxLinkException('CONNECTION_IN_PROGRESS', 'Connection is already in progress', {})
+        }
+
+        this.clearReconnectTimeout()
+        this.explicitDisconnect = false
+        this.connecting = true
+
+        let sockets: ConnectionSockets | undefined
+
+        try {
+            const [gateway, tunnel] = await connectSockets(this.ip, this.options.port)
+            sockets = { gateway, tunnel }
+
+            await retry(this.options.maxRetry, this.options.retryPause, async () => {
                 this.linkInfo = await connect(this.options, gateway, tunnel, this.connectionType, this.layer)
+                this.connecting = false
+
                 this.linkInfo.gateway.once('close', () => {
-                    setTimeout(() => {
-                        this.connect().catch(() => {
-                            // ignore
-                        })
-                    }, this.options.retryPause)
+                    this.handleSocketClose()
                 })
 
                 this.linkInfo.tunnel.once('close', () => {
-                    this.terminate()
+                    this.handleSocketClose()
                 })
 
                 this.linkInfo.gateway.on('message', data => {
                     const ipMessage = KnxIpMessage.decode(data)
 
+                    // Gateway initiated disconnect (device requests session teardown)
                     if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
-                        this.terminate()
-                        this.connect()
+                        this.teardown()
+                        if (!this.explicitDisconnect) {
+                            this.scheduleReconnect()
+                        }
 
                     } else if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_RESPONSE) {
-                        this.noReconnection = true
-                        this.terminate()
+                        this.teardown()
                     }
                 })
-            }
-        })
+            })
+        } catch (e) {
+            this.teardown(sockets)
+            throw e
+        }
     }
 
     public getLinkInfo (): InternalLinkInfo {
@@ -68,52 +95,124 @@ export class KnxConnection {
         }
     }
 
-    private terminate (): void {
-        if (this.linkInfo) {
-            try {
-                this.linkInfo.gateway.close()
+    private clearReconnectTimeout (): void {
+        if (this.reconnectTimeoutId !== undefined) {
+            clearTimeout(this.reconnectTimeoutId)
+            this.reconnectTimeoutId = undefined
+        }
+    }
 
-            } catch (e) {
-                // ignore
-            }
+    private scheduleReconnect (): void {
+        if (this.explicitDisconnect || this.reconnectTimeoutId !== undefined) {
+            return
+        }
 
-            try {
-                this.linkInfo.tunnel.close()
+        this.reconnectTimeoutId = setTimeout(() => {
+            this.reconnectTimeoutId = undefined
+            this.connect().catch(() => {
+                // ignore — connect errors surface via options.events from connect helper
+            })
+        }, this.options.retryPause)
+    }
 
-            } catch (e) {
-                // ignore
-            }
+    private handleSocketClose (): void {
+        if (this.tearingDown) {
+            return
+        }
+
+        this.teardown()
+        if (!this.explicitDisconnect) {
+            this.scheduleReconnect()
+        }
+    }
+
+    private teardown (sockets?: ConnectionSockets): void {
+        if (this.tearingDown) {
+            return
+        }
+
+        this.tearingDown = true
+        this.clearReconnectTimeout()
+
+        if (this.disconnectTimeoutId !== undefined) {
+            clearTimeout(this.disconnectTimeoutId)
+            this.disconnectTimeoutId = undefined
+        }
+
+        if (this.pendingDisconnectResolve !== undefined) {
+            const resolve = this.pendingDisconnectResolve
+            this.pendingDisconnectResolve = undefined
+            resolve()
+        }
+
+        if (sockets !== undefined) {
+            this.terminate(sockets)
+        } else if (this.linkInfo !== undefined) {
+            this.terminate(this.linkInfo)
+        }
+
+        this.linkInfo = undefined
+        this.connecting = false
+        this.tearingDown = false
+    }
+
+    private terminate (sockets: ConnectionSockets): void {
+        try {
+            sockets.gateway.close()
+        } catch (e) {
+            // ignore
+        }
+
+        try {
+            sockets.tunnel.close()
+        } catch (e) {
+            // ignore
         }
     }
 
     /**
-     * Gracefully close the knx gateway connection
-     */
+   * Gracefully close the knx gateway connection
+   */
     public async disconnect (): Promise<void> {
-        this.noReconnection = true
-
-        if (this.linkInfo) {
-            this.sendTo(
-                this.linkInfo.gateway,
-                KnxIpMessage.compose(
-                    KnxServiceId.DISCONNECT_REQUEST,
-                    [
-                        Buffer.from([this.linkInfo.channel, 0x00]),
-                        hpai(this.linkInfo.gateway.address())
-                    ]
-                )
-            )
+        if (this.linkInfo === undefined) {
+            throw new KnxLinkException('NO_CONNECTION', 'Gateway connection not established', {})
         }
+
+        this.explicitDisconnect = true
+        this.clearReconnectTimeout()
+
+        await this.sendTo(
+            this.linkInfo.gateway,
+            KnxIpMessage.compose(
+                KnxServiceId.DISCONNECT_REQUEST,
+                [
+                    Buffer.from([this.linkInfo.channel, 0x00]),
+                    hpai(this.linkInfo.gateway.address())
+                ]
+            )
+        )
+
+        return new Promise(resolve => {
+            this.pendingDisconnectResolve = resolve
+
+            this.disconnectTimeoutId = setTimeout(() => {
+                this.disconnectTimeoutId = undefined
+                this.pendingDisconnectResolve = undefined
+                this.teardown()
+                resolve()
+            }, DISCONNECT_RESPONSE_TIMEOUT_MS)
+        })
     }
 
-    private async sendTo (socket :Socket, message: KnxIpMessage): Promise<void> {
+    private async sendTo (socket: Socket, message: KnxIpMessage): Promise<void> {
         return new Promise((resolve, reject) => {
 
             socket.send(message.getBuffer(), error => {
                 if (error) {
-                    this.terminate()
-
-                    this.linkInfo = void 0
+                    this.teardown()
+                    if (!this.explicitDisconnect) {
+                        this.scheduleReconnect()
+                    }
                     reject(error)
 
                 } else {
