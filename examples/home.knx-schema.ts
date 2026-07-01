@@ -17,7 +17,7 @@ import {
     DPT_Value_ApparentPower,
     DPT_State,
     DPT_Scaling
-} from './lib'
+} from 'js-knx'
 
 export const lights = {
     'Salon i hol': {

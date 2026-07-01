@@ -8,6 +8,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Dual package exports: CommonJS (`require`) and native ESM (`import`) via `package.json` `exports`
+- `examples/` directory with demo script and home schema (moved out of `src/`)
 - GitHub Actions CI (build, format, lint, typecheck, test on Node 26)
 - Public export of `enums`, `IDPT`, and `KnxLinkException` codes including `PROTOCOL_ERROR`
 - CLI tools `knx-read` and `knx-write` with `KNX_GATEWAY` support

@@ -9,7 +9,14 @@ export default tseslint.config(
     eslint.configs.recommended,
     eslintConfigPrettier,
     {
-        files: ['**/*.{js,cjs,mjs}'],
+        files: ['**/*.mjs'],
+        languageOptions: {
+            ecmaVersion: 'latest',
+            sourceType: 'module'
+        }
+    },
+    {
+        files: ['**/*.{js,cjs}'],
         languageOptions: {
             ecmaVersion: 'latest',
             sourceType: 'commonjs',

@@ -13,8 +13,18 @@
     "keywords": [
         "KNX"
     ],
-    "main": "dist/index.js",
-    "types": "dist/index.d.ts",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/esm/index.js",
+            "require": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
     "files": [
         "dist",
         "bin",
@@ -25,14 +35,14 @@
         "node": ">=20"
     },
     "scripts": {
-        "build": "tsc",
+        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/patch-esm-extensions.mjs",
         "test": "jest",
         "format": "prettier --write .",
         "format:ci": "prettier --check .",
         "lint": "eslint . --fix",
         "lint:ci": "eslint .",
-        "typecheck": "tsc --noEmit",
-        "dev": "ts-node src",
+        "typecheck": "tsc --noEmit && tsc -p tsconfig.esm.json --noEmit",
+        "dev": "ts-node --project tsconfig.examples.json examples/demo.ts",
         "prepublishOnly": "npm run build && npm test"
     },
     "author": "Marcin Malinowski <mm.kodmax@gmail.com>",

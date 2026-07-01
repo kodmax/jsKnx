@@ -12,6 +12,8 @@ npm install js-knx
 yarn add js-knx
 ```
 
+The package ships as a **dual package**: use `require('js-knx')` in CommonJS or `import { KnxLink } from 'js-knx'` in ESM. Entry points are defined in `package.json` `exports`.
+
 ## Quick start
 
 ```typescript
@@ -109,7 +111,7 @@ export async function readTemperature(knx: KnxLink) {
 }
 ```
 
-See [`src/home.knx-schema.ts`](src/home.knx-schema.ts) for a larger real-world example.
+See [`examples/home.knx-schema.ts`](examples/home.knx-schema.ts) for a larger real-world example.
 
 ## Supported DPT types
 
@@ -266,9 +268,10 @@ yarn test
 yarn lint:ci
 ```
 
-Local demo (edit gateway IP in `src/index.ts`):
+Local demo (edit gateway IP in `examples/demo.ts`):
 
 ```bash
+yarn build   # required once so `js-knx` resolves for the example imports
 yarn dev
 ```
 

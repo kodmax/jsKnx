@@ -1,4 +1,4 @@
-import { DPT_HVACMode, KnxLink } from './lib'
+import { DPT_HVACMode, KnxLink } from 'js-knx'
 
 console.log('Connecting ...')
 KnxLink.connect('192.168.0.8', { readTimeout: 500 }).then(async knx => {

@@ -1,0 +1,13 @@
+{
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "js-knx": ["src/lib/index.ts"]
+        },
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "noEmit": true
+    },
+    "include": ["examples/**/*.ts"]
+}
