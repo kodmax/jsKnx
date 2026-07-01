@@ -1,5 +1,6 @@
 import { KnxCemiCode, KnxServiceId } from '../enums'
 import { KnxIpMessage } from './ip-message'
+import { KnxLinkException } from '../types'
 import { TunnelingRequest } from './tunneling'
 
 describe('Tunneling', () => {
@@ -50,12 +51,22 @@ describe('Tunneling', () => {
         expect(ack.getBody()).toEqual(TunnelingRequest.compose(8, 15))
     })
 
-    it('throws for invalid tunneling header', () => {
-        expect(() => new TunnelingRequest(Buffer.from([0x00, 0x01, 0x02, 0x03]))).toThrow('Invalid Tunneling Request Frame')
+    it('throws PROTOCOL_ERROR for invalid tunneling header', () => {
+        expect(() => new TunnelingRequest(Buffer.from([0x00, 0x01, 0x02, 0x03]))).toThrow(KnxLinkException)
+        try {
+            new TunnelingRequest(Buffer.from([0x00, 0x01, 0x02, 0x03]))
+        } catch (e) {
+            expect((e as KnxLinkException).code).toBe('PROTOCOL_ERROR')
+        }
     })
 
-    it('throws when structure length byte is not zero', () => {
-        expect(() => new TunnelingRequest(Buffer.from([0x04, 0x01, 0x02, 0x01]))).toThrow('Invalid Tunneling Request Frame')
+    it('throws PROTOCOL_ERROR when structure length byte is not zero', () => {
+        expect(() => new TunnelingRequest(Buffer.from([0x04, 0x01, 0x02, 0x01]))).toThrow(KnxLinkException)
+        try {
+            new TunnelingRequest(Buffer.from([0x04, 0x01, 0x02, 0x01]))
+        } catch (e) {
+            expect((e as KnxLinkException).code).toBe('PROTOCOL_ERROR')
+        }
     })
 })
 

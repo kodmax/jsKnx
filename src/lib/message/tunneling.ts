@@ -1,10 +1,11 @@
 import { KnxCemiCode, KnxServiceId } from '../enums'
+import { KnxLinkException } from '../types'
 import { KnxIpMessage } from './ip-message'
 
 export class TunnelingRequest {
     public constructor(private readonly frame: Buffer) {
         if (frame.readUint8(0) !== 0x4 || frame.readUint8(3) !== 0x0) {
-            throw new Error('Invalid Tunneling Request Frame')
+            throw new KnxLinkException('PROTOCOL_ERROR', 'Invalid tunneling request frame', { data: frame })
         }
     }
 

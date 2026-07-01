@@ -239,15 +239,17 @@ Every DPT instance implements `IDPT`:
 
 Errors are thrown as `KnxLinkException` with a `code` field:
 
-| Code                             | Typical cause                                      |
-| -------------------------------- | -------------------------------------------------- |
-| `CONNECTION_TIMEOUT`             | Gateway did not respond during handshake           |
-| `CONNECTION_ERROR`               | Gateway rejected connection (busy, wrong layer, …) |
-| `CONNECTION_ALREADY_ESTABLISHED` | `connect()` called twice                           |
-| `READ_TIMEOUT`                   | No bus response within `readTimeout`               |
-| `DATA_LENGTH_MISMATCH`           | Received payload size does not match DPT           |
-| `PROTOCOL_ERROR`                 | Invalid KNX/IP or cEMI frame                       |
-| `NO_CONNECTION`                  | Send attempted after disconnect                    |
+| Code                             | Typical cause                                       |
+| -------------------------------- | --------------------------------------------------- |
+| `CONNECTION_TIMEOUT`             | Gateway did not respond during handshake            |
+| `CONNECTION_ERROR`               | Gateway rejected connection (busy, wrong layer, …)  |
+| `CONNECTION_ALREADY_ESTABLISHED` | `connect()` called twice                            |
+| `READ_TIMEOUT`                   | No bus response within `readTimeout`                |
+| `DATA_LENGTH_MISMATCH`           | Received payload size does not match DPT            |
+| `PROTOCOL_ERROR`                 | Invalid KNX/IP or cEMI frame                        |
+| `NO_CONNECTION`                  | Send attempted after disconnect                     |
+| `ACK_TIMEOUT`                    | Gateway did not ACK a tunnel telegram (after retry) |
+| `NETWORK_ERROR`                  | UDP socket connect or send failure                  |
 
 Listen on `knx.events.on('error', …)` for non-fatal bus/protocol errors during operation.
 

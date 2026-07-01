@@ -1,5 +1,5 @@
 import { DPT, KnxErrorCode, KnxServiceId } from './enums'
-import { KnxLinkException } from './types'
+import { KnxLinkException, knxNetworkError } from './types'
 
 describe('KnxLinkException', () => {
     it('prefixes message with KnxLink Exception', () => {
@@ -48,6 +48,20 @@ describe('KnxLinkException', () => {
         const error = new KnxLinkException('INVALID_VALUE', 'Bad value', { value: { nested: true } })
 
         expect(error.details.value).toEqual({ nested: true })
+    })
+
+    it('stores ACK_TIMEOUT with channel', () => {
+        const error = new KnxLinkException('ACK_TIMEOUT', 'Missing ACK', { channel: 3 })
+
+        expect(error.code).toBe('ACK_TIMEOUT')
+        expect(error.details.channel).toBe(3)
+    })
+
+    it('wraps socket errors as NETWORK_ERROR', () => {
+        const error = knxNetworkError(new Error('ECONNREFUSED'))
+
+        expect(error.code).toBe('NETWORK_ERROR')
+        expect(error.message).toContain('ECONNREFUSED')
     })
 })
 

@@ -62,7 +62,10 @@ describe('messageHandler', () => {
 
         jest.advanceTimersByTime(1000)
 
-        await expect(sendPromise).rejects.toBeUndefined()
+        await expect(sendPromise).rejects.toMatchObject({
+            code: 'ACK_TIMEOUT',
+            details: { channel: 1 }
+        })
         expect(tunnel.close).toHaveBeenCalled()
     })
 

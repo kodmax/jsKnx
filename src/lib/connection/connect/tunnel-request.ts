@@ -1,5 +1,5 @@
 import { KnxConnectionType, KnxErrorCode, KnxLayer, KnxServiceId } from '../../enums'
-import { KnxLinkException } from '../../types'
+import { KnxLinkException, knxNetworkError } from '../../types'
 import { cri, hpai, KnxIpMessage } from '../../message'
 import { AddressInfo } from 'net'
 import { Socket } from 'dgram'
@@ -16,11 +16,12 @@ const tunnelRequest: TunnelRequest = async (gateway, tunnelAddress, connectionTi
     await new Promise((resolve, reject) => {
         const connRequest = KnxIpMessage.compose(KnxServiceId.CONNECTION_REQUEST, [hpai(gateway.address()), hpai(tunnelAddress), cri(connectionType, layer)])
 
-        gateway.send(connRequest.getBuffer(), error => (error ? reject(error) : resolve(void 0)))
+        gateway.send(connRequest.getBuffer(), error => (error ? reject(knxNetworkError(error)) : resolve(void 0)))
     })
 
     return new Promise((resolve, reject) => {
         gateway.once('message', (msg: Buffer) => {
+            clearTimeout(connectionTimeoutTimerId)
             const serviceId = msg.readUInt16BE(2)
             if (serviceId === KnxServiceId.CONNECTION_RESPONSE) {
                 const knxErrorCode = msg.readUint8(7)
@@ -36,7 +37,7 @@ const tunnelRequest: TunnelRequest = async (gateway, tunnelAddress, connectionTi
             }
         })
 
-        setTimeout(() => {
+        const connectionTimeoutTimerId = setTimeout(() => {
             reject(new KnxLinkException('CONNECTION_TIMEOUT', 'Knx IP Gateway connection timeout', {}))
         }, connectionTimeout)
     })

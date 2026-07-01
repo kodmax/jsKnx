@@ -106,9 +106,10 @@ describe('tunnelRequest', () => {
             callback?.(new Error('send failed'))
         })
 
-        await expect(tunnelRequest(gateway as never, tunnelAddress, 5000, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)).rejects.toThrow(
-            'send failed'
-        )
+        await expect(tunnelRequest(gateway as never, tunnelAddress, 5000, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)).rejects.toMatchObject({
+            code: 'NETWORK_ERROR',
+            message: expect.stringContaining('send failed')
+        })
     })
 
     it('composes CONNECTION_REQUEST with tunnel and gateway HPAI', async () => {

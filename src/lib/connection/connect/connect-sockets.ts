@@ -1,4 +1,5 @@
 import { createSocket, Socket } from 'dgram'
+import { knxNetworkError } from '../../types'
 
 const connectSockets = async (ip: string, port: number): Promise<[gateway: Socket, tunnel: Socket]> => {
     const gateway: Socket = createSocket('udp4')
@@ -15,12 +16,12 @@ const connectSockets = async (ip: string, port: number): Promise<[gateway: Socke
             })
 
             tunnel.on('error', err => {
-                reject(err)
+                reject(knxNetworkError(err))
             })
         })
 
         gateway.on('error', err => {
-            reject(err)
+            reject(knxNetworkError(err))
         })
     })
 

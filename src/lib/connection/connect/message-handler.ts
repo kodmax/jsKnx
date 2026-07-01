@@ -12,7 +12,7 @@ type MessageHandler = (tunnel: Socket, channel: number, maxConcurrentMessages: n
 type PendingMessage = {
     packet: KnxIpMessage
     resolve: () => void
-    reject: () => void
+    reject: (error: KnxLinkException) => void
 }
 
 const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, maxTelegramsPerSecond, onCemiFrame) => {
@@ -78,7 +78,7 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
                         } catch {
                             // ignore
                         }
-                        message.reject()
+                        message.reject(new KnxLinkException('ACK_TIMEOUT', `Gateway did not acknowledge tunnel telegram on channel ${channel}`, { channel }))
                     }, 1000)
                 })
             }, 1000)

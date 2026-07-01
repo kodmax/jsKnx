@@ -4,7 +4,7 @@ import connect, { InternalLinkInfo, KnxLinkOptions } from './connect'
 
 import { Socket } from 'dgram'
 import { retry } from './retry'
-import { KnxLinkException } from '../types'
+import { KnxLinkException, knxNetworkError } from '../types'
 import { connectSockets } from './connect/connect-sockets'
 import { ConnectionSockets } from './link/LinkInfo'
 
@@ -202,7 +202,7 @@ export class KnxConnection {
                     if (!this.explicitDisconnect) {
                         this.scheduleReconnect()
                     }
-                    reject(error)
+                    reject(knxNetworkError(error))
                 } else {
                     resolve()
                 }

@@ -32,6 +32,8 @@ export type KnxLinkExceptionCode =
     | 'CONNECTION_ALREADY_ESTABLISHED'
     | 'CONNECTION_IN_PROGRESS'
     | 'PROTOCOL_ERROR'
+    | 'ACK_TIMEOUT'
+    | 'NETWORK_ERROR'
 
 export class KnxLinkException extends Error {
     public constructor(
@@ -62,6 +64,8 @@ export class KnxLinkException extends Error {
     public constructor(code: 'NO_CONNECTION', message: string, details: {})
     public constructor(code: 'CONNECTION_ALREADY_ESTABLISHED', message: string, details: {})
     public constructor(code: 'CONNECTION_IN_PROGRESS', message: string, details: {})
+    public constructor(code: 'ACK_TIMEOUT', message: string, details: { channel: number })
+    public constructor(code: 'NETWORK_ERROR', message: string, details: {})
     public constructor(
         public readonly code: KnxLinkExceptionCode,
         message: string,
@@ -69,4 +73,9 @@ export class KnxLinkException extends Error {
     ) {
         super(`KnxLink Exception: ${message}`)
     }
+}
+
+export function knxNetworkError(error: unknown): KnxLinkException {
+    const message = error instanceof Error ? error.message : String(error)
+    return new KnxLinkException('NETWORK_ERROR', message, {})
 }
