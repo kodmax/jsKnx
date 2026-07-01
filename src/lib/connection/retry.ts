@@ -7,7 +7,6 @@ const retry = async (maxRetry: number, msPause: number, cb: () => Promise<void>)
         try {
             await cb()
             break
-
         } catch (e) {
             if (attempt === maxRetry) {
                 throw e

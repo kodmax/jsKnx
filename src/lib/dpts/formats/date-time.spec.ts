@@ -14,7 +14,7 @@ describe('DateTime', () => {
                 status: 0
             }
 
-            expect(toBuffer(datetime, Buffer.alloc(9))).toEqual(Buffer.from([0x00, 0x7B, 0x02, 0x08, 0x74, 0x21, 0x16, 0x00, 0x00]))
+            expect(toBuffer(datetime, Buffer.alloc(9))).toEqual(Buffer.from([0x00, 0x7b, 0x02, 0x08, 0x74, 0x21, 0x16, 0x00, 0x00]))
         })
 
         it('date and time 2', () => {
@@ -29,7 +29,7 @@ describe('DateTime', () => {
                 status: DTStatus.CLQ + DTStatus.WD
             }
 
-            expect(toBuffer(datetime, Buffer.alloc(9))).toEqual(Buffer.from([0x00, 0x7B, 0x02, 0x08, 0x74, 0x21, 0x16, 0x40, 0x80]))
+            expect(toBuffer(datetime, Buffer.alloc(9))).toEqual(Buffer.from([0x00, 0x7b, 0x02, 0x08, 0x74, 0x21, 0x16, 0x40, 0x80]))
         })
 
         it('no year', () => {
@@ -60,7 +60,7 @@ describe('DateTime', () => {
                 dayOfWeek: 3
             }
 
-            expect(fromBuffer(Buffer.from([0x00, 0x7B, 0x02, 0x08, 0x74, 0x21, 0x16, 0x00, 0x00]))).toEqual(datetime)
+            expect(fromBuffer(Buffer.from([0x00, 0x7b, 0x02, 0x08, 0x74, 0x21, 0x16, 0x00, 0x00]))).toEqual(datetime)
         })
 
         it('date and time 2', () => {
@@ -75,7 +75,7 @@ describe('DateTime', () => {
                 status: DTStatus.CLQ + DTStatus.WD
             }
 
-            expect(fromBuffer(Buffer.from([0x00, 0x7B, 0x02, 0x08, 0x74, 0x21, 0x16, 0x40, 0x80]))).toEqual(datetime)
+            expect(fromBuffer(Buffer.from([0x00, 0x7b, 0x02, 0x08, 0x74, 0x21, 0x16, 0x40, 0x80]))).toEqual(datetime)
         })
 
         it('no year', () => {

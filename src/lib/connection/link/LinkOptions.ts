@@ -18,7 +18,6 @@ export interface KnxEventEmitter extends EventEmitter {
 }
 
 export type KnxLinkOptions = {
-
     /**
      * Maximum number of cemi frames to sent before waiting for gateway acknowledgement.
      */

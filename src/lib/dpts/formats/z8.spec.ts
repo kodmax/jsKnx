@@ -1,20 +1,11 @@
 import { B8 } from './b8'
 import { KnxStandardStatus } from './z8'
 
-function statusToBits (status: KnxStandardStatus): number[] {
-    return [
-        +status.OutOfService,
-        +status.Fault,
-        +status.Overridden,
-        +status.InAlarm,
-        +status.AlarmUnAck,
-        0,
-        0,
-        0
-    ]
+function statusToBits(status: KnxStandardStatus): number[] {
+    return [+status.OutOfService, +status.Fault, +status.Overridden, +status.InAlarm, +status.AlarmUnAck, 0, 0, 0]
 }
 
-function bitsToStatus (bits: number[]): KnxStandardStatus {
+function bitsToStatus(bits: number[]): KnxStandardStatus {
     return {
         OutOfService: !!bits[0],
         Fault: !!bits[1],

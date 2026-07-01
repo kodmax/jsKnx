@@ -31,9 +31,7 @@ describe('TimeOfDay', () => {
         })
 
         it('rejects hour 24', () => {
-            expect(() => toBuffer('24:00:00', Buffer.alloc(4))).toThrow(
-                expect.objectContaining({ code: 'INVALID_VALUE' })
-            )
+            expect(() => toBuffer('24:00:00', Buffer.alloc(4))).toThrow(expect.objectContaining({ code: 'INVALID_VALUE' }))
         })
     })
 

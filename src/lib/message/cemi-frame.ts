@@ -9,7 +9,7 @@ export class KnxCemiFrame {
     public readonly target: string
     public readonly value: Buffer
 
-    public constructor (private readonly frame: Buffer) {
+    public constructor(private readonly frame: Buffer) {
         if (frame.readUint8(0) !== KnxCemiCode.L_Data_Indication) {
             throw new Error('Not a cEMI frame')
         }
@@ -33,7 +33,7 @@ export class KnxCemiFrame {
      * – 0: 1 bit (ackbowledge request – 0: no ack requested, 1: ack requested)
      * – 0: 1 bit (confirm – 0: no error, 1: error)
      */
-    public static controlByte (): number {
+    public static controlByte(): number {
         return 0xbc
     }
 
@@ -44,35 +44,35 @@ export class KnxCemiFrame {
      * – 6: 3bit (hop count – 0-7 110: standard)
      * – 0: 4bit (extended frame format – 0000: standard frame)
      */
-    public static dlrByte (): number {
+    public static dlrByte(): number {
         return 0xe0
     }
 
-    private static hiLo (v: number) {
+    private static hiLo(v: number) {
         return [v >> 8, v & 0xff]
     }
 
-    public getPacketType (): CemiPacketType {
-        return this.frame.readUint8(9) >> 7 & 0x1
+    public getPacketType(): CemiPacketType {
+        return (this.frame.readUint8(9) >> 7) & 0x1
     }
 
-    public isSequenced (): boolean {
-        return (this.frame.readUint8(9) >> 6 & 0x1) === CemiSequenceType.Sequenced
+    public isSequenced(): boolean {
+        return ((this.frame.readUint8(9) >> 6) & 0x1) === CemiSequenceType.Sequenced
     }
 
-    public getSequence (): number {
-        return this.frame.readUint8(9) >> 2 & 0x0f
+    public getSequence(): number {
+        return (this.frame.readUint8(9) >> 2) & 0x0f
     }
 
-    public getService (): APCI {
-        return this.frame.readUint16BE(9) >> 6 & 0x0f
+    public getService(): APCI {
+        return (this.frame.readUint16BE(9) >> 6) & 0x0f
     }
 
-    public getDataByteZero (): number {
+    public getDataByteZero(): number {
         return this.frame.readUint8(10) & 0x3f
     }
 
-    public static groupValueRead (code: KnxCemiCode, source: string, target: string): Buffer {
+    public static groupValueRead(code: KnxCemiCode, source: string, target: string): Buffer {
         const [sa, sb, sc] = source.split('.')
         const [ta, tb, tc] = target.split('/')
 
@@ -82,7 +82,7 @@ export class KnxCemiFrame {
         return Buffer.from([code, 0x00, 0xbc, 0xe0, sourceHi, sourceLo, targetHi, targetLo, 1, 0x00, 0x00])
     }
 
-    public static groupValueWrite (code: KnxCemiCode, source: string, target: string, value: Buffer): Buffer {
+    public static groupValueWrite(code: KnxCemiCode, source: string, target: string, value: Buffer): Buffer {
         const [sa, sb, sc] = source.split('.')
         const [ta, tb, tc] = target.split('/')
 
@@ -95,7 +95,7 @@ export class KnxCemiFrame {
         ])
     }
 
-    public static compose (code: KnxCemiCode, source: string, target: string, value: Buffer = Buffer.alloc(0), control = 0xbc, drl = 0xe0): Buffer {
+    public static compose(code: KnxCemiCode, source: string, target: string, value: Buffer = Buffer.alloc(0), control = 0xbc, drl = 0xe0): Buffer {
         const [sa, sb, sc] = source.split('.')
         const [ta, tb, tc] = target.split('/')
 

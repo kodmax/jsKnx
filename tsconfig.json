@@ -1,13 +1,8 @@
 {
-  "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "./src/lib"
-  },
-  "exclude": [
-    "node_modules",
-    "**/*.spec.ts"
-  ],
-  "include": [
-    "src/lib/**/*.ts"
-  ]
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        "rootDir": "./src/lib"
+    },
+    "exclude": ["node_modules", "**/*.spec.ts"],
+    "include": ["src/lib/**/*.ts"]
 }

@@ -1,4 +1,3 @@
-
 import { KnxConnectionType, KnxLayer } from '../../enums'
 import { KnxConnection } from '..'
 import { IDPT } from '../../dpts/formats'
@@ -11,18 +10,21 @@ import { KnxEventEmitter, KnxLinkOptions } from './LinkOptions'
 export { KnxLinkOptions, LinkInfo }
 
 export type KnxGroupSchema<T> = {
-    DataType: new(...args: ConstructorParameters<typeof DataPointAbstract>) => T
+    DataType: new (...args: ConstructorParameters<typeof DataPointAbstract>) => T
     address: string
 }
 
 export class KnxLink {
     public readonly events: KnxEventEmitter
 
-    public constructor (private readonly connection: KnxConnection, private readonly options: Required<KnxLinkOptions>) {
+    public constructor(
+        private readonly connection: KnxConnection,
+        private readonly options: Required<KnxLinkOptions>
+    ) {
         this.events = this.options.events
     }
 
-    public static async connect (ip: string, options: Partial<KnxLinkOptions> = {}): Promise<KnxLink> {
+    public static async connect(ip: string, options: Partial<KnxLinkOptions> = {}): Promise<KnxLink> {
         const opts: KnxLinkOptions = {
             events: new EventEmitter(),
 
@@ -45,7 +47,7 @@ export class KnxLink {
         return new KnxLink(connection, opts)
     }
 
-    public getLinkInfo (): LinkInfo {
+    public getLinkInfo(): LinkInfo {
         const linkInfo = this.connection.getLinkInfo()
 
         return {
@@ -58,15 +60,15 @@ export class KnxLink {
         }
     }
 
-    public async sendCemiFrame (cemiFrame: Buffer): Promise<void> {
+    public async sendCemiFrame(cemiFrame: Buffer): Promise<void> {
         return this.connection.getLinkInfo().sendCemiFrame(cemiFrame)
     }
 
-    public async disconnect (): Promise<void> {
+    public async disconnect(): Promise<void> {
         return this.connection.disconnect()
     }
 
-    public getDatapoint<T extends IDPT> ({ address, DataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
+    public getDatapoint<T extends IDPT>({ address, DataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
         const dataPoint = new DataType(address, this.connection, this, this.options)
 
         if (init) {

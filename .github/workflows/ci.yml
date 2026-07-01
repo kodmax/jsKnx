@@ -1,37 +1,40 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - master
-      - main
-  pull_request:
+    push:
+        branches:
+            - master
+            - main
+    pull_request:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
+    test:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: yarn
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 26
+                  cache: yarn
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile
 
-      - name: Build
-        run: yarn build
+            - name: Build
+              run: yarn build
 
-      - name: Lint
-        run: yarn lint:ci
+            - name: Format
+              run: yarn format:ci
 
-      - name: Typecheck
-        run: yarn typecheck
+            - name: Lint
+              run: yarn lint:ci
 
-      - name: Test
-        run: yarn test
+            - name: Typecheck
+              run: yarn typecheck
+
+            - name: Test
+              run: yarn test

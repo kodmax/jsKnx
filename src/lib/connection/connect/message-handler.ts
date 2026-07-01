@@ -7,13 +7,7 @@ import { Socket } from 'dgram'
 export type SendCemiFrame = (cemiFrame: Buffer) => Promise<void>
 export type OnCemiFrame = (cemiFrame: KnxCemiFrame) => void
 
-type MessageHandler = (
-    tunnel: Socket,
-    channel: number,
-    maxConcurrentMessages: number,
-    maxTelegramsPerSecond: number,
-    onCemiFrame: OnCemiFrame
-) => SendCemiFrame
+type MessageHandler = (tunnel: Socket, channel: number, maxConcurrentMessages: number, maxTelegramsPerSecond: number, onCemiFrame: OnCemiFrame) => SendCemiFrame
 
 type PendingMessage = {
     packet: KnxIpMessage
@@ -39,7 +33,6 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
             if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
                 onCemiFrame(new KnxCemiFrame(tunneling.getBody()))
             }
-
         } else if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_RESPONSE) {
             const tunneling = new TunnelingRequest(ipMessage.getBody())
             const seq = tunneling.getSequenceNumber()
@@ -72,8 +65,7 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
                                 isClosed = true
                                 tunnel.close()
                             }
-
-                        } catch (e) {
+                        } catch {
                             // ignore
                         }
                         message.reject()
@@ -101,16 +93,10 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
     return async (cemiFrame: Buffer) => {
         if (isClosed) {
             throw new KnxLinkException('NO_CONNECTION', 'No connection', {})
-
         } else {
             return new Promise((resolve, reject) => {
                 pendingMessages.push({
-                    packet: KnxIpMessage.compose(
-                        KnxServiceId.TUNNEL_REQUEST, [
-                            TunnelingRequest.compose(channel, nextSeq()),
-                            cemiFrame
-                        ]
-                    ),
+                    packet: KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(channel, nextSeq()), cemiFrame]),
                     resolve,
                     reject
                 })

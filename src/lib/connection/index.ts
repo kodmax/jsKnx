@@ -25,16 +25,14 @@ export class KnxConnection {
     private reconnectTimeoutId?: ReturnType<typeof setTimeout>
     private pendingDisconnectResolve?: () => void
 
-    public constructor (
+    public constructor(
         private readonly options: KnxLinkOptions,
         private readonly ip: string,
         private readonly connectionType: KnxConnectionType,
         private readonly layer: KnxLayer
-    ) {
+    ) {}
 
-    }
-
-    public async connect (): Promise<void> {
+    public async connect(): Promise<void> {
         if (this.linkInfo) {
             throw new KnxLinkException('CONNECTION_ALREADY_ESTABLISHED', 'Connection is already established', {})
         }
@@ -74,7 +72,6 @@ export class KnxConnection {
                         if (!this.explicitDisconnect) {
                             this.scheduleReconnect()
                         }
-
                     } else if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_RESPONSE) {
                         this.teardown()
                     }
@@ -86,23 +83,22 @@ export class KnxConnection {
         }
     }
 
-    public getLinkInfo (): InternalLinkInfo {
+    public getLinkInfo(): InternalLinkInfo {
         if (this.linkInfo) {
             return this.linkInfo
-
         } else {
             throw new KnxLinkException('NO_CONNECTION', 'Gateway connection not established', {})
         }
     }
 
-    private clearReconnectTimeout (): void {
+    private clearReconnectTimeout(): void {
         if (this.reconnectTimeoutId !== undefined) {
             clearTimeout(this.reconnectTimeoutId)
             this.reconnectTimeoutId = undefined
         }
     }
 
-    private scheduleReconnect (): void {
+    private scheduleReconnect(): void {
         if (this.explicitDisconnect || this.reconnectTimeoutId !== undefined) {
             return
         }
@@ -115,7 +111,7 @@ export class KnxConnection {
         }, this.options.retryPause)
     }
 
-    private handleSocketClose (): void {
+    private handleSocketClose(): void {
         if (this.tearingDown) {
             return
         }
@@ -126,7 +122,7 @@ export class KnxConnection {
         }
     }
 
-    private teardown (sockets?: ConnectionSockets): void {
+    private teardown(sockets?: ConnectionSockets): void {
         if (this.tearingDown) {
             return
         }
@@ -156,24 +152,24 @@ export class KnxConnection {
         this.tearingDown = false
     }
 
-    private terminate (sockets: ConnectionSockets): void {
+    private terminate(sockets: ConnectionSockets): void {
         try {
             sockets.gateway.close()
-        } catch (e) {
+        } catch {
             // ignore
         }
 
         try {
             sockets.tunnel.close()
-        } catch (e) {
+        } catch {
             // ignore
         }
     }
 
     /**
-   * Gracefully close the knx gateway connection
-   */
-    public async disconnect (): Promise<void> {
+     * Gracefully close the knx gateway connection
+     */
+    public async disconnect(): Promise<void> {
         if (this.linkInfo === undefined) {
             throw new KnxLinkException('NO_CONNECTION', 'Gateway connection not established', {})
         }
@@ -183,13 +179,7 @@ export class KnxConnection {
 
         await this.sendTo(
             this.linkInfo.gateway,
-            KnxIpMessage.compose(
-                KnxServiceId.DISCONNECT_REQUEST,
-                [
-                    Buffer.from([this.linkInfo.channel, 0x00]),
-                    hpai(this.linkInfo.gateway.address())
-                ]
-            )
+            KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([this.linkInfo.channel, 0x00]), hpai(this.linkInfo.gateway.address())])
         )
 
         return new Promise(resolve => {
@@ -204,9 +194,8 @@ export class KnxConnection {
         })
     }
 
-    private async sendTo (socket: Socket, message: KnxIpMessage): Promise<void> {
+    private async sendTo(socket: Socket, message: KnxIpMessage): Promise<void> {
         return new Promise((resolve, reject) => {
-
             socket.send(message.getBuffer(), error => {
                 if (error) {
                     this.teardown()
@@ -214,7 +203,6 @@ export class KnxConnection {
                         this.scheduleReconnect()
                     }
                     reject(error)
-
                 } else {
                     resolve()
                 }

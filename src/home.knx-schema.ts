@@ -114,7 +114,6 @@ export const lights = {
         'Led B': {
             command: { address: '14/7/3', DataType: DPT_Switch },
             state: { address: '14/7/4', DataType: DPT_Switch }
-
         }
     }
 }
@@ -252,7 +251,6 @@ export const venting = {
         'Pokój dzienny': {
             command: { address: '12/0/0', DataType: DPT_Switch },
             state: { address: '12/0/1', DataType: DPT_Switch }
-
         },
         Sypialnia: {
             command: { address: '12/1/0', DataType: DPT_Switch },

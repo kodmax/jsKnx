@@ -68,5 +68,4 @@ describe('DPT_Scaling', () => {
             expect(DPT_Scaling.fromBuffer(Buffer.from([0x00, 0x00]))).toEqual(0)
         })
     })
-
 })

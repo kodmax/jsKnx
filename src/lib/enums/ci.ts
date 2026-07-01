@@ -36,5 +36,5 @@ export enum APCI {
 
     APCI_RESTART = 14, // # P2P-Connection-Oriented.
 
-    APCI_ESCAPE = 15, // # Others, escape.
+    APCI_ESCAPE = 15 // # Others, escape.
 }

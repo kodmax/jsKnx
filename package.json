@@ -1,57 +1,56 @@
 {
-  "name": "js-knx",
-  "version": "2.18.0",
-  "description": "KNX IP/Gateway client",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/kodmax/jsKnx.git"
-  },
-  "bugs": {
-    "url": "https://github.com/kodmax/jsKnx/issues"
-  },
-  "homepage": "https://github.com/kodmax/jsKnx#readme",
-  "keywords": [
-    "KNX"
-  ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist",
-    "bin",
-    "LICENSE.md"
-  ],
-  "engines": {
-    "node": ">=16"
-  },
-  "scripts": {
-    "build": "tsc",
-    "test": "jest",
-    "lint": "eslint . --fix",
-    "lint:ci": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "dev": "ts-node src",
-    "prepublishOnly": "npm run build && npm test"
-  },
-  "author": "Marcin Malinowski <mm.kodmax@gmail.com>",
-  "license": "GPL-3.0",
-  "devDependencies": {
-    "@types/jest": "^27.5.1",
-    "@types/node": "^17.0.34",
-    "@typescript-eslint/eslint-plugin": "^5.25.0",
-    "@typescript-eslint/parser": "^5.25.0",
-    "eslint": "^8.30.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.6.0",
-    "eslint-plugin-node": "11",
-    "eslint-plugin-promise": "^6.1.1",
-    "jest": "28",
-    "ts-jest": "^28.0.2",
-    "ts-node": "^10.7.0",
-    "typescript": "^4.6.4"
-  },
-  "bin": {
-    "knx-write": "./bin/write.js",
-    "knx-read": "./bin/read.js"
-  }
+    "name": "js-knx",
+    "version": "2.18.0",
+    "description": "KNX IP/Gateway client",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kodmax/jsKnx.git"
+    },
+    "bugs": {
+        "url": "https://github.com/kodmax/jsKnx/issues"
+    },
+    "homepage": "https://github.com/kodmax/jsKnx#readme",
+    "keywords": [
+        "KNX"
+    ],
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist",
+        "bin",
+        "LICENSE.md"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "scripts": {
+        "build": "tsc",
+        "test": "jest",
+        "format": "prettier --write .",
+        "format:ci": "prettier --check .",
+        "lint": "eslint . --fix",
+        "lint:ci": "eslint .",
+        "typecheck": "tsc --noEmit",
+        "dev": "ts-node src",
+        "prepublishOnly": "npm run build && npm test"
+    },
+    "author": "Marcin Malinowski <mm.kodmax@gmail.com>",
+    "license": "GPL-3.0",
+    "devDependencies": {
+        "@eslint/js": "^9.28.0",
+        "@types/jest": "^29.5.14",
+        "@types/node": "^24.0.3",
+        "eslint": "^9.28.0",
+        "eslint-config-prettier": "^10.1.5",
+        "jest": "^29.7.0",
+        "prettier": "^3.5.3",
+        "ts-jest": "^29.3.4",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.8.3",
+        "typescript-eslint": "^8.33.0"
+    },
+    "bin": {
+        "knx-write": "./bin/write.js",
+        "knx-read": "./bin/read.js"
+    }
 }

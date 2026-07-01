@@ -10,20 +10,20 @@ export class DPT_Scaling extends U8 {
     public readonly type: DPT = DPT.Scaling
     public readonly unit: string = ''
 
-    public static fromBuffer (buf: Buffer): number {
-        return Math.round(buf.readUint8(1) / 255 * 100)
+    public static fromBuffer(buf: Buffer): number {
+        return Math.round((buf.readUint8(1) / 255) * 100)
     }
 
-    public static toBuffer (value: number, buf: Buffer): Buffer {
-        buf.writeUint8(Math.round(value / 100 * 255), 1)
+    public static toBuffer(value: number, buf: Buffer): Buffer {
+        buf.writeUint8(Math.round((value / 100) * 255), 1)
         return buf
     }
 
-    protected decode (data: Buffer): number {
+    protected decode(data: Buffer): number {
         return DPT_Scaling.fromBuffer(data)
     }
 
-    public async write (value: number): Promise<void> {
+    public async write(value: number): Promise<void> {
         return this.send(DPT_Scaling.toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 }
@@ -32,20 +32,20 @@ export class DPT_Angle extends U8 {
     public readonly type: DPT = DPT.Angle
     public readonly unit: string = '°'
 
-    public static fromBuffer (buf: Buffer): number {
-        return Math.round(buf.readUint8(1) / 255 * 360)
+    public static fromBuffer(buf: Buffer): number {
+        return Math.round((buf.readUint8(1) / 255) * 360)
     }
 
-    public static toBuffer (value: number, buf: Buffer): Buffer {
-        buf.writeUint8(Math.round(value / 360 * 255), 1)
+    public static toBuffer(value: number, buf: Buffer): Buffer {
+        buf.writeUint8(Math.round((value / 360) * 255), 1)
         return buf
     }
 
-    protected decode (data: Buffer): number {
+    protected decode(data: Buffer): number {
         return DPT_Angle.fromBuffer(data)
     }
 
-    public async write (value: number): Promise<void> {
+    public async write(value: number): Promise<void> {
         return this.send(DPT_Angle.toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 }
@@ -83,10 +83,9 @@ export class DPT_HVACMode extends U8 {
     public static readonly COMFORT = 1
     public static readonly AUTO = 0
 
-    public toString (value?: number): string {
+    public toString(value?: number): string {
         if (value === undefined) {
             return super.toString()
-
         } else {
             return HVACMode[value]
         }
@@ -121,11 +120,11 @@ export class DPT_HVACContrMode extends U8 {
 
     public static readonly MODE: typeof HVACContrMode = HVACContrMode
 
-    public async setMode (mode: HVACContrMode): Promise<void> {
+    public async setMode(mode: HVACContrMode): Promise<void> {
         return this.write(mode)
     }
 
-    public async readMode (): Promise<HVACContrMode> {
+    public async readMode(): Promise<HVACContrMode> {
         return (await this.read()).value as HVACContrMode
     }
 }

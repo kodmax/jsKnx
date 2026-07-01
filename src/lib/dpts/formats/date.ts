@@ -1,7 +1,7 @@
 import { KnxLinkException, KnxReading } from '../../types'
 import { DataPointAbstract } from './data-point-abstract'
 
-export function fromBuffer (data: Buffer): number[] {
+export function fromBuffer(data: Buffer): number[] {
     const d = data.readUint8(1)
     const m = data.readUint8(2)
     const y = data.readUint8(3)
@@ -10,7 +10,7 @@ export function fromBuffer (data: Buffer): number[] {
 }
 const pattern = /^(\d\d\d\d)-(\d\d)-(\d\d)$/
 
-export function toBuffer (value: string, data: Buffer): Buffer {
+export function toBuffer(value: string, data: Buffer): Buffer {
     const match = value.match(pattern)
     if (match) {
         const [, y, m, d] = match
@@ -21,10 +21,8 @@ export function toBuffer (value: string, data: Buffer): Buffer {
         const yy = +y
         if (yy >= 2000 && yy < 2090) {
             data.writeUint8(yy - 2000, 3)
-
         } else if (yy >= 1990 && yy < 2000) {
             data.writeUint8(yy - 1900, 3)
-
         } else {
             throw new KnxLinkException('INVALID_VALUE', 'Invalid Date Year: ' + y, {
                 value: y
@@ -32,7 +30,6 @@ export function toBuffer (value: string, data: Buffer): Buffer {
         }
 
         return data
-
     } else {
         throw new KnxLinkException('INVALID_VALUE', 'Invalid Date string: ' + value, {
             value
@@ -43,30 +40,29 @@ export function toBuffer (value: string, data: Buffer): Buffer {
 export abstract class Date extends DataPointAbstract<string> {
     protected valueByteLength: number = 4
 
-    protected decode (data: Buffer): string {
+    protected decode(data: Buffer): string {
         const [d, m, y] = fromBuffer(data)
 
         return `${y.toString(10)}-${m.toString(10).padStart(2, '0')}-${d.toString(10).padStart(2, '0')}`
     }
 
-    public async write (value: string): Promise<void> {
+    public async write(value: string): Promise<void> {
         return this.send(toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 
-    public removeValueListener (cb: (reading: KnxReading<string>) => void) {
+    public removeValueListener(cb: (reading: KnxReading<string>) => void) {
         this.valueEvent.removeListener('value-received', cb)
         this.updateSubscription('value-received')
     }
 
-    public addValueListener (cb: (reading: KnxReading<string>) => void) {
+    public addValueListener(cb: (reading: KnxReading<string>) => void) {
         this.valueEvent.addListener('value-received', cb)
         this.updateSubscription('value-received')
     }
 
-    public toString (value?: string): string {
+    public toString(value?: string): string {
         if (value === undefined) {
             return `${this.address} (${this.type})`
-
         } else {
             return value
         }

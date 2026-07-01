@@ -9,11 +9,7 @@ runMain(async () => {
     const { gateway, address, dptName } = parseArgs(process.argv)
 
     if (!gateway || !address || !dptName) {
-        printUsage('knx-read', 'address dpt', [
-            'knx-read 2/0/4 HVACMode',
-            'knx-read 192.168.0.8 2/0/4 Switch',
-            'KNX_GATEWAY=192.168.0.8 knx-read 2/0/4 Switch'
-        ])
+        printUsage('knx-read', 'address dpt', ['knx-read 2/0/4 HVACMode', 'knx-read 192.168.0.8 2/0/4 Switch', 'KNX_GATEWAY=192.168.0.8 knx-read 2/0/4 Switch'])
         process.exit(2)
     }
 

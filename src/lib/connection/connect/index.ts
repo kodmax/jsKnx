@@ -10,13 +10,7 @@ type Connect = (options: KnxLinkOptions, gateway: Socket, tunnel: Socket, connec
 
 const connect: Connect = async (options, gateway, tunnel, connectionType, layer): Promise<InternalLinkInfo> => {
     try {
-        const connectionInfo: Buffer = await tunnelRequest(
-            gateway,
-            tunnel.address(),
-            options.connectionTimeout,
-            connectionType,
-            layer
-        )
+        const connectionInfo: Buffer = await tunnelRequest(gateway, tunnel.address(), options.connectionTimeout, connectionType, layer)
 
         const address = connectionInfo.readUint16BE(18)
         const channel = connectionInfo.readUint8(6)
@@ -36,7 +30,6 @@ const connect: Connect = async (options, gateway, tunnel, connectionType, layer)
             tunnel,
             layer
         }
-
     } catch (e) {
         options.events.emit('error', e as KnxLinkException)
         throw e

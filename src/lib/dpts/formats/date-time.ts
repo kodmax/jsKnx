@@ -36,7 +36,7 @@ export enum DTStatus {
     SRC = 0x0040
 }
 
-export function fromBuffer (data: Buffer): KnxDateTime {
+export function fromBuffer(data: Buffer): KnxDateTime {
     return {
         year: data.readInt8(1) + 1900,
         month: data.readUint8(2),
@@ -49,7 +49,7 @@ export function fromBuffer (data: Buffer): KnxDateTime {
     }
 }
 
-export function toBuffer (dateTime: KnxDateTime, data: Buffer): Buffer {
+export function toBuffer(dateTime: KnxDateTime, data: Buffer): Buffer {
     data.writeUint8((dateTime.year ?? 1900) - 1900, 1)
     data.writeUint8(dateTime.month ?? 0, 2)
     data.writeUint8(dateTime.dayOfMonth ?? 0, 3)
@@ -64,28 +64,27 @@ export function toBuffer (dateTime: KnxDateTime, data: Buffer): Buffer {
 export abstract class DateTime extends DataPointAbstract<KnxDateTime> {
     protected valueByteLength: number = 9
 
-    protected decode (data: Buffer): KnxDateTime {
+    protected decode(data: Buffer): KnxDateTime {
         return fromBuffer(data)
     }
 
-    public async write (value: KnxDateTime): Promise<void> {
+    public async write(value: KnxDateTime): Promise<void> {
         return this.send(toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 
-    public removeValueListener (cb: (reading: KnxReading<KnxDateTime>) => void) {
+    public removeValueListener(cb: (reading: KnxReading<KnxDateTime>) => void) {
         this.valueEvent.removeListener('value-received', cb)
         this.updateSubscription('value-received')
     }
 
-    public addValueListener (cb: (reading: KnxReading<KnxDateTime>) => void) {
+    public addValueListener(cb: (reading: KnxReading<KnxDateTime>) => void) {
         this.valueEvent.addListener('value-received', cb)
         this.updateSubscription('value-received')
     }
 
-    public toString (value?: KnxDateTime): string {
+    public toString(value?: KnxDateTime): string {
         if (value === undefined) {
             return `${this.address} (${this.type})`
-
         } else {
             const dayOfMonth = Number(value.dayOfMonth).toString().padStart(2, '0')
             const month = Number(value.month).toString().padStart(2, '0')
