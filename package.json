@@ -18,7 +18,8 @@
     "files": [
         "dist",
         "bin",
-        "LICENSE.md"
+        "LICENSE.md",
+        "README.md"
     ],
     "engines": {
         "node": ">=20"
