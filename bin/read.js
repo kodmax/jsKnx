@@ -1,31 +1,47 @@
-#!/usr/local/bin/node
-const { KnxLink } = require("js-knx")
-const dpts = require("js-knx")
+#!/usr/bin/env node
+'use strict'
 
-const [ address, dpt ] = process.argv.slice(2)
-if (!dpts ["DPT_" + dpt]) {
-    console.error("Unknown DPT: " + dpt)
-    process.exit(2)
+const { loadLibrary, parseArgs, printUsage, resolveDpt, runMain } = require('./_utils')
 
-} else {
-    KnxLink.connect("192.168.0.8").then(async knx => {
-        knx.getDatapoint({ address, dataType: dpts ["DPT_" + dpt] }, dp => {
-            dp.addValueListener((value) => {
-                if (unit) {
-                    console.log(dp.toString(value))
+runMain(async () => {
+    const dpts = loadLibrary()
+    const { KnxLink } = dpts
+    const { gateway, address, dptName } = parseArgs(process.argv)
 
-                } else {
-                    console.log(dp.toString(value))
-                }
-                
-                knx.disconnect().then(() => process.exit(0))
-            })
-            dp.requestValue()
-        })
-        
-        process.on("SIGINT", () => {
-            knx.disconnect().then(() => process.exit(0))
-        })
-    })    
-}
+    if (!gateway || !address || !dptName) {
+        printUsage('knx-read', 'address dpt', [
+            'knx-read 2/0/4 HVACMode',
+            'knx-read 192.168.0.8 2/0/4 Switch',
+            'KNX_GATEWAY=192.168.0.8 knx-read 2/0/4 Switch'
+        ])
+        process.exit(2)
+    }
 
+    const DataType = resolveDpt(dpts, dptName)
+    if (!DataType) {
+        console.error(`Unknown DPT: ${dptName}`)
+        process.exit(2)
+    }
+
+    const knx = await KnxLink.connect(gateway)
+
+    const shutdown = async (code = 0) => {
+        await knx.disconnect()
+        process.exit(code)
+    }
+
+    process.on('SIGINT', () => {
+        void shutdown(0)
+    })
+
+    try {
+        const dp = knx.getDatapoint({ address, DataType })
+        const reading = await dp.read()
+        console.log(reading.text)
+        await shutdown(0)
+    } catch (error) {
+        await knx.disconnect().catch(() => {})
+        console.error(error instanceof Error ? error.message : error)
+        process.exit(1)
+    }
+})
