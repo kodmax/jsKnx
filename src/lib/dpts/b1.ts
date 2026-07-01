@@ -46,7 +46,7 @@ export class DPT_State extends B1 {
 }
 
 export class DPT_Bool extends B1 {
-    public readonly type: DPT = DPT.Switch
+    public readonly type: DPT = DPT.Bool
     public readonly unit: string = ''
 
     public async setTrue (): Promise<void> {
