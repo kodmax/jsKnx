@@ -1,3 +1,5 @@
+import { KnxCemiCode, KnxServiceId } from '../enums'
+import { KnxIpMessage } from './ip-message'
 import { TunnelingRequest } from './tunneling'
 
 describe('Tunneling', () => {
@@ -13,5 +15,56 @@ describe('Tunneling', () => {
 
     it('header', () => {
         expect(TunnelingRequest.compose(100, 0x43)).toEqual(Buffer.from([0x4, 0x64, 0x43, 0x00]))
+    })
+
+    it('getChannel returns tunnel channel', () => {
+        const request = new TunnelingRequest(TunnelingRequest.compose(12, 1))
+        expect(request.getChannel()).toBe(12)
+    })
+
+    it('getSequenceNumber returns sequence byte', () => {
+        const request = new TunnelingRequest(TunnelingRequest.compose(1, 200))
+        expect(request.getSequenceNumber()).toBe(200)
+    })
+
+    it('getBody returns trailing cEMI payload', () => {
+        const cemi = Buffer.from([0x29, 0x00, 0xbc])
+        const frame = Buffer.concat([TunnelingRequest.compose(3, 4), cemi])
+        const request = new TunnelingRequest(frame)
+
+        expect(request.getBody()).toEqual(cemi)
+    })
+
+    it('getCemiCode reads first byte of body', () => {
+        const frame = Buffer.concat([TunnelingRequest.compose(1, 1), Buffer.from([KnxCemiCode.L_Data_Indication])])
+        const request = new TunnelingRequest(frame)
+
+        expect(request.getCemiCode()).toBe(KnxCemiCode.L_Data_Indication)
+    })
+
+    it('ack composes TUNNEL_RESPONSE with same channel and sequence', () => {
+        const request = new TunnelingRequest(TunnelingRequest.compose(8, 15))
+        const ack = request.ack()
+
+        expect(ack.getServiceId()).toBe(KnxServiceId.TUNNEL_RESPONSE)
+        expect(ack.getBody()).toEqual(TunnelingRequest.compose(8, 15))
+    })
+
+    it('throws for invalid tunneling header', () => {
+        expect(() => new TunnelingRequest(Buffer.from([0x00, 0x01, 0x02, 0x03]))).toThrow('Invalid Tunneling Request Frame')
+    })
+
+    it('throws when structure length byte is not zero', () => {
+        expect(() => new TunnelingRequest(Buffer.from([0x04, 0x01, 0x02, 0x01]))).toThrow('Invalid Tunneling Request Frame')
+    })
+})
+
+describe('Tunneling over KnxIpMessage', () => {
+    it('embeds tunnel header before cEMI frame in tunnel request packet', () => {
+        const cemi = Buffer.from([0x11, 0x00])
+        const packet = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(2, 9), cemi])
+
+        expect(packet.getBody().slice(0, 4)).toEqual(TunnelingRequest.compose(2, 9))
+        expect(packet.getBody().slice(4)).toEqual(cemi)
     })
 })

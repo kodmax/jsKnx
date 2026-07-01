@@ -1,4 +1,13 @@
-import { DPT_Scaling, DPT_Percent_U8 } from './u8'
+import { DPT_HVACMode, DPT_Scaling, DPT_Percent_U8 } from './u8'
+
+describe('DPT_HVACMode', () => {
+    it('exposes mode constants', () => {
+        expect(DPT_HVACMode.AUTO).toBe(0)
+        expect(DPT_HVACMode.COMFORT).toBe(1)
+        expect(DPT_HVACMode.FROST_PROTECTION).toBe(4)
+        expect(DPT_HVACMode.FROST_PROTECION).toBe(DPT_HVACMode.FROST_PROTECTION)
+    })
+})
 
 describe('DPT_Percent_U8', () => {
     describe('write', () => {
