@@ -44,15 +44,17 @@ export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
     }
 
     public async write (status: KnxStandardStatus): Promise<void> {
+        // B8 uses MSB-first array order: index 0 → bit 7 (b0/OutOfService), index 7 → bit 0.
+        // Must match decode() which reads OutOfService from octet[0].
         return this.send(B8.toBuffer([
-            0,
-            0,
-            0,
-            +status.AlarmUnAck,
-            +status.InAlarm,
-            +status.Overridden,
+            +status.OutOfService,
             +status.Fault,
-            +status.OutOfService
+            +status.Overridden,
+            +status.InAlarm,
+            +status.AlarmUnAck,
+            0,
+            0,
+            0
         ], Buffer.alloc(this.valueByteLength)))
     }
 
