@@ -21,7 +21,7 @@ export function fromBuffer (data: Buffer): number[] {
     return [d, h, m, s]
 }
 
-const pattern = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun) )?(2[0-4]|[01]?[0-9]):([0-5]?[0-9])(?::([0-5]?[0-9]))?$/
+const pattern = /^(?:(Mon|Tue|Wed|Thu|Fri|Sat|Sun) )?(2[0-3]|[01]?[0-9]):([0-5]?[0-9])(?::([0-5]?[0-9]))?$/
 export function toBuffer (value: string, data: Buffer): Buffer {
     const match = value.match(pattern)
     if (match) {

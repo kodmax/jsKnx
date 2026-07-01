@@ -29,6 +29,12 @@ describe('TimeOfDay', () => {
         it('no zeros', () => {
             expect(toBuffer('7:12:0', Buffer.alloc(4))).toEqual(Buffer.from([0x00, 7, 12, 0]))
         })
+
+        it('rejects hour 24', () => {
+            expect(() => toBuffer('24:00:00', Buffer.alloc(4))).toThrow(
+                expect.objectContaining({ code: 'INVALID_VALUE' })
+            )
+        })
     })
 
     describe('decode', () => {

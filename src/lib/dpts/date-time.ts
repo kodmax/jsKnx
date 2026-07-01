@@ -5,7 +5,7 @@ import { KnxLinkException } from '../types'
 export { DTStatus }
 export type { KnxDateTime }
 
-const timePattern = /^(2[0-4]|[01]?[0-9]):([0-5]?[0-9])(?::([0-5]?[0-9]))?$/
+const timePattern = /^(2[0-3]|[01]?[0-9]):([0-5]?[0-9])(?::([0-5]?[0-9]))?$/
 const datePattern = /^(\d\d\d\d)-(\d\d)-(\d\d)$/
 
 export class DPT_DateTime extends DateTime {
@@ -44,7 +44,7 @@ export class DPT_DateTime extends DateTime {
             dayOfMonth: +d,
             hourOfDay: +h,
             minutes: +minutes,
-            seconds: +s
+            seconds: +s || 0
         }
     }
 
@@ -57,7 +57,7 @@ export class DPT_DateTime extends DateTime {
                 status: DTStatus.NWD + DTStatus.NDoW + (isDST ? DTStatus.SUTI : 0) + DTStatus.CLQ + DTStatus.SRC + DTStatus.ND + DTStatus.NY,
                 hourOfDay: +h,
                 minutes: +m,
-                seconds: +s
+                seconds: +s || 0
             }
 
         } else {
