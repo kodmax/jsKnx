@@ -1,4 +1,5 @@
 import { KnxCemiCode } from '../enums'
+import { KnxLinkException } from '../types'
 import { KnxCemiFrame } from './cemi-frame'
 
 describe('cEMI frame', () => {
@@ -15,5 +16,14 @@ describe('cEMI frame', () => {
     it('compose GroupValueRead', () => {
         const frame = KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '1.2.3', '4/5/6')
         expect(frame).toEqual(Buffer.from([0x11, 0x00, 0xbc, 0xe0, 0x12, 0x03, 0x025, 0x06, 0x01, 0x00, 0x0]))
+    })
+
+    it('decode throws PROTOCOL_ERROR for invalid frame', () => {
+        expect(() => KnxCemiFrame.decode(Buffer.from([0x00]))).toThrow(KnxLinkException)
+        try {
+            KnxCemiFrame.decode(Buffer.from([0x00]))
+        } catch (e) {
+            expect((e as KnxLinkException).code).toBe('PROTOCOL_ERROR')
+        }
     })
 })

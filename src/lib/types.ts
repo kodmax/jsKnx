@@ -17,7 +17,7 @@ export type KnxLinkExceptionDetails = {
     target: string
     channel: number
     source: string
-    value: any
+    value: unknown
     data: Buffer
 }
 
@@ -31,6 +31,7 @@ export type KnxLinkExceptionCode =
     | 'READ_TIMEOUT'
     | 'CONNECTION_ALREADY_ESTABLISHED'
     | 'CONNECTION_IN_PROGRESS'
+    | 'PROTOCOL_ERROR'
 
 export class KnxLinkException extends Error {
     public constructor(
@@ -55,7 +56,8 @@ export class KnxLinkException extends Error {
 
     public constructor(code: 'CONNECTION_ERROR', message: string, details: { knxErrorCode: KnxErrorCode })
     public constructor(code: 'READ_TIMEOUT', message: string, details: { address: string })
-    public constructor(code: 'INVALID_VALUE', message: string, details: { value: any })
+    public constructor(code: 'INVALID_VALUE', message: string, details: { value: unknown })
+    public constructor(code: 'PROTOCOL_ERROR', message: string, details: { data: Buffer })
     public constructor(code: 'CONNECTION_TIMEOUT', message: string, details: {})
     public constructor(code: 'NO_CONNECTION', message: string, details: {})
     public constructor(code: 'CONNECTION_ALREADY_ESTABLISHED', message: string, details: {})

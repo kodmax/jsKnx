@@ -1,4 +1,5 @@
 import { KnxServiceId } from '../enums'
+import { KnxLinkException } from '../types'
 
 export class KnxIpMessage {
     private readonly serviceId: KnxServiceId
@@ -15,7 +16,7 @@ export class KnxIpMessage {
 
     public static decode(message: Buffer): KnxIpMessage {
         if (message.readUint16BE(0) !== 0x0610 || message.readUint16BE(4) !== message.length) {
-            throw new Error('Invalid or corrupted message')
+            throw new KnxLinkException('PROTOCOL_ERROR', 'Invalid or corrupted KNX/IP message', { data: message })
         }
 
         return new KnxIpMessage(message)

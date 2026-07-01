@@ -1,4 +1,4 @@
-export { DataPointAbstract } from './formats'
+export { DataPointAbstract, IDPT } from './formats'
 export * from './date-time'
 export * from './v32'
 export * from './f32'

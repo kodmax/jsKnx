@@ -21,22 +21,32 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
     let isClosed = false
 
     const pendingMessages: PendingMessage[] = []
-    let concurrectMessagesCounter = 0
+    let concurrentMessagesCounter = 0
 
     tunnel.on('message', msg => {
-        const ipMessage = KnxIpMessage.decode(msg)
+        let ipMessage: KnxIpMessage
+
+        try {
+            ipMessage = KnxIpMessage.decode(msg)
+        } catch {
+            return
+        }
 
         if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
             const tunneling = new TunnelingRequest(ipMessage.getBody())
             tunnel.send(tunneling.ack().getBuffer())
 
             if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
-                onCemiFrame(new KnxCemiFrame(tunneling.getBody()))
+                try {
+                    onCemiFrame(KnxCemiFrame.decode(tunneling.getBody()))
+                } catch {
+                    // ignore corrupt cEMI frames
+                }
             }
         } else if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_RESPONSE) {
             const tunneling = new TunnelingRequest(ipMessage.getBody())
             const seq = tunneling.getSequenceNumber()
-            --concurrectMessagesCounter
+            --concurrentMessagesCounter
 
             if (acknowledge.has(seq)) {
                 const pendingMessage = acknowledge.get(seq)!
@@ -49,7 +59,7 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
 
     const send = (message: PendingMessage): void => {
         tunnel.send(message.packet.getBuffer())
-        ++concurrectMessagesCounter
+        ++concurrentMessagesCounter
 
         acknowledge.set(message.packet.getSequence(), {
             ack: message.resolve,
@@ -76,7 +86,7 @@ const messageHandler: MessageHandler = (tunnel, channel, maxConcurrentMessages, 
     }
 
     const sendInterval = setInterval(() => {
-        if (concurrectMessagesCounter < maxConcurrentMessages) {
+        if (concurrentMessagesCounter < maxConcurrentMessages) {
             const message = pendingMessages.shift()
 
             if (message) {

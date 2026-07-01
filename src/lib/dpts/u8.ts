@@ -77,7 +77,9 @@ export class DPT_HVACMode extends U8 {
     public readonly type: DPT = DPT.HVAC_HVACMode
     public readonly unit: string = ''
 
-    public static readonly FROST_PROTECION = 4
+    public static readonly FROST_PROTECTION = 4
+    /** @deprecated Use FROST_PROTECTION */
+    public static readonly FROST_PROTECION = DPT_HVACMode.FROST_PROTECTION
     public static readonly ECONOMY = 3
     public static readonly STANDBY = 2
     public static readonly COMFORT = 1

@@ -1,4 +1,5 @@
 import { CemiSequenceType, KnxCemiCode, CemiPacketType, APCI } from '../enums'
+import { KnxLinkException } from '../types'
 
 // function decodeAddress (address: number) {
 //     return [address >> 12, (address >> 8) & 0xf, address & 0xff]
@@ -9,11 +10,15 @@ export class KnxCemiFrame {
     public readonly target: string
     public readonly value: Buffer
 
-    public constructor(private readonly frame: Buffer) {
-        if (frame.readUint8(0) !== KnxCemiCode.L_Data_Indication) {
-            throw new Error('Not a cEMI frame')
+    public static decode(frame: Buffer): KnxCemiFrame {
+        if (frame.length < 10 || frame.readUint8(0) !== KnxCemiCode.L_Data_Indication) {
+            throw new KnxLinkException('PROTOCOL_ERROR', 'Not a cEMI frame', { data: frame })
         }
 
+        return new KnxCemiFrame(frame)
+    }
+
+    private constructor(private readonly frame: Buffer) {
         const source = frame.readUint16BE(4)
         const target = frame.readUint16BE(6)
 

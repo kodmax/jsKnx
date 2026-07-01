@@ -1,14 +1,25 @@
 import { KnxLinkException, KnxReading } from '../../types'
-import { KnxLink, KnxConnection, KnxLinkOptions } from '../../connection'
+import { KnxLink, KnxLinkOptions } from '../../connection'
 import { APCI, DPT, KnxCemiCode } from '../../enums'
 import { KnxCemiFrame } from '../../message'
 import EventEmitter from 'events'
 
-export interface IDPT {}
+export interface IDPT {
+    readonly type: DPT
+    readonly unit: string
+    read(): Promise<KnxReading<unknown>>
+    requestValue(): Promise<void>
+    addValueListener(cb: (reading: KnxReading<unknown>) => void): void
+    getAddress(): string
+    getLink(): KnxLink
+    toString(value?: unknown): string
+}
+
 export abstract class DataPointAbstract<T> implements IDPT {
     protected cemiFrameEvent: EventEmitter = new EventEmitter()
     protected valueEvent: EventEmitter = new EventEmitter()
     protected hasSubscribed = false
+    private pendingReadReject?: (error: KnxLinkException) => void
 
     protected abstract valueByteLength: number
     public abstract readonly unit: string
@@ -22,20 +33,23 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
     protected isCemiFrameValueByteLengthOk(cemiFrame: KnxCemiFrame): boolean {
         if (cemiFrame.value.byteLength !== this.valueByteLength) {
-            this.options.events.emit(
-                'error',
-                new KnxLinkException(
-                    'DATA_LENGTH_MISMATCH',
-                    `Invalid cEMI frame data length for group <${cemiFrame.target}> received from <${cemiFrame.source}>`,
-                    {
-                        actualDataLength: cemiFrame.value.byteLength,
-                        expectedDataType: this.type,
-                        source: cemiFrame.source,
-                        data: cemiFrame.value,
-                        target: this.address
-                    }
-                )
+            const error = new KnxLinkException(
+                'DATA_LENGTH_MISMATCH',
+                `Invalid cEMI frame data length for group <${cemiFrame.target}> received from <${cemiFrame.source}>`,
+                {
+                    actualDataLength: cemiFrame.value.byteLength,
+                    expectedDataType: this.type,
+                    source: cemiFrame.source,
+                    data: cemiFrame.value,
+                    target: this.address
+                }
             )
+
+            if (cemiFrame.getService() === APCI.APCI_GROUP_VALUE_RESP && this.pendingReadReject) {
+                this.pendingReadReject(error)
+            }
+
+            this.options.events.emit('error', error)
 
             return false
         } else {
@@ -54,20 +68,28 @@ export abstract class DataPointAbstract<T> implements IDPT {
     public async read(): Promise<KnxReading<T>> {
         await this.requestValue()
         return await new Promise((resolve, reject) => {
-            const recv = (reading: KnxReading<T>) => {
-                this.valueEvent.removeListener('resp-received', recv)
-                this.updateSubscription('resp-received')
+            const cleanup = (): void => {
                 clearTimeout(timeoutId)
+                this.valueEvent.removeListener('resp-received', recv)
+                this.pendingReadReject = undefined
+                this.updateSubscription('resp-received')
+            }
+
+            const recv = (reading: KnxReading<T>) => {
+                cleanup()
                 resolve(reading)
+            }
+
+            this.pendingReadReject = (error: KnxLinkException) => {
+                cleanup()
+                reject(error)
             }
 
             this.valueEvent.addListener('resp-received', recv)
             this.updateSubscription('resp-received')
 
             const timeoutId = setTimeout(() => {
-                this.valueEvent.removeListener('resp-received', recv)
-                this.updateSubscription('resp-received')
-
+                cleanup()
                 reject(
                     new KnxLinkException('READ_TIMEOUT', `Timeout waiting for ${this.address} response`, {
                         address: this.address
@@ -83,7 +105,6 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
     public constructor(
         protected readonly address: string,
-        protected readonly connection: KnxConnection,
         private readonly link: KnxLink,
         private readonly options: KnxLinkOptions
     ) {}
