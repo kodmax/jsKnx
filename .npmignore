@@ -1,6 +1,6 @@
 node_modules
 src
-.eslintrc.json
+.eslintrc.js
 .gitignore
 tsconfig.json
 package

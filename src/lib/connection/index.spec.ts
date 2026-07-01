@@ -49,7 +49,7 @@ function knxIpBuffer (serviceId: KnxServiceId): Buffer {
 function blockReconnectTimeout (): jest.SpiedFunction<typeof setTimeout> {
     return jest.spyOn(global, 'setTimeout').mockImplementation((fn, delay, ...args) => {
         if (delay === RETRY_PAUSE_MS) {
-            return 0 as unknown as NodeJS.Timeout
+            return 0 as unknown as ReturnType<typeof setTimeout>
         }
 
         return realSetTimeout(fn, delay, ...args)
@@ -63,7 +63,7 @@ function accelerateDisconnectTimeout (): jest.SpiedFunction<typeof setTimeout> {
         }
 
         if (delay === RETRY_PAUSE_MS) {
-            return 0 as unknown as NodeJS.Timeout
+            return 0 as unknown as ReturnType<typeof setTimeout>
         }
 
         return realSetTimeout(fn, delay, ...args)
@@ -195,7 +195,7 @@ describe('KnxConnection', () => {
     describe('auto reconnect', () => {
         it('schedules reconnect after session teardown', () => {
             const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(
-                () => 0 as unknown as NodeJS.Timeout
+                () => 0 as unknown as ReturnType<typeof setTimeout>
             )
 
             const gateway = createSocket('udp4')
@@ -230,7 +230,7 @@ describe('KnxConnection', () => {
 
         it('does not reconnect after explicit disconnect', () => {
             const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(
-                () => 0 as unknown as NodeJS.Timeout
+                () => 0 as unknown as ReturnType<typeof setTimeout>
             )
 
             const gateway = createSocket('udp4')
@@ -266,7 +266,7 @@ describe('KnxConnection', () => {
 
         it('does not reconnect after failed connect teardown', () => {
             const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(
-                () => 0 as unknown as NodeJS.Timeout
+                () => 0 as unknown as ReturnType<typeof setTimeout>
             )
 
             const gateway = createSocket('udp4')
