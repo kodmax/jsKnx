@@ -1,6 +1,11 @@
 import EventEmitter from 'events'
+import { Socket } from 'dgram'
+import { KnxConnectionType, KnxLayer } from '../../enums'
 import { KnxCemiFrame } from '../../message'
 import { KnxLinkException } from '../../types'
+import type { IDPT } from '../../dpts/formats'
+import type { KnxLink } from './KnxLink'
+import type { SendCemiFrame } from './KnxConnection/connect/message-handler'
 
 export type CemiFrameEventArguments = [KnxCemiFrame]
 export type ErrorEventArguments = [KnxLinkException]
@@ -54,4 +59,39 @@ export type KnxLinkOptions = {
     retryPause: number
 
     connectionTimeout: number
+}
+
+export type InternalLinkInfo = {
+    sendCemiFrame: SendCemiFrame
+
+    connectionType: KnxConnectionType
+    gatewayAddress: string
+    channel: number
+    layer: KnxLayer
+
+    gateway: Socket
+    tunnel: Socket
+    port: number
+    ip: string
+}
+
+export type ConnectionSockets = {
+    gateway: Socket
+    tunnel: Socket
+}
+
+export type LinkInfo = {
+    connectionType: KnxConnectionType
+    gatewayAddress: string
+    layer: KnxLayer
+    channel: number
+    port: number
+    ip: string
+}
+
+export type DatapointConstructor<T extends IDPT> = new (address: string, link: KnxLink, options: Required<KnxLinkOptions>) => T
+
+export type KnxGroupSchema<T extends IDPT> = {
+    DataType: DatapointConstructor<T>
+    address: string
 }

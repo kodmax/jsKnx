@@ -1,14 +1,14 @@
 import EventEmitter from 'events'
 import { KnxConnectionType, KnxLayer } from '../../enums'
-import { KnxConnection } from '..'
+import { KnxConnection } from './KnxConnection'
 import { KnxLink } from './KnxLink'
 import { DPT_Switch } from '../../dpts/b1'
 
-jest.mock('./connect/connect-sockets')
-jest.mock('./connect')
+jest.mock('./KnxConnection/connect/connect-sockets')
+jest.mock('./KnxConnection/connect')
 
-import { connectSockets } from './connect/connect-sockets'
-import connect from './connect'
+import { connectSockets } from './KnxConnection/connect/connect-sockets'
+import connect from './KnxConnection/connect'
 
 const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
 const connectMock = connect as jest.MockedFunction<typeof connect>

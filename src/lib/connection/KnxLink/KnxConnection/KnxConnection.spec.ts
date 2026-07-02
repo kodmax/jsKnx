@@ -1,15 +1,15 @@
 import EventEmitter from 'events'
 import { createSocket, Socket } from 'dgram'
-import { KnxConnection } from './link/KnxConnection'
-import { KnxConnectionType, KnxLayer, KnxServiceId } from '../enums'
-import { KnxLinkException } from '../types'
-import { connectSockets } from './link/connect/connect-sockets'
-import connect from './link/connect'
-import { ConnectionSockets } from './link/LinkInfo'
-import { KnxIpMessage } from '../message'
+import { KnxConnection } from '.'
+import { KnxConnectionType, KnxLayer, KnxServiceId } from '../../../enums'
+import { KnxLinkException } from '../../../types'
+import { connectSockets } from './connect/connect-sockets'
+import connect from './connect'
+import { ConnectionSockets } from '../types'
+import { KnxIpMessage } from '../../../message'
 
-jest.mock('./link/connect/connect-sockets')
-jest.mock('./link/connect')
+jest.mock('./connect/connect-sockets')
+jest.mock('./connect')
 
 const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
 const connectMock = connect as jest.MockedFunction<typeof connect>

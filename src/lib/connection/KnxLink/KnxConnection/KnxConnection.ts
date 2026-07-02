@@ -1,12 +1,12 @@
-import { KnxIpMessage, hpai } from '../../message'
-import { KnxConnectionType, KnxLayer, KnxServiceId } from '../../enums'
+import { KnxIpMessage, hpai } from '../../../message'
+import { KnxConnectionType, KnxLayer, KnxServiceId } from '../../../enums'
 import connect, { InternalLinkInfo, KnxLinkOptions } from './connect'
 
 import { Socket } from 'dgram'
-import { retry } from '../retry'
-import { KnxLinkException, knxNetworkError } from '../../types'
+import { retry } from './retry'
+import { KnxLinkException, knxNetworkError } from '../../../types'
 import { connectSockets } from './connect/connect-sockets'
-import { ConnectionSockets } from './LinkInfo'
+import { ConnectionSockets } from '../types'
 
 const DISCONNECT_RESPONSE_TIMEOUT_MS = 30_000
 

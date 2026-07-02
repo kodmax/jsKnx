@@ -1,2 +1,1 @@
-export * from './link/KnxConnection'
-export * from './link'
+export * from './KnxLink'

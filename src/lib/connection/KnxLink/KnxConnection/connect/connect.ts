@@ -1,6 +1,6 @@
 import { messageHandler } from './message-handler'
 import { tunnelRequest } from './tunnel-request'
-import { KnxLinkException } from '../../../types'
+import { KnxLinkException } from '../../../../types'
 import type { Connect } from './types'
 
 const connect: Connect = async (options, gateway, tunnel, connectionType, layer) => {

@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
-import { KnxConnectionType, KnxErrorCode, KnxLayer, KnxServiceId } from '../../../enums'
-import { KnxIpMessage } from '../../../message'
-import { KnxLinkException } from '../../../types'
+import { KnxConnectionType, KnxErrorCode, KnxLayer, KnxServiceId } from '../../../../enums'
+import { KnxIpMessage } from '../../../../message'
+import { KnxLinkException } from '../../../../types'
 import { tunnelRequest } from './tunnel-request'
 
 type MockGateway = EventEmitter & {

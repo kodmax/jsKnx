@@ -3,9 +3,7 @@ import { KnxConnection } from './KnxConnection'
 import { IDPT } from '../../dpts/formats'
 
 import EventEmitter from 'events'
-import { LinkInfo } from './LinkInfo'
-import { KnxEventEmitter, KnxLinkOptions } from './LinkOptions'
-import { KnxGroupSchema } from './types'
+import { KnxEventEmitter, KnxGroupSchema, KnxLinkOptions, LinkInfo } from './types'
 
 export class KnxLink {
     public readonly events: KnxEventEmitter
