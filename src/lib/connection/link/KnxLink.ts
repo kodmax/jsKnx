@@ -1,5 +1,5 @@
 import { KnxConnectionType, KnxLayer } from '../../enums'
-import { KnxConnection } from '../KnxConnection'
+import { KnxConnection } from './KnxConnection'
 import { IDPT } from '../../dpts/formats'
 
 import EventEmitter from 'events'

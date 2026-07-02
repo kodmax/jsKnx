@@ -2,10 +2,16 @@ const pause = async (ms: number): Promise<void> => {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-const retry = async (maxRetry: number, msPause: number, cb: () => Promise<void>): Promise<void> => {
-    for (let attempt = 0; attempt <= maxRetry; attempt++) {
+const retry = async (maxRetry: number, msPause: number, cb: (stop: () => void) => Promise<void>): Promise<void> => {
+    let stopped = false
+
+    const stop = (): void => {
+        stopped = true
+    }
+
+    for (let attempt = 0; attempt <= maxRetry && !stopped; attempt++) {
         try {
-            await cb()
+            await cb(stop)
             break
         } catch (e) {
             if (attempt === maxRetry) {

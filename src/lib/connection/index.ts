@@ -1,2 +1,2 @@
-export * from './KnxConnection'
+export * from './link/KnxConnection'
 export * from './link'
