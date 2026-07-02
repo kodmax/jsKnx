@@ -135,7 +135,7 @@ describe('KnxConnection', () => {
         const session = createMockSession()
 
         openTransportMock.mockResolvedValue(transport as unknown as KnxTransport)
-        startSessionMock.mockResolvedValue(session as unknown as KnxSession)
+        startSessionMock.mockImplementation(async () => session as unknown as KnxSession)
 
         const connection = createConnection()
 
@@ -152,6 +152,7 @@ describe('KnxConnection', () => {
         events = new KnxEventEmitter()
         openTransportMock.mockReset()
         startSessionMock.mockReset()
+        startSessionMock.mockImplementation(async () => createMockSession() as unknown as KnxSession)
     })
 
     describe('connect', () => {
@@ -238,19 +239,26 @@ describe('KnxConnection', () => {
     })
 
     describe('lifecycle events', () => {
-        it('emits connecting and connected on successful connect', async () => {
+        it('emits connecting, network-connection-established, starting-session, and connected on successful connect', async () => {
             const connecting = jest.fn()
+            const networkConnectionEstablished = jest.fn()
+            const startingSession = jest.fn()
             const connected = jest.fn()
 
             events.on('connecting', connecting)
+            events.on('network-connection-established', networkConnectionEstablished)
+            events.on('starting-session', startingSession)
             events.on('connected', connected)
 
             openTransportMock.mockResolvedValue(createMockTransport() as unknown as KnxTransport)
-            startSessionMock.mockResolvedValue(createMockSession() as unknown as KnxSession)
 
             await createConnection().connect()
 
-            expect(connecting).toHaveBeenCalledWith({ ip: '192.168.0.8', port: 3671 })
+            const endpoint = { ip: '192.168.0.8', port: 3671 }
+
+            expect(connecting).toHaveBeenCalledWith(endpoint)
+            expect(networkConnectionEstablished).toHaveBeenCalledWith(endpoint)
+            expect(startingSession).toHaveBeenCalledWith(endpoint)
             expect(connected).toHaveBeenCalledWith(
                 expect.objectContaining({
                     gatewayAddress: '1.1.1',
@@ -258,6 +266,71 @@ describe('KnxConnection', () => {
                     port: 3671
                 })
             )
+            expect(connecting.mock.invocationCallOrder[0]).toBeLessThan(networkConnectionEstablished.mock.invocationCallOrder[0]!)
+            expect(networkConnectionEstablished.mock.invocationCallOrder[0]).toBeLessThan(startingSession.mock.invocationCallOrder[0]!)
+            expect(startingSession.mock.invocationCallOrder[0]).toBeLessThan(connected.mock.invocationCallOrder[0]!)
+        })
+
+        it('does not emit starting-session when transport open fails', async () => {
+            const startingSession = jest.fn()
+
+            events.on('error', () => {})
+            events.on('starting-session', startingSession)
+            openTransportMock.mockRejectedValue(new Error('socket error'))
+
+            await expect(createConnection().connect()).rejects.toThrow('socket error')
+
+            expect(startingSession).not.toHaveBeenCalled()
+        })
+
+        it('emits starting-session on each startSession retry', async () => {
+            jest.useFakeTimers()
+            const startingSession = jest.fn()
+
+            events.on('error', () => {})
+            events.on('starting-session', startingSession)
+            openTransportMock.mockResolvedValue(createMockTransport() as unknown as KnxTransport)
+
+            let attempts = 0
+            startSessionMock.mockImplementation(async () => {
+                attempts++
+
+                if (attempts < 3) {
+                    throw new KnxLinkException('CONNECTION_ERROR', 'Error connecting to KNX/IP Gateway: NO_MORE_CHANNELS', { knxErrorCode: 37 })
+                }
+
+                return createMockSession() as unknown as KnxSession
+            })
+
+            const connection = new KnxConnection(
+                { ...options, maxRetry: 5, retryPause: 1000 },
+                '192.168.0.8',
+                KnxConnectionType.TUNNEL_CONNECTION,
+                KnxLayer.LINK_LAYER,
+                events
+            )
+
+            const connectPromise = connection.connect()
+
+            await jest.advanceTimersByTimeAsync(2000)
+            await connectPromise
+
+            expect(startingSession).toHaveBeenCalledTimes(3)
+            expect(startingSession).toHaveBeenCalledWith({ ip: '192.168.0.8', port: 3671 })
+
+            jest.useRealTimers()
+        })
+
+        it('does not emit network-connection-established when transport open fails', async () => {
+            const networkConnectionEstablished = jest.fn()
+
+            events.on('error', () => {})
+            events.on('network-connection-established', networkConnectionEstablished)
+            openTransportMock.mockRejectedValue(new Error('socket error'))
+
+            await expect(createConnection().connect()).rejects.toThrow('socket error')
+
+            expect(networkConnectionEstablished).not.toHaveBeenCalled()
         })
 
         it('emits disconnected with network-connect-failed when transport open fails', async () => {

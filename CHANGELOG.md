@@ -33,6 +33,7 @@ await knx.connect()
 ### Added
 
 - Lifecycle events on `KnxLink`: `connecting`, `connected`, `reconnecting`, and `disconnected` (optional via `knx.on(...)`)
+- Session lifecycle events: `network-connection-established` (UDP transport ready), `starting-session` (KNX/IP handshake starting, emitted before each `startSession` attempt including retries); session ready is `connected` after `KnxSession.startSession()` succeeds
 - `KnxDisconnectedReason` and related event payload types
 
 ## [2.20.0]

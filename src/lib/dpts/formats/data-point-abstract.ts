@@ -49,6 +49,8 @@ export abstract class DataPointAbstract<T> implements IDPT {
                 this.pendingReadReject(error)
             }
 
+            // Non-fatal: message-handler wraps cemi-frame delivery in try/catch. emit('error') throw is swallowed there.
+            // on('error') is optional — read() still rejects via pendingReadReject when applicable.
             this.link.emit('error', error)
 
             return false

@@ -1,12 +1,21 @@
 import EventEmitter from 'events'
 import { KnxCemiFrame } from '../../message'
 import { KnxLinkException } from '../../types'
-import type { KnxConnectingEvent, KnxDisconnectedEvent, KnxReconnectingEvent, LinkInfo } from './types'
+import type {
+    KnxConnectingEvent,
+    KnxDisconnectedEvent,
+    KnxStartingSessionEvent,
+    KnxNetworkConnectionEstablishedEvent,
+    KnxReconnectingEvent,
+    LinkInfo
+} from './types'
 
 export type KnxEventMap = {
     error: KnxLinkException
     'cemi-frame': KnxCemiFrame
     connecting: KnxConnectingEvent
+    'network-connection-established': KnxNetworkConnectionEstablishedEvent
+    'starting-session': KnxStartingSessionEvent
     connected: LinkInfo
     reconnecting: KnxReconnectingEvent
     disconnected: KnxDisconnectedEvent

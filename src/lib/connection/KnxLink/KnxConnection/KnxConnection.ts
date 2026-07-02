@@ -31,26 +31,6 @@ export class KnxConnection {
         private readonly events: KnxEventEmitter
     ) {}
 
-    private emitConnecting(): void {
-        this.events.emit('connecting', { ip: this.ip, port: this.options.port })
-    }
-
-    private emitConnected(): void {
-        this.events.emit('connected', this.session!.getLinkInfo())
-    }
-
-    private emitReconnecting(): void {
-        this.events.emit('reconnecting', { delayMs: this.options.retryPause })
-    }
-
-    private emitDisconnected(reason: KnxDisconnectedReason): void {
-        this.events.emit('disconnected', { reason })
-    }
-
-    private emitError(error: unknown): void {
-        this.events.emit('error', error as KnxLinkException)
-    }
-
     public async connect(): Promise<void> {
         if (this.session) {
             throw new KnxLinkException('CONNECTION_ALREADY_ESTABLISHED', 'Connection is already established', {})
@@ -60,14 +40,17 @@ export class KnxConnection {
             throw new KnxLinkException('CONNECTION_IN_PROGRESS', 'Connection is already in progress', {})
         }
 
+        const endpoint = { ip: this.ip, port: this.options.port }
+
         this.clearReconnectTimeout()
         this.explicitDisconnect = false
         this.connecting = true
-        this.emitConnecting()
+        this.events.emit('connecting', endpoint)
 
         try {
             this.ignoreSocketClose = false
             this.transport = await KnxTransport.open(this.ip, this.options.port)
+            this.events.emit('network-connection-established', endpoint)
 
             this.transport.onClose(() => {
                 this.handleSocketClose()
@@ -75,6 +58,7 @@ export class KnxConnection {
 
             await retry(this.options.maxRetry, this.options.retryPause, async () => {
                 try {
+                    this.events.emit('starting-session', endpoint)
                     this.session = await KnxSession.startSession(this.transport!, this.options, this.connectionType, this.layer, cemiFrame =>
                         this.events.emit('cemi-frame', cemiFrame)
                     )
@@ -89,16 +73,20 @@ export class KnxConnection {
                         this.teardown('graceful')
                     })
 
-                    this.emitConnected()
+                    this.events.emit('connected', this.session.getLinkInfo())
                     this.connecting = false
                 } catch (e) {
-                    this.emitError(e)
+                    // Non-fatal: part of the retry loop (e.g. NO_MORE_CHANNELS). emit('error') throw is caught by retry().
+                    // on('error') is optional here — only for logging/metrics.
+                    this.events.emit('error', e as KnxLinkException)
                     throw e
                 }
             })
         } catch (e) {
             if (this.transport === undefined) {
-                this.emitError(e)
+                // Fatal: UDP transport failed to open. Without on('error'), emit throws and connect() rejects —
+                // uncaught rejection crashes the process unless the caller catches connect().
+                this.events.emit('error', e as KnxLinkException)
             }
 
             this.teardown('network-connect-failed')
@@ -134,7 +122,7 @@ export class KnxConnection {
             return
         }
 
-        this.emitReconnecting()
+        this.events.emit('reconnecting', { delayMs: this.options.retryPause })
 
         this.reconnectTimeoutId = setTimeout(() => {
             this.reconnectTimeoutId = undefined
@@ -162,7 +150,7 @@ export class KnxConnection {
 
         this.tearingDown = true
         this.ignoreSocketClose = true
-        this.emitDisconnected(reason)
+        this.events.emit('disconnected', { reason })
         this.clearReconnectTimeout()
 
         if (this.disconnectTimeoutId !== undefined) {

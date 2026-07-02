@@ -75,6 +75,16 @@ export type KnxConnectingEvent = {
     port: number
 }
 
+export type KnxNetworkConnectionEstablishedEvent = {
+    ip: string
+    port: number
+}
+
+export type KnxStartingSessionEvent = {
+    ip: string
+    port: number
+}
+
 export type KnxReconnectingEvent = {
     delayMs: number
 }

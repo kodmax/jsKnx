@@ -5,6 +5,8 @@ export type {
     OnError,
     KnxDisconnectedReason,
     KnxConnectingEvent,
+    KnxNetworkConnectionEstablishedEvent,
+    KnxStartingSessionEvent,
     KnxReconnectingEvent,
     KnxDisconnectedEvent,
     LinkInfo

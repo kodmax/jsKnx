@@ -3,12 +3,16 @@ import { DPT_HVACMode, KnxLink } from '../src/lib'
 async function main(): Promise<void> {
     console.log('Connecting ...')
 
-    const knx = new KnxLink('192.168.1.8', { readTimeout: 500 })
-
+    const knx = new KnxLink('192.168.1.18', { readTimeout: 500 })
+    knx.on('error', e => {
+        console.error(e)
+    })
     knx.on('cemi-frame', frame => {
         console.log(frame.target, frame.getDataByteZero(), frame.value, frame.value.length)
     })
     knx.on('connecting', e => console.log('connecting', e))
+    knx.on('network-connection-established', e => console.log('network-connection-established', e))
+    knx.on('starting-session', e => console.log('starting-session', e))
     knx.on('connected', e => console.log('connected', e))
     knx.on('reconnecting', e => console.log('reconnecting', e))
     knx.on('disconnected', e => console.log('disconnected', e))
