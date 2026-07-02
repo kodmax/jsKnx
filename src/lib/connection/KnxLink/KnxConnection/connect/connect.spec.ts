@@ -48,14 +48,15 @@ describe('connect', () => {
         tunnelRequestMock.mockReset()
     })
 
-    it('returns link info and wires messageHandler callback to events bus', async () => {
+    it('returns link info and passes onCemiFrame to messageHandler', async () => {
         const gateway = new EventEmitter()
         const tunnel = new EventEmitter()
         const sendCemiFrame = jest.fn().mockResolvedValue(undefined)
-        let onCemiFrame: OnCemiFrame = () => {}
+        const onCemiFrame = jest.fn()
+        let wiredOnCemiFrame: OnCemiFrame = () => {}
 
         messageHandlerMock.mockImplementation((_tunnel, _channel, _maxConcurrent, _maxRate, callback) => {
-            onCemiFrame = callback
+            wiredOnCemiFrame = callback
             return sendCemiFrame
         })
 
@@ -64,37 +65,34 @@ describe('connect', () => {
             address: () => ({ address: '192.168.0.9', port: 3672, family: 'IPv4' })
         })
 
-        const linkInfo = await connect(options, gateway as never, tunnel as never, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
+        const linkInfo = await connect(options, gateway as never, tunnel as never, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, onCemiFrame)
 
         expect(linkInfo.channel).toBe(5)
         expect(linkInfo.gatewayAddress).toBe('1.2.3')
         expect(linkInfo.ip).toBe('192.168.0.8')
         expect(linkInfo.port).toBe(3671)
         expect(linkInfo.sendCemiFrame).toBe(sendCemiFrame)
-        expect(messageHandlerMock).toHaveBeenCalledWith(tunnel, 5, 16, 24, expect.any(Function))
+        expect(messageHandlerMock).toHaveBeenCalledWith(tunnel, 5, 16, 24, onCemiFrame)
 
         const cemiFrame = KnxCemiFrame.decode(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '1/2/3', Buffer.from([0x00, 0x01])))
-        const received = new Promise(resolve => options.events.once('cemi-frame', resolve))
-        onCemiFrame(cemiFrame)
+        wiredOnCemiFrame(cemiFrame)
 
-        await expect(received).resolves.toBe(cemiFrame)
+        expect(onCemiFrame).toHaveBeenCalledWith(cemiFrame)
     })
 
-    it('emits error event and rethrows when tunnelRequest fails', async () => {
+    it('rethrows when tunnelRequest fails', async () => {
         const gateway = new EventEmitter()
         const tunnel = new EventEmitter()
-        const errorListener = jest.fn()
 
-        options.events.on('error', errorListener)
         tunnelRequestMock.mockRejectedValue(new KnxLinkException('CONNECTION_TIMEOUT', 'timeout', {}))
         Object.assign(tunnel, {
             address: () => ({ address: '192.168.0.9', port: 3672, family: 'IPv4' })
         })
 
-        await expect(connect(options, gateway as never, tunnel as never, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)).rejects.toMatchObject({
+        await expect(
+            connect(options, gateway as never, tunnel as never, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, jest.fn())
+        ).rejects.toMatchObject({
             code: 'CONNECTION_TIMEOUT'
         })
-
-        expect(errorListener).toHaveBeenCalledWith(expect.objectContaining({ code: 'CONNECTION_TIMEOUT' }))
     })
 })

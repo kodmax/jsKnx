@@ -5,10 +5,10 @@ import { KnxLink } from './KnxLink'
 import { DPT_Switch } from '../../dpts/b1'
 
 jest.mock('./KnxConnection/connect/connect-sockets')
-jest.mock('./KnxConnection/connect')
+jest.mock('./KnxConnection/connect/connect')
 
 import { connectSockets } from './KnxConnection/connect/connect-sockets'
-import connect from './KnxConnection/connect'
+import connect from './KnxConnection/connect/connect'
 
 const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
 const connectMock = connect as jest.MockedFunction<typeof connect>

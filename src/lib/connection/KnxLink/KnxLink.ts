@@ -39,20 +39,11 @@ export class KnxLink {
     }
 
     public getLinkInfo(): LinkInfo {
-        const linkInfo = this.connection.getLinkInfo()
-
-        return {
-            connectionType: linkInfo.connectionType,
-            gatewayAddress: linkInfo.gatewayAddress,
-            channel: linkInfo.channel,
-            layer: linkInfo.layer,
-            port: linkInfo.port,
-            ip: linkInfo.ip
-        }
+        return this.connection.getLinkInfo()
     }
 
     public async sendCemiFrame(cemiFrame: Buffer): Promise<void> {
-        return this.connection.getLinkInfo().sendCemiFrame(cemiFrame)
+        return this.connection.sendCemiFrame(cemiFrame)
     }
 
     public async disconnect(): Promise<void> {

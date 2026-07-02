@@ -75,11 +75,6 @@ export type InternalLinkInfo = {
     ip: string
 }
 
-export type ConnectionSockets = {
-    gateway: Socket
-    tunnel: Socket
-}
-
 export type LinkInfo = {
     connectionType: KnxConnectionType
     gatewayAddress: string

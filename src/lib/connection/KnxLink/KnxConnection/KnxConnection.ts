@@ -1,12 +1,9 @@
-import { KnxIpMessage, hpai } from '../../../message'
-import { KnxConnectionType, KnxLayer, KnxServiceId } from '../../../enums'
-import connect, { InternalLinkInfo, KnxLinkOptions } from './connect'
-
-import { Socket } from 'dgram'
+import { KnxConnectionType, KnxLayer } from '../../../enums'
+import { KnxLinkOptions, LinkInfo } from './connect'
 import { retry } from './retry'
-import { KnxLinkException, knxNetworkError } from '../../../types'
-import { connectSockets } from './connect/connect-sockets'
-import { ConnectionSockets } from '../types'
+import { KnxLinkException } from '../../../types'
+import { KnxSession } from './connect/KnxSession'
+import { KnxTransport } from './connect/KnxTransport'
 
 const DISCONNECT_RESPONSE_TIMEOUT_MS = 30_000
 
@@ -15,7 +12,8 @@ const DISCONNECT_RESPONSE_TIMEOUT_MS = 30_000
  * http://www.eb-systeme.de/?page_id=479
  */
 export class KnxConnection {
-    private linkInfo?: InternalLinkInfo
+    private transport?: KnxTransport
+    private session?: KnxSession
     private connecting: boolean = false
     private explicitDisconnect: boolean = false
     private tearingDown: boolean = false
@@ -30,8 +28,14 @@ export class KnxConnection {
         private readonly layer: KnxLayer
     ) {}
 
+    private emitError(error: unknown): void {
+        if (this.options.events.listenerCount('error') > 0) {
+            this.options.events.emit('error', error as KnxLinkException)
+        }
+    }
+
     public async connect(): Promise<void> {
-        if (this.linkInfo) {
+        if (this.session) {
             throw new KnxLinkException('CONNECTION_ALREADY_ESTABLISHED', 'Connection is already established', {})
         }
 
@@ -43,50 +47,59 @@ export class KnxConnection {
         this.explicitDisconnect = false
         this.connecting = true
 
-        let sockets: ConnectionSockets | undefined
-
         try {
-            const [gateway, tunnel] = await connectSockets(this.ip, this.options.port)
-            sockets = { gateway, tunnel }
+            this.transport = await KnxTransport.open(this.ip, this.options.port)
+
+            this.transport.onClose(() => {
+                this.handleSocketClose()
+            })
 
             await retry(this.options.maxRetry, this.options.retryPause, async () => {
-                this.linkInfo = await connect(this.options, gateway, tunnel, this.connectionType, this.layer)
-                this.connecting = false
+                try {
+                    this.session = await KnxSession.startSession(this.transport!, this.options, this.connectionType, this.layer, cemiFrame =>
+                        this.options.events.emit('cemi-frame', cemiFrame)
+                    )
+                    this.connecting = false
 
-                this.linkInfo.gateway.once('close', () => {
-                    this.handleSocketClose()
-                })
-
-                this.linkInfo.tunnel.once('close', () => {
-                    this.handleSocketClose()
-                })
-
-                this.linkInfo.gateway.on('message', data => {
-                    const ipMessage = KnxIpMessage.decode(data)
-
-                    // Gateway initiated disconnect (device requests session teardown)
-                    if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
+                    this.session.onDisconnectRequest(() => {
                         this.teardown()
                         if (!this.explicitDisconnect) {
                             this.scheduleReconnect()
                         }
-                    } else if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_RESPONSE) {
+                    })
+
+                    this.session.onDisconnectResponse(() => {
                         this.teardown()
-                    }
-                })
+                    })
+                } catch (e) {
+                    this.emitError(e)
+                    throw e
+                }
             })
         } catch (e) {
-            this.teardown(sockets)
+            if (this.transport === undefined) {
+                this.emitError(e)
+            }
+
+            this.teardown()
             throw e
         }
     }
 
-    public getLinkInfo(): InternalLinkInfo {
-        if (this.linkInfo) {
-            return this.linkInfo
-        } else {
+    async sendCemiFrame(cemiFrame: Buffer): Promise<void> {
+        if (this.session === undefined) {
             throw new KnxLinkException('NO_CONNECTION', 'Gateway connection not established', {})
         }
+
+        return this.session.sendCemiFrame(cemiFrame)
+    }
+
+    public getLinkInfo(): LinkInfo {
+        if (this.session === undefined) {
+            throw new KnxLinkException('NO_CONNECTION', 'Gateway connection not established', {})
+        }
+
+        return this.session.getLinkInfo()
     }
 
     private clearReconnectTimeout(): void {
@@ -104,7 +117,7 @@ export class KnxConnection {
         this.reconnectTimeoutId = setTimeout(() => {
             this.reconnectTimeoutId = undefined
             this.connect().catch(() => {
-                // ignore — connect errors surface via options.events from connect helper
+                // ignore — connect errors surface via options.events from KnxConnection
             })
         }, this.options.retryPause)
     }
@@ -120,7 +133,7 @@ export class KnxConnection {
         }
     }
 
-    private teardown(sockets?: ConnectionSockets): void {
+    private teardown(): void {
         if (this.tearingDown) {
             return
         }
@@ -139,46 +152,25 @@ export class KnxConnection {
             resolve()
         }
 
-        if (sockets !== undefined) {
-            this.terminate(sockets)
-        } else if (this.linkInfo !== undefined) {
-            this.terminate(this.linkInfo)
-        }
-
-        this.linkInfo = undefined
+        this.session = undefined
+        this.transport?.close()
+        this.transport = undefined
         this.connecting = false
         this.tearingDown = false
-    }
-
-    private terminate(sockets: ConnectionSockets): void {
-        try {
-            sockets.gateway.close()
-        } catch {
-            // ignore
-        }
-
-        try {
-            sockets.tunnel.close()
-        } catch {
-            // ignore
-        }
     }
 
     /**
      * Gracefully close the knx gateway connection
      */
     public async disconnect(): Promise<void> {
-        if (this.linkInfo === undefined) {
+        if (this.session === undefined) {
             throw new KnxLinkException('NO_CONNECTION', 'Gateway connection not established', {})
         }
 
         this.explicitDisconnect = true
         this.clearReconnectTimeout()
 
-        await this.sendTo(
-            this.linkInfo.gateway,
-            KnxIpMessage.compose(KnxServiceId.DISCONNECT_REQUEST, [Buffer.from([this.linkInfo.channel, 0x00]), hpai(this.linkInfo.gateway.address())])
-        )
+        this.session.requestDisconnect()
 
         return new Promise(resolve => {
             this.pendingDisconnectResolve = resolve
@@ -189,22 +181,6 @@ export class KnxConnection {
                 this.teardown()
                 resolve()
             }, DISCONNECT_RESPONSE_TIMEOUT_MS)
-        })
-    }
-
-    private async sendTo(socket: Socket, message: KnxIpMessage): Promise<void> {
-        return new Promise((resolve, reject) => {
-            socket.send(message.getBuffer(), error => {
-                if (error) {
-                    this.teardown()
-                    if (!this.explicitDisconnect) {
-                        this.scheduleReconnect()
-                    }
-                    reject(knxNetworkError(error))
-                } else {
-                    resolve()
-                }
-            })
         })
     }
 }

@@ -1,49 +1,85 @@
 import EventEmitter from 'events'
-import { createSocket, Socket } from 'dgram'
+import { Socket } from 'dgram'
 import { KnxConnection } from '.'
-import { KnxConnectionType, KnxLayer, KnxServiceId } from '../../../enums'
+import { KnxConnectionType, KnxLayer } from '../../../enums'
 import { KnxLinkException } from '../../../types'
-import { connectSockets } from './connect/connect-sockets'
-import connect from './connect'
-import { ConnectionSockets } from '../types'
-import { KnxIpMessage } from '../../../message'
+import { InternalLinkInfo } from '../types'
+import { KnxSession } from './connect/KnxSession'
+import { KnxTransport } from './connect/KnxTransport'
 
-jest.mock('./connect/connect-sockets')
-jest.mock('./connect')
+jest.mock('./connect/KnxTransport')
+jest.mock('./connect/KnxSession')
 
-const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
-const connectMock = connect as jest.MockedFunction<typeof connect>
+const openTransportMock = KnxTransport.open as jest.MockedFunction<typeof KnxTransport.open>
+const startSessionMock = KnxSession.startSession as jest.MockedFunction<typeof KnxSession.startSession>
+
 const RETRY_PAUSE_MS = 1000
 const DISCONNECT_TIMEOUT_MS = 30_000
 const realSetTimeout = global.setTimeout.bind(global)
 
-type MockSocket = EventEmitter & {
+type MockKnxTransport = {
+    onClose: jest.Mock
     close: jest.Mock
-    send: jest.Mock
-    address: jest.Mock
+    triggerClose: () => void
 }
 
-function createMockSocket(): MockSocket {
-    const socket = new EventEmitter() as MockSocket
+type MockKnxSession = {
+    onDisconnectRequest: jest.Mock
+    onDisconnectResponse: jest.Mock
+    getLinkInfo: jest.Mock
+    requestDisconnect: jest.Mock
+    triggerDisconnectRequest: () => void
+    triggerDisconnectResponse: () => void
+}
 
-    socket.close = jest.fn(() => {
-        socket.emit('close')
-        return socket as unknown as Socket
-    })
-    socket.send = jest.fn((_buffer: Buffer, callback?: (error: Error | null, bytes?: number) => void) => {
-        callback?.(null, _buffer.length)
-    })
-    socket.address = jest.fn(() => ({
-        address: '192.168.0.8',
+function createMockTransport(): MockKnxTransport {
+    let onCloseCb: (() => void) | undefined
+
+    return {
+        onClose: jest.fn((cb: () => void) => {
+            onCloseCb = cb
+        }),
+        close: jest.fn(),
+        triggerClose: () => onCloseCb?.()
+    }
+}
+
+function createMockSession(linkInfo?: Partial<InternalLinkInfo>): MockKnxSession {
+    let onDisconnectRequestCb: (() => void) | undefined
+    let onDisconnectResponseCb: (() => void) | undefined
+
+    const info: InternalLinkInfo = {
+        sendCemiFrame: jest.fn(),
+        connectionType: KnxConnectionType.TUNNEL_CONNECTION,
+        gatewayAddress: '1.1.1',
+        channel: 1,
+        layer: KnxLayer.LINK_LAYER,
         port: 3671,
-        family: 'IPv4'
-    }))
+        ip: '192.168.0.8',
+        gateway: {} as Socket,
+        tunnel: {} as Socket,
+        ...linkInfo
+    }
 
-    return socket
-}
-
-function knxIpBuffer(serviceId: KnxServiceId): Buffer {
-    return KnxIpMessage.compose(serviceId, []).getBuffer()
+    return {
+        onDisconnectRequest: jest.fn((cb: () => void) => {
+            onDisconnectRequestCb = cb
+        }),
+        onDisconnectResponse: jest.fn((cb: () => void) => {
+            onDisconnectResponseCb = cb
+        }),
+        getLinkInfo: jest.fn(() => ({
+            connectionType: info.connectionType,
+            gatewayAddress: info.gatewayAddress,
+            channel: info.channel,
+            layer: info.layer,
+            port: info.port,
+            ip: info.ip
+        })),
+        requestDisconnect: jest.fn().mockResolvedValue(undefined),
+        triggerDisconnectRequest: () => onDisconnectRequestCb?.(),
+        triggerDisconnectResponse: () => onDisconnectResponseCb?.()
+    }
 }
 
 function blockReconnectTimeout(): jest.SpiedFunction<typeof setTimeout> {
@@ -88,67 +124,46 @@ describe('KnxConnection', () => {
 
     async function setupConnected(): Promise<{
         connection: KnxConnection
-        gateway: MockSocket
-        tunnel: MockSocket
+        session: MockKnxSession
+        transport: MockKnxTransport
     }> {
-        const gateway = createMockSocket()
-        const tunnel = createMockSocket()
+        const transport = createMockTransport()
+        const session = createMockSession()
 
-        connectSocketsMock.mockResolvedValue([gateway as unknown as Socket, tunnel as unknown as Socket])
-        connectMock.mockImplementation(async (_options, gw, tun) => ({
-            gateway: gw,
-            tunnel: tun,
-            sendCemiFrame: jest.fn(),
-            connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-            gatewayAddress: '1.1.1',
-            channel: 1,
-            layer: KnxLayer.LINK_LAYER,
-            port: 3671,
-            ip: '192.168.0.8'
-        }))
+        openTransportMock.mockResolvedValue(transport as unknown as KnxTransport)
+        startSessionMock.mockResolvedValue(session as unknown as KnxSession)
 
         const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
 
         await connection.connect()
 
-        return { connection, gateway, tunnel }
+        expect(transport.onClose).toHaveBeenCalled()
+        expect(session.onDisconnectRequest).toHaveBeenCalled()
+        expect(session.onDisconnectResponse).toHaveBeenCalled()
+
+        return { connection, session, transport }
     }
 
     beforeEach(() => {
-        connectSocketsMock.mockReset()
-        connectMock.mockReset()
+        openTransportMock.mockReset()
+        startSessionMock.mockReset()
     })
 
     describe('connect', () => {
-        it('throws CONNECTION_ALREADY_ESTABLISHED when linkInfo is set', async () => {
-            const gateway = createSocket('udp4')
-            const tunnel = createSocket('udp4')
+        it('throws CONNECTION_ALREADY_ESTABLISHED when session is active', async () => {
             const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
 
-            ;(connection as unknown as { linkInfo: object }).linkInfo = {
-                gateway,
-                tunnel,
-                sendCemiFrame: jest.fn(),
-                connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-                gatewayAddress: '1.1.1',
-                channel: 1,
-                layer: KnxLayer.LINK_LAYER,
-                port: 3671,
-                ip: '192.168.0.8'
-            }
+            ;(connection as unknown as { session?: KnxSession }).session = createMockSession() as unknown as KnxSession
 
             await expect(connection.connect()).rejects.toMatchObject({
                 code: 'CONNECTION_ALREADY_ESTABLISHED'
             } satisfies Partial<KnxLinkException>)
 
-            expect(connectSocketsMock).not.toHaveBeenCalled()
-
-            gateway.close()
-            tunnel.close()
+            expect(openTransportMock).not.toHaveBeenCalled()
         })
 
         it('throws CONNECTION_IN_PROGRESS while connect is in progress', async () => {
-            connectSocketsMock.mockImplementation(async () => new Promise(() => {}))
+            openTransportMock.mockImplementation(async () => new Promise(() => {}))
 
             const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
 
@@ -158,11 +173,11 @@ describe('KnxConnection', () => {
                 code: 'CONNECTION_IN_PROGRESS'
             } satisfies Partial<KnxLinkException>)
 
-            expect(connectSocketsMock).toHaveBeenCalledTimes(1)
+            expect(openTransportMock).toHaveBeenCalledTimes(1)
         })
 
-        it('resets connecting after connectSockets failure', async () => {
-            connectSocketsMock.mockRejectedValue(new Error('socket error'))
+        it('resets connecting after transport open failure', async () => {
+            openTransportMock.mockRejectedValue(new Error('socket error'))
 
             const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
 
@@ -170,28 +185,59 @@ describe('KnxConnection', () => {
 
             expect((connection as unknown as { connecting: boolean }).connecting).toBe(false)
         })
+
+        it('starts session after transport is open', async () => {
+            const transport = createMockTransport()
+
+            openTransportMock.mockResolvedValue(transport as unknown as KnxTransport)
+            startSessionMock.mockResolvedValue(createMockSession() as unknown as KnxSession)
+
+            const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
+
+            await connection.connect()
+
+            expect(startSessionMock).toHaveBeenCalledWith(transport, options, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, expect.any(Function))
+            expect(connection.getLinkInfo().gatewayAddress).toBe('1.1.1')
+        })
+
+        it('emits error when transport open fails', async () => {
+            const errorListener = jest.fn()
+
+            options.events.on('error', errorListener)
+            openTransportMock.mockRejectedValue(new Error('socket error'))
+
+            const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
+
+            await expect(connection.connect()).rejects.toThrow('socket error')
+
+            expect(errorListener).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining('socket error') }))
+        })
+
+        it('emits error when startSession fails', async () => {
+            const errorListener = jest.fn()
+
+            options.events.on('error', errorListener)
+            openTransportMock.mockResolvedValue(createMockTransport() as unknown as KnxTransport)
+            startSessionMock.mockRejectedValue(new KnxLinkException('CONNECTION_TIMEOUT', 'timeout', {}))
+
+            const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
+
+            await expect(connection.connect()).rejects.toMatchObject({
+                code: 'CONNECTION_TIMEOUT'
+            })
+
+            expect(errorListener).toHaveBeenCalledTimes(1)
+            expect(errorListener).toHaveBeenCalledWith(expect.objectContaining({ code: 'CONNECTION_TIMEOUT' }))
+        })
     })
 
     describe('auto reconnect', () => {
         it('schedules reconnect after session teardown', () => {
             const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(() => 0 as unknown as ReturnType<typeof setTimeout>)
 
-            const gateway = createSocket('udp4')
-            const tunnel = createSocket('udp4')
-
             const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
 
-            ;(connection as unknown as { linkInfo: object }).linkInfo = {
-                gateway,
-                tunnel,
-                sendCemiFrame: jest.fn(),
-                connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-                gatewayAddress: '1.1.1',
-                channel: 1,
-                layer: KnxLayer.LINK_LAYER,
-                port: 3671,
-                ip: '192.168.0.8'
-            }
+            ;(connection as unknown as { session?: KnxSession }).session = createMockSession() as unknown as KnxSession
 
             ;(connection as unknown as { teardown: () => void; scheduleReconnect: () => void }).teardown()
             ;(connection as unknown as { scheduleReconnect: () => void }).scheduleReconnect()
@@ -204,23 +250,10 @@ describe('KnxConnection', () => {
         it('does not reconnect after explicit disconnect', () => {
             const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(() => 0 as unknown as ReturnType<typeof setTimeout>)
 
-            const gateway = createSocket('udp4')
-            const tunnel = createSocket('udp4')
-
             const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
 
             ;(connection as unknown as { explicitDisconnect: boolean }).explicitDisconnect = true
-            ;(connection as unknown as { linkInfo: object }).linkInfo = {
-                gateway,
-                tunnel,
-                sendCemiFrame: jest.fn(),
-                connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-                gatewayAddress: '1.1.1',
-                channel: 1,
-                layer: KnxLayer.LINK_LAYER,
-                port: 3671,
-                ip: '192.168.0.8'
-            }
+            ;(connection as unknown as { session?: KnxSession }).session = createMockSession() as unknown as KnxSession
 
             ;(connection as unknown as { teardown: () => void; scheduleReconnect: () => void }).teardown()
             ;(connection as unknown as { scheduleReconnect: () => void }).scheduleReconnect()
@@ -232,108 +265,87 @@ describe('KnxConnection', () => {
 
         it('does not reconnect after failed connect teardown', () => {
             const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(() => 0 as unknown as ReturnType<typeof setTimeout>)
-
-            const gateway = createSocket('udp4')
-            const tunnel = createSocket('udp4')
+            const transport = createMockTransport()
 
             const connection = new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
 
-            ;(connection as unknown as { teardown: (sockets: ConnectionSockets) => void }).teardown({ gateway, tunnel })
+            ;(connection as unknown as { transport?: KnxTransport }).transport = transport as unknown as KnxTransport
+            ;(connection as unknown as { teardown: () => void }).teardown()
 
             expect(setTimeoutSpy).not.toHaveBeenCalled()
+            expect(transport.close).toHaveBeenCalled()
 
             setTimeoutSpy.mockRestore()
         })
     })
 
     describe('session lifecycle', () => {
-        it('schedules reconnect when gateway socket closes', async () => {
+        it('schedules reconnect when transport closes', async () => {
             const setTimeoutSpy = blockReconnectTimeout()
 
-            const { connection, gateway } = await setupConnected()
+            const { connection, transport } = await setupConnected()
             setTimeoutSpy.mockClear()
 
-            gateway.emit('close')
+            transport.triggerClose()
 
             expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), options.retryPause)
             expect(() => connection.getLinkInfo()).toThrow(expect.objectContaining({ code: 'NO_CONNECTION' }))
+            expect(transport.close).toHaveBeenCalled()
 
             setTimeoutSpy.mockRestore()
         })
 
-        it('schedules reconnect when tunnel socket closes', async () => {
+        it('schedules reconnect on session DISCONNECT_REQUEST', async () => {
             const setTimeoutSpy = blockReconnectTimeout()
 
-            const { tunnel } = await setupConnected()
+            const { connection, session, transport } = await setupConnected()
             setTimeoutSpy.mockClear()
 
-            tunnel.emit('close')
-
-            expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), options.retryPause)
-
-            setTimeoutSpy.mockRestore()
-        })
-
-        it('schedules reconnect on gateway DISCONNECT_REQUEST', async () => {
-            const setTimeoutSpy = blockReconnectTimeout()
-
-            const { connection, gateway } = await setupConnected()
-            setTimeoutSpy.mockClear()
-
-            gateway.emit('message', knxIpBuffer(KnxServiceId.DISCONNECT_REQUEST))
+            session.triggerDisconnectRequest()
 
             expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), options.retryPause)
             expect(() => connection.getLinkInfo()).toThrow(expect.objectContaining({ code: 'NO_CONNECTION' }))
+            expect(transport.close).toHaveBeenCalled()
 
             setTimeoutSpy.mockRestore()
         })
 
-        it('tears down on gateway DISCONNECT_RESPONSE without reconnect', async () => {
+        it('tears down on session DISCONNECT_RESPONSE without reconnect', async () => {
             const setTimeoutSpy = blockReconnectTimeout()
 
-            const { connection, gateway } = await setupConnected()
+            const { connection, session, transport } = await setupConnected()
             setTimeoutSpy.mockClear()
 
-            gateway.emit('message', knxIpBuffer(KnxServiceId.DISCONNECT_RESPONSE))
+            session.triggerDisconnectResponse()
 
             expect(() => connection.getLinkInfo()).toThrow(expect.objectContaining({ code: 'NO_CONNECTION' }))
             expect(setTimeoutSpy).not.toHaveBeenCalledWith(expect.any(Function), RETRY_PAUSE_MS)
+            expect(transport.close).toHaveBeenCalled()
 
             setTimeoutSpy.mockRestore()
-        })
-
-        it('closes both sockets on unexpected close', async () => {
-            const { connection, gateway, tunnel } = await setupConnected()
-
-            gateway.emit('close')
-
-            expect(gateway.close).toHaveBeenCalled()
-            expect(tunnel.close).toHaveBeenCalled()
-            expect(() => connection.getLinkInfo()).toThrow(expect.objectContaining({ code: 'NO_CONNECTION' }))
         })
     })
 
     describe('disconnect', () => {
-        it('sends DISCONNECT_REQUEST and resolves on DISCONNECT_RESPONSE', async () => {
+        it('requests session disconnect and resolves on DISCONNECT_RESPONSE', async () => {
             const setTimeoutSpy = blockReconnectTimeout()
 
-            const { connection, gateway } = await setupConnected()
+            const { connection, session, transport } = await setupConnected()
             setTimeoutSpy.mockClear()
 
             const disconnectPromise = connection.disconnect()
             await waitForDisconnectPending()
             setTimeoutSpy.mockClear()
 
-            expect(gateway.send).toHaveBeenCalled()
-            const sentMessage = KnxIpMessage.decode(gateway.send.mock.calls[0][0] as Buffer)
-            expect(sentMessage.getServiceId()).toBe(KnxServiceId.DISCONNECT_REQUEST)
+            expect(session.requestDisconnect).toHaveBeenCalled()
 
-            gateway.emit('message', knxIpBuffer(KnxServiceId.DISCONNECT_RESPONSE))
+            session.triggerDisconnectResponse()
 
             await disconnectPromise
 
             expect(setTimeoutSpy).not.toHaveBeenCalledWith(expect.any(Function), RETRY_PAUSE_MS)
             expect(() => connection.getLinkInfo()).toThrow(expect.objectContaining({ code: 'NO_CONNECTION' }))
+            expect(transport.close).toHaveBeenCalled()
 
             setTimeoutSpy.mockRestore()
         })
@@ -341,10 +353,12 @@ describe('KnxConnection', () => {
         it('resolves after timeout when DISCONNECT_RESPONSE is missing', async () => {
             const setTimeoutSpy = accelerateDisconnectTimeout()
 
-            const { connection } = await setupConnected()
+            const { connection, session, transport } = await setupConnected()
 
             await connection.disconnect()
 
+            expect(session.requestDisconnect).toHaveBeenCalled()
+            expect(transport.close).toHaveBeenCalled()
             expect(() => connection.getLinkInfo()).toThrow(expect.objectContaining({ code: 'NO_CONNECTION' }))
 
             setTimeoutSpy.mockRestore()
