@@ -23,10 +23,9 @@ runMain(async () => {
         process.exit(2)
     }
 
-    const knx = await KnxLink.connect(gateway, {
-        onError: error => console.error(error.message),
-        onCemiFrame: () => {}
-    })
+    const knx = new KnxLink(gateway)
+    knx.on('error', error => console.error(error.message))
+    await knx.connect()
 
     try {
         const dp = knx.getDatapoint({ address, DataType })

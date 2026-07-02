@@ -1,7 +1,7 @@
 export type {
     KnxLinkOptions,
     RequiredKnxLinkOptions,
-    KnxLinkConnectOptions,
+    KnxLinkConstructorOptions,
     OnError,
     KnxDisconnectedReason,
     KnxConnectingEvent,

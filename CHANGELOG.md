@@ -6,8 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Breaking
+
+- **`KnxLink.connect()` removed.** Use `new KnxLink(ip, options)` then `await knx.connect()`. Lifecycle listeners (`connecting`, `connected`, …) can be registered before `connect()`.
+
+**Migration from 2.20:**
+
+```typescript
+// Before
+const knx = await KnxLink.connect('192.168.0.8', { onError, onCemiFrame })
+
+// After
+const knx = new KnxLink('192.168.0.8')
+knx.on('error', onError)
+knx.on('cemi-frame', onCemiFrame)
+knx.on('connecting', e => { ... })
+await knx.connect()
+```
+
 ### Changed
 
+- **`onError` and `onCemiFrame` removed from constructor options.** Subscribe via `knx.on('error', …)` and `knx.on('cemi-frame', …)` before `connect()`.
+- `connect()` logs a **console warning** when no `error` listener is registered. Without one, Node.js throws on unhandled `error` events.
 - `KnxDisconnectedReason`: `explicit` → `graceful` (disconnect response received), disconnect timeout → `disconnect-timeout`; removed `gateway-response`
 
 ### Added
@@ -20,7 +40,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Breaking
 
 - **KnxLink event API rework.** `events` was removed from `KnxLinkOptions`; you can no longer inject a custom `EventEmitter` or subscribe via `knx.events`.
-- **`KnxLink.connect()` now requires `onError` and `onCemiFrame`.** Both callbacks are registered on the link before the tunnel session starts.
+- **`KnxLink.connect()` now accepts optional `onError` and `onCemiFrame`.** When provided, both callbacks are registered on the link before the tunnel session starts.
 
 **Migration from 2.19.x and earlier:**
 
@@ -44,7 +64,7 @@ const knx = await KnxLink.connect('192.168.0.8', {
 knx.on('cemi-frame', anotherListener)
 ```
 
-- Replace every `KnxLink.connect(ip)` call with `KnxLink.connect(ip, { onError, onCemiFrame })`. CLI/scripts that only need errors can use a no-op for `onCemiFrame` (and vice versa), but both properties must be present.
+- Replace every `KnxLink.connect(ip)` call with `KnxLink.connect(ip, { onError, onCemiFrame })` when you want constructor-time handlers, or use `knx.on(...)` after creating the link.
 - Replace `knx.events.on(...)` / `knx.events.emit(...)` with `knx.on(...)` / `knx.emit(...)`.
 - `emit('error', …)` still follows Node.js semantics: register `onError` (or `knx.on('error', …)`) before errors can occur, or an unhandled exception will be thrown.
 

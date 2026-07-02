@@ -39,6 +39,10 @@ export class KnxEventEmitter {
         return this
     }
 
+    listenerCount<K extends KnxEventName>(eventName: K): number {
+        return this.emitter.listenerCount(eventName)
+    }
+
     emit<K extends KnxEventName>(eventName: K, arg: KnxEventMap[K]): boolean {
         return this.emitter.emit(eventName, arg)
     }

@@ -3,7 +3,7 @@ import { KnxConnectionType, KnxLayer } from '../../enums'
 import { KnxLinkException } from '../../types'
 import type { IDPT } from '../../dpts/formats'
 import type { KnxLink } from './KnxLink'
-import type { SendCemiFrame, OnCemiFrame } from './KnxConnection/connect/message-handler'
+import type { SendCemiFrame } from './KnxConnection/connect/message-handler'
 
 export type OnError = (error: KnxLinkException) => void
 
@@ -29,16 +29,6 @@ export type KnxLinkOptions = {
     port: number
 
     /**
-     * Callback subscribed to `error` events when the link is created.
-     */
-    onError: OnError
-
-    /**
-     * Callback subscribed to `cemi-frame` events when the link is created.
-     */
-    onCemiFrame: OnCemiFrame
-
-    /**
      * Maximum number of retries on IP network failure.
      */
     maxRetry: number
@@ -51,9 +41,9 @@ export type KnxLinkOptions = {
     connectionTimeout: number
 }
 
-export type RequiredKnxLinkOptions = Required<Omit<KnxLinkOptions, 'onError' | 'onCemiFrame'>>
+export type RequiredKnxLinkOptions = Required<KnxLinkOptions>
 
-export type KnxLinkConnectOptions = Partial<RequiredKnxLinkOptions> & Pick<KnxLinkOptions, 'onError' | 'onCemiFrame'>
+export type KnxLinkConstructorOptions = Partial<RequiredKnxLinkOptions>
 
 export type InternalLinkInfo = {
     sendCemiFrame: SendCemiFrame
