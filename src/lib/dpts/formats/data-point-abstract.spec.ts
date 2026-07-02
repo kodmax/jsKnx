@@ -1,8 +1,7 @@
-import EventEmitter from 'events'
 import { APCI, DPT, KnxCemiCode } from '../../enums'
 import { KnxCemiFrame } from '../../message'
 import { KnxReading } from '../../types'
-import { KnxLink, KnxLinkOptions } from '../../connection'
+import { KnxEventEmitter, KnxLink, RequiredKnxLinkOptions } from '../../connection'
 import { DataPointAbstract } from './data-point-abstract'
 import { U8 } from './u8'
 
@@ -29,19 +28,29 @@ class TestU8 extends DataPointAbstract<number> {
     }
 }
 
-function createTestDatapoint(): { dp: TestU8; events: EventEmitter; link: KnxLink } {
-    const events = new EventEmitter()
+function createMockLink(): { link: KnxLink; emitCemiFrame: (frame: KnxCemiFrame) => void } {
+    const events = new KnxEventEmitter()
     events.on('error', () => {})
     const link = {
-        sendCemiFrame: jest.fn().mockResolvedValue(undefined)
+        sendCemiFrame: jest.fn().mockResolvedValue(undefined),
+        on: (...args: Parameters<KnxEventEmitter['on']>) => events.on(...args),
+        off: (...args: Parameters<KnxEventEmitter['off']>) => events.off(...args),
+        emit: (...args: Parameters<KnxEventEmitter['emit']>) => events.emit(...args)
     } as unknown as KnxLink
 
-    const options = {
-        events,
-        readTimeout: 1000
-    } as KnxLinkOptions
+    return {
+        link,
+        emitCemiFrame: frame => events.emit('cemi-frame', frame)
+    }
+}
 
-    return { dp: new TestU8('1/2/3', link, options), events, link }
+function createTestDatapoint(): { dp: TestU8; emitCemiFrame: (frame: KnxCemiFrame) => void; link: KnxLink } {
+    const { link, emitCemiFrame } = createMockLink()
+    const options = {
+        readTimeout: 1000
+    } as RequiredKnxLinkOptions
+
+    return { dp: new TestU8('1/2/3', link, options), emitCemiFrame, link }
 }
 
 function groupValueRespFrame(value: Buffer): KnxCemiFrame {
@@ -64,21 +73,21 @@ describe('DataPointAbstract', () => {
     })
 
     it('read() rejects on DATA_LENGTH_MISMATCH', async () => {
-        const { dp, events } = createTestDatapoint()
+        const { dp, emitCemiFrame } = createTestDatapoint()
         const readPromise = dp.read()
         await flushAsync()
 
-        events.emit('cemi-frame', groupValueRespFrame(Buffer.from([0x00])))
+        emitCemiFrame(groupValueRespFrame(Buffer.from([0x00])))
 
         await expect(readPromise).rejects.toMatchObject({ code: 'DATA_LENGTH_MISMATCH' })
     })
 
     it('read() resolves when response length matches', async () => {
-        const { dp, events } = createTestDatapoint()
+        const { dp, emitCemiFrame } = createTestDatapoint()
         const readPromise = dp.read()
         await flushAsync()
 
-        events.emit('cemi-frame', groupValueRespFrame(Buffer.from([0x00, 0x2a])))
+        emitCemiFrame(groupValueRespFrame(Buffer.from([0x00, 0x2a])))
 
         await expect(readPromise).resolves.toMatchObject({
             value: 42,
@@ -87,10 +96,8 @@ describe('DataPointAbstract', () => {
     })
 
     it('read() rejects with READ_TIMEOUT when no response arrives', async () => {
-        const events = new EventEmitter()
-        events.on('error', () => {})
-        const link = { sendCemiFrame: jest.fn().mockResolvedValue(undefined) } as unknown as KnxLink
-        const dp = new TestU8('1/2/3', link, { events, readTimeout: 30 } as KnxLinkOptions)
+        const { link } = createMockLink()
+        const dp = new TestU8('1/2/3', link, { readTimeout: 30 } as RequiredKnxLinkOptions)
 
         await expect(dp.read()).rejects.toMatchObject({ code: 'READ_TIMEOUT' })
     })
@@ -105,11 +112,11 @@ describe('DataPointAbstract', () => {
     })
 
     it('addValueListener receives group value writes for matching address', async () => {
-        const { dp, events } = createTestDatapoint()
+        const { dp, emitCemiFrame } = createTestDatapoint()
         const listener = jest.fn()
 
         dp.addValueListener(listener)
-        events.emit('cemi-frame', groupValueWriteFrame(Buffer.from([0x00, 0x07])))
+        emitCemiFrame(groupValueWriteFrame(Buffer.from([0x00, 0x07])))
 
         expect(listener).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -121,11 +128,11 @@ describe('DataPointAbstract', () => {
     })
 
     it('ignores cEMI frames for other group addresses', async () => {
-        const { dp, events } = createTestDatapoint()
+        const { dp, emitCemiFrame } = createTestDatapoint()
         const listener = jest.fn()
 
         dp.addValueListener(listener)
-        events.emit('cemi-frame', KnxCemiFrame.decode(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '9/9/9', Buffer.from([0x00, 0x01]))))
+        emitCemiFrame(KnxCemiFrame.decode(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '9/9/9', Buffer.from([0x00, 0x01]))))
 
         expect(listener).not.toHaveBeenCalled()
     })

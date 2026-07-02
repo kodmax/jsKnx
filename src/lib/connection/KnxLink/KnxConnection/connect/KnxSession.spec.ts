@@ -64,7 +64,6 @@ function createMockTransport(gateway: MockSocket, tunnel: MockSocket): KnxTransp
 
 describe('KnxSession', () => {
     const options = {
-        events: new EventEmitter(),
         maxConcurrentMessages: 16,
         maxTelegramsPerSecond: 24,
         readTimeout: 10000,

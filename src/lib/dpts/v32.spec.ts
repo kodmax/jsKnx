@@ -1,10 +1,9 @@
-import EventEmitter from 'events'
-import { KnxLink, KnxLinkOptions } from '../connection'
+import { KnxLink, RequiredKnxLinkOptions } from '../connection'
 import { DPT_ActiveEnergy } from './v32'
 
-function createV32<T>(DataType: new (address: string, link: KnxLink, options: KnxLinkOptions) => T): T {
+function createV32<T>(DataType: new (address: string, link: KnxLink, options: RequiredKnxLinkOptions) => T): T {
     const link = { sendCemiFrame: jest.fn().mockResolvedValue(undefined) } as unknown as KnxLink
-    const options = { events: new EventEmitter(), readTimeout: 1000 } as KnxLinkOptions
+    const options = { readTimeout: 1000 } as RequiredKnxLinkOptions
 
     return new DataType('4/1/0', link, options)
 }

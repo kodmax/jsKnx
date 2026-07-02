@@ -1,10 +1,10 @@
 import { KnxConnectionType, KnxLayer } from '../../../../enums'
-import type { InternalLinkInfo, KnxLinkOptions } from '../../types'
+import type { InternalLinkInfo, RequiredKnxLinkOptions } from '../../types'
 import type { OnCemiFrame } from './message-handler'
 import type { Socket } from 'dgram'
 
 export type Connect = (
-    options: KnxLinkOptions,
+    options: RequiredKnxLinkOptions,
     gateway: Socket,
     tunnel: Socket,
     connectionType: KnxConnectionType,
@@ -12,5 +12,14 @@ export type Connect = (
     onCemiFrame: OnCemiFrame
 ) => Promise<InternalLinkInfo>
 
-export type { KnxLinkOptions, InternalLinkInfo, LinkInfo } from '../../types'
+export type {
+    KnxLinkOptions,
+    RequiredKnxLinkOptions,
+    InternalLinkInfo,
+    LinkInfo,
+    KnxDisconnectedReason,
+    KnxConnectingEvent,
+    KnxReconnectingEvent,
+    KnxDisconnectedEvent
+} from '../../types'
 export type { OnCemiFrame } from './message-handler'

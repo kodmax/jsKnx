@@ -1,9 +1,10 @@
 import { KnxConnectionType, KnxLayer } from '../../../enums'
-import { KnxLinkOptions, LinkInfo } from './connect'
+import { RequiredKnxLinkOptions, LinkInfo, KnxDisconnectedReason } from '../types'
 import { retry } from './retry'
 import { KnxLinkException } from '../../../types'
 import { KnxSession } from './connect/KnxSession'
 import { KnxTransport } from './connect/KnxTransport'
+import { KnxEventEmitter } from '../KnxEventEmitter'
 
 const DISCONNECT_RESPONSE_TIMEOUT_MS = 30_000
 
@@ -17,21 +18,37 @@ export class KnxConnection {
     private connecting: boolean = false
     private explicitDisconnect: boolean = false
     private tearingDown: boolean = false
+    private ignoreSocketClose: boolean = false
     private disconnectTimeoutId?: ReturnType<typeof setTimeout>
     private reconnectTimeoutId?: ReturnType<typeof setTimeout>
     private pendingDisconnectResolve?: () => void
 
     public constructor(
-        private readonly options: KnxLinkOptions,
+        private readonly options: RequiredKnxLinkOptions,
         private readonly ip: string,
         private readonly connectionType: KnxConnectionType,
-        private readonly layer: KnxLayer
+        private readonly layer: KnxLayer,
+        private readonly events: KnxEventEmitter
     ) {}
 
+    private emitConnecting(): void {
+        this.events.emit('connecting', { ip: this.ip, port: this.options.port })
+    }
+
+    private emitConnected(): void {
+        this.events.emit('connected', this.session!.getLinkInfo())
+    }
+
+    private emitReconnecting(): void {
+        this.events.emit('reconnecting', { delayMs: this.options.retryPause })
+    }
+
+    private emitDisconnected(reason: KnxDisconnectedReason): void {
+        this.events.emit('disconnected', { reason })
+    }
+
     private emitError(error: unknown): void {
-        if (this.options.events.listenerCount('error') > 0) {
-            this.options.events.emit('error', error as KnxLinkException)
-        }
+        this.events.emit('error', error as KnxLinkException)
     }
 
     public async connect(): Promise<void> {
@@ -46,8 +63,10 @@ export class KnxConnection {
         this.clearReconnectTimeout()
         this.explicitDisconnect = false
         this.connecting = true
+        this.emitConnecting()
 
         try {
+            this.ignoreSocketClose = false
             this.transport = await KnxTransport.open(this.ip, this.options.port)
 
             this.transport.onClose(() => {
@@ -57,20 +76,21 @@ export class KnxConnection {
             await retry(this.options.maxRetry, this.options.retryPause, async () => {
                 try {
                     this.session = await KnxSession.startSession(this.transport!, this.options, this.connectionType, this.layer, cemiFrame =>
-                        this.options.events.emit('cemi-frame', cemiFrame)
+                        this.events.emit('cemi-frame', cemiFrame)
                     )
-                    this.connecting = false
-
                     this.session.onDisconnectRequest(() => {
-                        this.teardown()
+                        this.teardown('gateway-request')
                         if (!this.explicitDisconnect) {
                             this.scheduleReconnect()
                         }
                     })
 
                     this.session.onDisconnectResponse(() => {
-                        this.teardown()
+                        this.teardown('graceful')
                     })
+
+                    this.emitConnected()
+                    this.connecting = false
                 } catch (e) {
                     this.emitError(e)
                     throw e
@@ -81,7 +101,7 @@ export class KnxConnection {
                 this.emitError(e)
             }
 
-            this.teardown()
+            this.teardown('network-connect-failed')
             throw e
         }
     }
@@ -114,31 +134,35 @@ export class KnxConnection {
             return
         }
 
+        this.emitReconnecting()
+
         this.reconnectTimeoutId = setTimeout(() => {
             this.reconnectTimeoutId = undefined
             this.connect().catch(() => {
-                // ignore — connect errors surface via options.events from KnxConnection
+                // ignore — connect errors surface via link error events
             })
         }, this.options.retryPause)
     }
 
     private handleSocketClose(): void {
-        if (this.tearingDown) {
+        if (this.tearingDown || this.ignoreSocketClose) {
             return
         }
 
-        this.teardown()
+        this.teardown('unexpected-socket-close')
         if (!this.explicitDisconnect) {
             this.scheduleReconnect()
         }
     }
 
-    private teardown(): void {
+    private teardown(reason: KnxDisconnectedReason): void {
         if (this.tearingDown) {
             return
         }
 
         this.tearingDown = true
+        this.ignoreSocketClose = true
+        this.emitDisconnected(reason)
         this.clearReconnectTimeout()
 
         if (this.disconnectTimeoutId !== undefined) {
@@ -178,7 +202,7 @@ export class KnxConnection {
             this.disconnectTimeoutId = setTimeout(() => {
                 this.disconnectTimeoutId = undefined
                 this.pendingDisconnectResolve = undefined
-                this.teardown()
+                this.teardown('disconnect-timeout')
                 resolve()
             }, DISCONNECT_RESPONSE_TIMEOUT_MS)
         })

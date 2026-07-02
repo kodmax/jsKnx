@@ -1,5 +1,5 @@
 import { KnxLinkException, KnxReading } from '../../types'
-import { KnxLink, KnxLinkOptions } from '../../connection'
+import { KnxLink, RequiredKnxLinkOptions } from '../../connection'
 import { APCI, DPT, KnxCemiCode } from '../../enums'
 import { KnxCemiFrame } from '../../message'
 import EventEmitter from 'events'
@@ -49,7 +49,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                 this.pendingReadReject(error)
             }
 
-            this.options.events.emit('error', error)
+            this.link.emit('error', error)
 
             return false
         } else {
@@ -106,7 +106,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
     public constructor(
         protected readonly address: string,
         private readonly link: KnxLink,
-        private readonly options: KnxLinkOptions
+        private readonly options: RequiredKnxLinkOptions
     ) {}
 
     public getAddress(): string {
@@ -154,16 +154,14 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected updateSubscription(_eventName: 'value-received' | 'resp-received'): void {
-        if (this.options.events) {
-            const lc = this.valueEvent.listenerCount('value-received') + this.valueEvent.listenerCount('resp-received')
+        const lc = this.valueEvent.listenerCount('value-received') + this.valueEvent.listenerCount('resp-received')
 
-            if (lc === 0 && this.hasSubscribed) {
-                this.options.events.off('cemi-frame', this.eventsListener)
-                this.hasSubscribed = false
-            } else if (lc === 1 && !this.hasSubscribed) {
-                this.options.events.on('cemi-frame', this.eventsListener)
-                this.hasSubscribed = true
-            }
+        if (lc === 0 && this.hasSubscribed) {
+            this.link.off('cemi-frame', this.eventsListener)
+            this.hasSubscribed = false
+        } else if (lc === 1 && !this.hasSubscribed) {
+            this.link.on('cemi-frame', this.eventsListener)
+            this.hasSubscribed = true
         }
     }
 }

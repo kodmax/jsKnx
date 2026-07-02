@@ -1,26 +1,11 @@
-import EventEmitter from 'events'
 import { Socket } from 'dgram'
 import { KnxConnectionType, KnxLayer } from '../../enums'
-import { KnxCemiFrame } from '../../message'
 import { KnxLinkException } from '../../types'
 import type { IDPT } from '../../dpts/formats'
 import type { KnxLink } from './KnxLink'
-import type { SendCemiFrame } from './KnxConnection/connect/message-handler'
+import type { SendCemiFrame, OnCemiFrame } from './KnxConnection/connect/message-handler'
 
-export type CemiFrameEventArguments = [KnxCemiFrame]
-export type ErrorEventArguments = [KnxLinkException]
-
-export interface KnxEventEmitter extends EventEmitter {
-    addListener(eventName: 'error', listener: (...args: ErrorEventArguments) => void): this
-    once(eventName: 'error', listener: (...args: ErrorEventArguments) => void): this
-    on(eventName: 'error', listener: (...args: ErrorEventArguments) => void): this
-    emit(eventName: 'error', ...args: ErrorEventArguments): boolean
-
-    addListener(eventName: 'cemi-frame', listener: (...args: CemiFrameEventArguments) => void): this
-    once(eventName: 'cemi-frame', listener: (...args: CemiFrameEventArguments) => void): this
-    on(eventName: 'cemi-frame', listener: (...args: CemiFrameEventArguments) => void): this
-    emit(eventName: 'cemi-frame', ...args: CemiFrameEventArguments): boolean
-}
+export type OnError = (error: KnxLinkException) => void
 
 export type KnxLinkOptions = {
     /**
@@ -44,9 +29,14 @@ export type KnxLinkOptions = {
     port: number
 
     /**
-     * Event bus to use internally, may be useful to tap into low level knx messages
+     * Callback subscribed to `error` events when the link is created.
      */
-    events: KnxEventEmitter
+    onError: OnError
+
+    /**
+     * Callback subscribed to `cemi-frame` events when the link is created.
+     */
+    onCemiFrame: OnCemiFrame
 
     /**
      * Maximum number of retries on IP network failure.
@@ -60,6 +50,10 @@ export type KnxLinkOptions = {
 
     connectionTimeout: number
 }
+
+export type RequiredKnxLinkOptions = Required<Omit<KnxLinkOptions, 'onError' | 'onCemiFrame'>>
+
+export type KnxLinkConnectOptions = Partial<RequiredKnxLinkOptions> & Pick<KnxLinkOptions, 'onError' | 'onCemiFrame'>
 
 export type InternalLinkInfo = {
     sendCemiFrame: SendCemiFrame
@@ -84,7 +78,22 @@ export type LinkInfo = {
     ip: string
 }
 
-export type DatapointConstructor<T extends IDPT> = new (address: string, link: KnxLink, options: Required<KnxLinkOptions>) => T
+export type KnxDisconnectedReason = 'graceful' | 'disconnect-timeout' | 'unexpected-socket-close' | 'gateway-request' | 'network-connect-failed'
+
+export type KnxConnectingEvent = {
+    ip: string
+    port: number
+}
+
+export type KnxReconnectingEvent = {
+    delayMs: number
+}
+
+export type KnxDisconnectedEvent = {
+    reason: KnxDisconnectedReason
+}
+
+export type DatapointConstructor<T extends IDPT> = new (address: string, link: KnxLink, options: RequiredKnxLinkOptions) => T
 
 export type KnxGroupSchema<T extends IDPT> = {
     DataType: DatapointConstructor<T>

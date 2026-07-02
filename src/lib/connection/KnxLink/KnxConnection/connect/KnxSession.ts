@@ -1,6 +1,6 @@
 import { hpai, KnxIpMessage } from '../../../../message'
 import { KnxConnectionType, KnxLayer, KnxServiceId } from '../../../../enums'
-import { InternalLinkInfo, KnxLinkOptions, LinkInfo } from '../../types'
+import { InternalLinkInfo, RequiredKnxLinkOptions, LinkInfo } from '../../types'
 import connect from './connect'
 import { knxNetworkError } from '../../../../types'
 import { KnxTransport } from './KnxTransport'
@@ -9,7 +9,13 @@ import type { OnCemiFrame } from './message-handler'
 export class KnxSession {
     private constructor(private readonly linkInfo: InternalLinkInfo) {}
 
-    static async startSession(transport: KnxTransport, options: KnxLinkOptions, connectionType: KnxConnectionType, layer: KnxLayer, onCemiFrame: OnCemiFrame) {
+    static async startSession(
+        transport: KnxTransport,
+        options: RequiredKnxLinkOptions,
+        connectionType: KnxConnectionType,
+        layer: KnxLayer,
+        onCemiFrame: OnCemiFrame
+    ) {
         return new KnxSession(await connect(options, transport.getGateway(), transport.getTunnel(), connectionType, layer, onCemiFrame))
     }
 

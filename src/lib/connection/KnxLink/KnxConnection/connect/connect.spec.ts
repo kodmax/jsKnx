@@ -33,7 +33,6 @@ function connectionResponseBuffer(): Buffer {
 
 describe('connect', () => {
     const options = {
-        events: new EventEmitter(),
         maxConcurrentMessages: 16,
         maxTelegramsPerSecond: 24,
         readTimeout: 10000,
