@@ -16,6 +16,11 @@ const connectSockets = async (ip: string, port: number): Promise<[gateway: Socke
             })
 
             tunnel.on('error', err => {
+                try {
+                    gateway.close()
+                } catch {
+                    // ignore
+                }
                 reject(knxNetworkError(err))
             })
         })
