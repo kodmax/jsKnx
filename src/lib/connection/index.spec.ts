@@ -3,13 +3,13 @@ import { createSocket, Socket } from 'dgram'
 import { KnxConnection } from './KnxConnection'
 import { KnxConnectionType, KnxLayer, KnxServiceId } from '../enums'
 import { KnxLinkException } from '../types'
-import { connectSockets } from './connect/connect-sockets'
-import connect from './connect'
+import { connectSockets } from './link/connect/connect-sockets'
+import connect from './link/connect'
 import { ConnectionSockets } from './link/LinkInfo'
 import { KnxIpMessage } from '../message'
 
-jest.mock('./connect/connect-sockets')
-jest.mock('./connect')
+jest.mock('./link/connect/connect-sockets')
+jest.mock('./link/connect')
 
 const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
 const connectMock = connect as jest.MockedFunction<typeof connect>

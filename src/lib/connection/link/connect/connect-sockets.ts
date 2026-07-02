@@ -1,5 +1,5 @@
 import { createSocket, Socket } from 'dgram'
-import { knxNetworkError } from '../../types'
+import { knxNetworkError } from '../../../types'
 
 const connectSockets = async (ip: string, port: number): Promise<[gateway: Socket, tunnel: Socket]> => {
     const gateway: Socket = createSocket('udp4')

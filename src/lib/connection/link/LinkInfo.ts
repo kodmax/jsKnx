@@ -1,6 +1,6 @@
 import { Socket } from 'dgram'
 import { KnxConnectionType, KnxLayer } from '../../enums'
-import { SendCemiFrame } from '../connect/message-handler'
+import { SendCemiFrame } from './connect/message-handler'
 
 export type InternalLinkInfo = {
     sendCemiFrame: SendCemiFrame

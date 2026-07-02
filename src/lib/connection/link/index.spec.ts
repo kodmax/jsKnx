@@ -4,11 +4,11 @@ import { KnxConnection } from '..'
 import { KnxLink } from './KnxLink'
 import { DPT_Switch } from '../../dpts/b1'
 
-jest.mock('../connect/connect-sockets')
-jest.mock('../connect')
+jest.mock('./connect/connect-sockets')
+jest.mock('./connect')
 
-import { connectSockets } from '../connect/connect-sockets'
-import connect from '../connect'
+import { connectSockets } from './connect/connect-sockets'
+import connect from './connect'
 
 const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
 const connectMock = connect as jest.MockedFunction<typeof connect>

@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
-import { KnxCemiCode, KnxServiceId } from '../../enums'
-import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../../message'
-import { KnxLinkException } from '../../types'
+import { KnxCemiCode, KnxServiceId } from '../../../enums'
+import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../../../message'
+import { KnxLinkException } from '../../../types'
 import { messageHandler } from './message-handler'
 
 type MockTunnel = EventEmitter & {

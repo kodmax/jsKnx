@@ -4,7 +4,7 @@ Guidance for automated refactors, reviews, and “leak” fixes. Read before cha
 
 ## `message-handler.ts` — timers are not leaks
 
-File: [`src/lib/connection/connect/message-handler.ts`](src/lib/connection/connect/message-handler.ts)
+File: [`src/lib/connection/link/connect/message-handler.ts`](src/lib/connection/link/connect/message-handler.ts)
 
 Jest may print _“A worker process has failed to exit gracefully… Active timers”_ after the full suite. That warning is **not** evidence of a production timer leak in `messageHandler`. The timers below are **session-scoped** and **bounded**.
 
