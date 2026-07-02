@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import { KnxConnectionType, KnxLayer } from '../../enums'
 import { KnxConnection } from '..'
-import { KnxLink } from './index'
+import { KnxLink } from './KnxLink'
 import { DPT_Switch } from '../../dpts/b1'
 
 jest.mock('../connect/connect-sockets')

@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 import { createSocket, Socket } from 'dgram'
-import { KnxConnection } from './index'
+import { KnxConnection } from './KnxConnection'
 import { KnxConnectionType, KnxLayer, KnxServiceId } from '../enums'
 import { KnxLinkException } from '../types'
 import { connectSockets } from './connect/connect-sockets'

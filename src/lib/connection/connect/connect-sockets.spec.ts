@@ -9,12 +9,14 @@ const createSocketMock = createSocket as jest.MockedFunction<typeof createSocket
 
 type MockSocket = EventEmitter & {
     connect: jest.Mock
+    close: jest.Mock
 }
 
 function createMockSocket(): MockSocket {
     const socket = new EventEmitter() as MockSocket
 
     socket.connect = jest.fn()
+    socket.close = jest.fn()
 
     return socket
 }
