@@ -1,4 +1,4 @@
-import { KnxConnectionType, KnxLayer } from '../enums'
+import { KnxConnectionType, KnxLayer } from '../../../../../../enums'
 import { cri } from './cri'
 
 describe('CRI', () => {

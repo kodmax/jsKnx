@@ -1,5 +1,5 @@
-import { CemiSequenceType, KnxCemiCode, CemiPacketType, APCI } from '../enums'
-import { KnxLinkException } from '../types'
+import { CemiSequenceType, KnxCemiCode, CemiPacketType, APCI } from '../../../../../../enums'
+import { KnxLinkException } from '../../../../../../types'
 
 // function decodeAddress (address: number) {
 //     return [address >> 12, (address >> 8) & 0xf, address & 0xff]

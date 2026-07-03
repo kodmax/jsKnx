@@ -1,8 +1,8 @@
 import EventEmitter from 'events'
-import { KnxCemiCode, KnxServiceId } from '../../../../enums'
-import { KnxCemiFrame, KnxIpMessage, TunnelingRequest } from '../../../../message'
-import { KnxLinkException } from '../../../../types'
-import { messageHandler } from './message-handler'
+import { KnxCemiCode, KnxServiceId } from '../../../../../enums'
+import { KnxCemiFrame, KnxIpMessage, TunnelingFrame } from '../../../../../message'
+import { KnxLinkException } from '../../../../../types'
+import { KnxTunnel } from './KnxTunnel'
 
 type MockTunnel = EventEmitter & {
     send: jest.Mock
@@ -18,11 +18,15 @@ function createMockTunnel(): MockTunnel {
     return tunnel
 }
 
-function tunnelResponse(channel: number, seq: number): Buffer {
-    return KnxIpMessage.compose(KnxServiceId.TUNNEL_RESPONSE, [TunnelingRequest.compose(channel, seq)]).getBuffer()
+function tunnelOptions(maxConcurrentMessages = 16, maxTelegramsPerSecond = 1000) {
+    return { maxConcurrentMessages, maxTelegramsPerSecond }
 }
 
-describe('messageHandler', () => {
+function tunnelResponse(channel: number, seq: number): Buffer {
+    return KnxIpMessage.compose(KnxServiceId.TUNNEL_RESPONSE, [TunnelingFrame.compose(channel, seq)]).getBuffer()
+}
+
+describe('KnxTunnel', () => {
     beforeEach(() => {
         jest.useFakeTimers()
     })
@@ -33,10 +37,10 @@ describe('messageHandler', () => {
 
     it('queues and sends cEMI frame, resolves on tunnel ACK', async () => {
         const tunnel = createMockTunnel()
-        const sendCemi = messageHandler(tunnel as never, 3, 16, 1000, jest.fn())
+        const knxTunnel = new KnxTunnel(tunnel as never, 3, jest.fn(), tunnelOptions())
         const cemi = KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', '1/2/3')
 
-        const sendPromise = sendCemi(cemi)
+        const sendPromise = knxTunnel.sendCemiFrame(cemi)
         jest.advanceTimersByTime(1)
 
         expect(tunnel.send).toHaveBeenCalledTimes(1)
@@ -51,8 +55,8 @@ describe('messageHandler', () => {
 
     it('retries once before rejecting when ACK is missing', async () => {
         const tunnel = createMockTunnel()
-        const sendCemi = messageHandler(tunnel as never, 1, 16, 1000, jest.fn())
-        const sendPromise = sendCemi(Buffer.from([0x11]))
+        const knxTunnel = new KnxTunnel(tunnel as never, 1, jest.fn(), tunnelOptions())
+        const sendPromise = knxTunnel.sendCemiFrame(Buffer.from([0x11]))
 
         jest.advanceTimersByTime(1)
         expect(tunnel.send).toHaveBeenCalledTimes(1)
@@ -71,17 +75,17 @@ describe('messageHandler', () => {
 
     it('throws NO_CONNECTION after tunnel is closed', async () => {
         const tunnel = createMockTunnel()
-        const sendCemi = messageHandler(tunnel as never, 1, 16, 1000, jest.fn())
+        const knxTunnel = new KnxTunnel(tunnel as never, 1, jest.fn(), tunnelOptions())
 
         tunnel.emit('close')
 
-        await expect(sendCemi(Buffer.from([0x11]))).rejects.toMatchObject({ code: 'NO_CONNECTION' })
+        await expect(knxTunnel.sendCemiFrame(Buffer.from([0x11]))).rejects.toMatchObject({ code: 'NO_CONNECTION' })
     })
 
     it('ignores corrupted KNX/IP packets', () => {
         const tunnel = createMockTunnel()
         const onCemiFrame = jest.fn()
-        messageHandler(tunnel as never, 1, 16, 1000, onCemiFrame)
+        new KnxTunnel(tunnel as never, 1, onCemiFrame, tunnelOptions())
 
         tunnel.emit('message', Buffer.from([0x00, 0x00]))
 
@@ -92,10 +96,10 @@ describe('messageHandler', () => {
     it('forwards L_Data_Indication to onCemiFrame and sends tunnel ACK', () => {
         const tunnel = createMockTunnel()
         const onCemiFrame = jest.fn()
-        messageHandler(tunnel as never, 2, 16, 1000, onCemiFrame)
+        new KnxTunnel(tunnel as never, 2, onCemiFrame, tunnelOptions())
 
         const cemi = KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '4/5/6', Buffer.from([0x00, 0x01]))
-        const packet = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(2, 9), cemi]).getBuffer()
+        const packet = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingFrame.compose(2, 9), cemi]).getBuffer()
 
         tunnel.emit('message', packet)
 
@@ -108,9 +112,9 @@ describe('messageHandler', () => {
     it('ignores corrupt cEMI inside valid tunnel request', () => {
         const tunnel = createMockTunnel()
         const onCemiFrame = jest.fn()
-        messageHandler(tunnel as never, 2, 16, 1000, onCemiFrame)
+        new KnxTunnel(tunnel as never, 2, onCemiFrame, tunnelOptions())
 
-        const packet = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingRequest.compose(2, 1), Buffer.from([0x00])]).getBuffer()
+        const packet = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingFrame.compose(2, 1), Buffer.from([0x00])]).getBuffer()
 
         tunnel.emit('message', packet)
 
@@ -120,10 +124,10 @@ describe('messageHandler', () => {
 
     it('respects maxConcurrentMessages before dequeuing next telegram', async () => {
         const tunnel = createMockTunnel()
-        const sendCemi = messageHandler(tunnel as never, 1, 1, 1000, jest.fn())
+        const knxTunnel = new KnxTunnel(tunnel as never, 1, jest.fn(), tunnelOptions(1))
 
-        sendCemi(Buffer.from([0x11]))
-        sendCemi(Buffer.from([0x12]))
+        knxTunnel.sendCemiFrame(Buffer.from([0x11]))
+        knxTunnel.sendCemiFrame(Buffer.from([0x12]))
 
         jest.advanceTimersByTime(1)
         expect(tunnel.send).toHaveBeenCalledTimes(1)
@@ -136,16 +140,16 @@ describe('messageHandler', () => {
     })
 })
 
-describe('messageHandler KnxLinkException', () => {
+describe('KnxTunnel KnxLinkException', () => {
     it('uses KnxLinkException for closed connection', async () => {
         jest.useRealTimers()
 
         const tunnel = createMockTunnel()
-        const sendCemi = messageHandler(tunnel as never, 1, 16, 1000, jest.fn())
+        const knxTunnel = new KnxTunnel(tunnel as never, 1, jest.fn(), tunnelOptions())
         tunnel.emit('close')
 
         try {
-            await sendCemi(Buffer.from([0x11]))
+            await knxTunnel.sendCemiFrame(Buffer.from([0x11]))
         } catch (e) {
             expect(e).toBeInstanceOf(KnxLinkException)
         }

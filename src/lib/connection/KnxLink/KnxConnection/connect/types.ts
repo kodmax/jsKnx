@@ -1,6 +1,5 @@
 import { KnxConnectionType, KnxLayer } from '../../../../enums'
 import type { InternalLinkInfo, RequiredKnxLinkOptions } from '../../types'
-import type { OnCemiFrame } from './message-handler'
 import type { Socket } from 'dgram'
 
 export type Connect = (
@@ -8,8 +7,7 @@ export type Connect = (
     gateway: Socket,
     tunnel: Socket,
     connectionType: KnxConnectionType,
-    layer: KnxLayer,
-    onCemiFrame: OnCemiFrame
+    layer: KnxLayer
 ) => Promise<InternalLinkInfo>
 
 export type {
@@ -22,4 +20,4 @@ export type {
     KnxReconnectingEvent,
     KnxDisconnectedEvent
 } from '../../types'
-export type { OnCemiFrame } from './message-handler'
+export type { OnCemiFrame } from './KnxTunnel/types'

@@ -49,7 +49,6 @@ function createMockSession(linkInfo?: Partial<InternalLinkInfo>): MockKnxSession
     let onDisconnectResponseCb: (() => void) | undefined
 
     const info: InternalLinkInfo = {
-        sendCemiFrame: jest.fn(),
         connectionType: KnxConnectionType.TUNNEL_CONNECTION,
         individualAddress: '1.1.1',
         channel: 1,

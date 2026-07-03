@@ -1,5 +1,5 @@
-import { APCI, KnxCemiCode } from '../enums'
-import { KnxLinkException } from '../types'
+import { APCI, KnxCemiCode } from '../../../../../../enums'
+import { KnxLinkException } from '../../../../../../types'
 import { KnxCemiFrame } from './cemi-frame'
 
 describe('cEMI frame', () => {

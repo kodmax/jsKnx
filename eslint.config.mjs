@@ -55,7 +55,7 @@ export default tseslint.config(
             }
         },
         rules: {
-            '@typescript-eslint/no-unused-vars': 'warn',
+            '@typescript-eslint/no-unused-vars': 'error',
             '@typescript-eslint/no-empty-object-type': 'off',
             '@typescript-eslint/no-explicit-any': 'off',
             '@typescript-eslint/require-await': 'off',

@@ -4,10 +4,22 @@ import { InternalLinkInfo, RequiredKnxLinkOptions, LinkInfo } from '../../types'
 import connect from './connect'
 import { knxNetworkError } from '../../../../types'
 import { KnxTransport } from './KnxTransport'
-import type { OnCemiFrame } from './message-handler'
+import { KnxTunnel } from './KnxTunnel/KnxTunnel'
+import { OnCemiFrame } from './types'
 
 export class KnxSession {
-    private constructor(private readonly linkInfo: InternalLinkInfo) {}
+    private readonly knxTunnel: KnxTunnel
+
+    private constructor(
+        private readonly linkInfo: InternalLinkInfo,
+        options: RequiredKnxLinkOptions,
+        onCemiFrame: OnCemiFrame
+    ) {
+        this.knxTunnel = new KnxTunnel(this.linkInfo.tunnel, this.linkInfo.channel, onCemiFrame, {
+            maxConcurrentMessages: options.maxConcurrentMessages,
+            maxTelegramsPerSecond: options.maxTelegramsPerSecond
+        })
+    }
 
     static async startSession(
         transport: KnxTransport,
@@ -16,11 +28,17 @@ export class KnxSession {
         layer: KnxLayer,
         onCemiFrame: OnCemiFrame
     ) {
-        return new KnxSession(await connect(options, transport.getGateway(), transport.getTunnel(), connectionType, layer, onCemiFrame))
+        return new KnxSession(await connect(options, transport.getGateway(), transport.getTunnel(), connectionType, layer), options, onCemiFrame)
     }
 
     async sendCemiFrame(cemiFrame: Buffer): Promise<void> {
-        return this.linkInfo.sendCemiFrame(cemiFrame)
+        return this.knxTunnel.sendCemiFrame(cemiFrame)
+    }
+
+    onGatewayMessage(cb: (message: KnxIpMessage) => void): void {
+        this.linkInfo.gateway.on('message', data => {
+            cb(KnxIpMessage.decode(data))
+        })
     }
 
     onDisconnectResponse(cb: () => void): void {

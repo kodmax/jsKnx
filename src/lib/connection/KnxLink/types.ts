@@ -3,8 +3,6 @@ import { KnxConnectionType, KnxLayer } from '../../enums'
 import { KnxLinkException } from '../../types'
 import type { IDPT } from '../../dpts/formats'
 import type { KnxLink } from './KnxLink'
-import type { SendCemiFrame } from './KnxConnection/connect/message-handler'
-
 export type OnError = (error: KnxLinkException) => void
 
 export type KnxLinkOptions = {
@@ -46,8 +44,6 @@ export type RequiredKnxLinkOptions = Required<KnxLinkOptions>
 export type KnxLinkConstructorOptions = Partial<RequiredKnxLinkOptions>
 
 export type InternalLinkInfo = {
-    sendCemiFrame: SendCemiFrame
-
     connectionType: KnxConnectionType
     individualAddress: string
     channel: number

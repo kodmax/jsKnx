@@ -44,7 +44,6 @@ function linkInfo(gateway: MockSocket, tunnel: MockSocket): InternalLinkInfo {
     return {
         gateway: gateway as unknown as Socket,
         tunnel: tunnel as unknown as Socket,
-        sendCemiFrame: jest.fn(),
         connectionType: KnxConnectionType.TUNNEL_CONNECTION,
         individualAddress: '1.1.1',
         channel: 1,
@@ -90,7 +89,7 @@ describe('KnxSession', () => {
 
             const session = await KnxSession.startSession(transport, options, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, onCemiFrame)
 
-            expect(connectMock).toHaveBeenCalledWith(options, gateway, tunnel, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, onCemiFrame)
+            expect(connectMock).toHaveBeenCalledWith(options, gateway, tunnel, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER)
             expect(session.getLinkInfo()).toEqual({
                 connectionType: KnxConnectionType.TUNNEL_CONNECTION,
                 individualAddress: '1.1.1',

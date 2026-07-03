@@ -1,5 +1,5 @@
-import { KnxServiceId } from '../enums'
-import { KnxLinkException } from '../types'
+import { KnxServiceId } from '../../../../../../enums'
+import { KnxLinkException } from '../../../../../../types'
 import { KnxIpMessage } from './ip-message'
 
 describe('KNX IP Message', () => {

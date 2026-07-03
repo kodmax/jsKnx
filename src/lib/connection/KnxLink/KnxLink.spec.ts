@@ -1,10 +1,10 @@
 import EventEmitter from 'events'
-import { KnxConnectionType, KnxLayer } from '../../enums'
+import { KnxConnectionType, KnxLayer, KnxCemiCode, KnxServiceId } from '../../enums'
 import { KnxConnection } from './KnxConnection'
 import { KnxLink } from './KnxLink'
 import { DPT_Switch } from '../../dpts/b1'
-import { KnxCemiCode } from '../../enums'
-import { KnxCemiFrame } from '../../message'
+import { KnxCemiFrame, KnxIpMessage, TunnelingFrame } from '../../message'
+import { InternalLinkInfo } from './types'
 
 jest.mock('./KnxConnection/connect/connect-sockets')
 jest.mock('./KnxConnection/connect/connect')
@@ -14,6 +14,19 @@ import connect from './KnxConnection/connect/connect'
 
 const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
 const connectMock = connect as jest.MockedFunction<typeof connect>
+
+function mockLinkInfo(gateway: EventEmitter, tunnel: EventEmitter): InternalLinkInfo {
+    return {
+        individualAddress: '1.1.1',
+        ip: '192.168.0.8',
+        port: 3671,
+        connectionType: KnxConnectionType.TUNNEL_CONNECTION,
+        channel: 1,
+        gateway: gateway as never,
+        tunnel: tunnel as never,
+        layer: KnxLayer.LINK_LAYER
+    }
+}
 
 describe('KnxLink', () => {
     beforeEach(() => {
@@ -27,17 +40,7 @@ describe('KnxLink', () => {
         const tunnel = new EventEmitter()
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
-        connectMock.mockResolvedValue({
-            sendCemiFrame: jest.fn(),
-            individualAddress: '1.1.1',
-            ip: '192.168.0.8',
-            port: 3671,
-            connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-            channel: 1,
-            gateway: gateway as never,
-            tunnel: tunnel as never,
-            layer: KnxLayer.LINK_LAYER
-        })
+        connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
         const link = new KnxLink('192.168.0.8')
         await link.connect()
@@ -55,17 +58,7 @@ describe('KnxLink', () => {
         const tunnel = new EventEmitter()
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
-        connectMock.mockResolvedValue({
-            sendCemiFrame: jest.fn(),
-            individualAddress: '1.1.1',
-            ip: '192.168.0.8',
-            port: 3671,
-            connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-            channel: 1,
-            gateway: gateway as never,
-            tunnel: tunnel as never,
-            layer: KnxLayer.LINK_LAYER
-        })
+        connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
         const link = new KnxLink('192.168.0.8')
         link.on('error', () => {})
@@ -77,22 +70,11 @@ describe('KnxLink', () => {
     })
 
     it('connect() creates link with default options', async () => {
-        const sendCemiFrame = jest.fn().mockResolvedValue(undefined)
         const gateway = new EventEmitter()
         const tunnel = new EventEmitter()
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
-        connectMock.mockResolvedValue({
-            sendCemiFrame,
-            individualAddress: '1.1.1',
-            ip: '192.168.0.8',
-            port: 3671,
-            connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-            channel: 1,
-            gateway: gateway as never,
-            tunnel: tunnel as never,
-            layer: KnxLayer.LINK_LAYER
-        })
+        connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
         const link = new KnxLink('192.168.0.8')
         link.on('error', () => {})
@@ -114,17 +96,7 @@ describe('KnxLink', () => {
         const tunnel = new EventEmitter()
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
-        connectMock.mockResolvedValue({
-            sendCemiFrame: jest.fn(),
-            individualAddress: '1.1.1',
-            ip: '192.168.0.8',
-            port: 3671,
-            connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-            channel: 1,
-            gateway: gateway as never,
-            tunnel: tunnel as never,
-            layer: KnxLayer.LINK_LAYER
-        })
+        connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
         const link = new KnxLink('192.168.0.8')
         link.on('error', () => {})
@@ -138,30 +110,20 @@ describe('KnxLink', () => {
         const onError = jest.fn()
         const onCemiFrame = jest.fn()
         const gateway = new EventEmitter()
-        const tunnel = new EventEmitter()
-        const cemiFrame = KnxCemiFrame.decode(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '1/2/3', Buffer.from([0x00, 0x01])))
+        const tunnel = Object.assign(new EventEmitter(), { send: jest.fn() })
+        const cemiBuffer = KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '1/2/3', Buffer.from([0x00, 0x01]))
+        const cemiFrame = KnxCemiFrame.decode(cemiBuffer)
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
-        connectMock.mockImplementation(async (_options, _gateway, _tunnel, _connectionType, _layer, frameListener) => {
-            frameListener(cemiFrame)
-
-            return {
-                sendCemiFrame: jest.fn(),
-                individualAddress: '1.1.1',
-                ip: '192.168.0.8',
-                port: 3671,
-                connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-                channel: 1,
-                gateway: gateway as never,
-                tunnel: tunnel as never,
-                layer: KnxLayer.LINK_LAYER
-            }
-        })
+        connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
         const link = new KnxLink('192.168.0.8')
         link.on('error', onError)
         link.on('cemi-frame', onCemiFrame)
         await link.connect()
+
+        const packet = KnxIpMessage.compose(KnxServiceId.TUNNEL_REQUEST, [TunnelingFrame.compose(1, 9), cemiBuffer]).getBuffer()
+        tunnel.emit('message', packet)
 
         expect(onCemiFrame).toHaveBeenCalledWith(cemiFrame)
 

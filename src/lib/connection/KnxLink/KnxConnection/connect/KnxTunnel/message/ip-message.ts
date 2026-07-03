@@ -1,13 +1,11 @@
-import { KnxServiceId } from '../enums'
-import { KnxLinkException } from '../types'
+import { KnxServiceId } from '../../../../../../enums'
+import { KnxLinkException } from '../../../../../../types'
 
 export class KnxIpMessage {
     private readonly serviceId: KnxServiceId
-    private readonly body: Buffer
 
     private constructor(private readonly message: Buffer) {
         this.serviceId = message.readUint16BE(2)
-        this.body = message.slice(6)
     }
 
     public getServiceId(): KnxServiceId {
@@ -30,7 +28,7 @@ export class KnxIpMessage {
     }
 
     public getBody(index = 0): Buffer {
-        return this.message.slice(6 + index)
+        return this.message.subarray(6 + index)
     }
 
     public getBuffer(): Buffer {
