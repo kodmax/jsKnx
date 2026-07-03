@@ -1,6 +1,6 @@
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
 import { KnxConnection } from './KnxConnection'
-import { IDPT } from '@repo/knx-dpts'
+import { DataPointAbstract } from '@repo/knx-dpts'
 import { KnxCemiFrame } from '@repo/knx-message'
 import { KnxEventEmitter, type KnxEventMap, type KnxEventName } from '@repo/knx-common'
 import { KnxGroupSchema, KnxLinkConstructorOptions, LinkInfo, RequiredKnxLinkOptions } from './types'
@@ -14,6 +14,21 @@ export class KnxLink {
     private readonly connection: KnxConnection
     private readonly options: RequiredKnxLinkOptions
 
+    /**
+     * Create a KNX/IP tunnel link to a gateway.
+     *
+     * All `options` fields are optional. Defaults applied when omitted:
+     *
+     * | Option | Default |
+     * | --- | --- |
+     * | `maxTelegramsPerSecond` | `24` |
+     * | `maxConcurrentMessages` | `16` |
+     * | `readTimeout` | `10000` |
+     * | `connectionTimeout` | `10000` |
+     * | `maxRetry` | `Infinity` |
+     * | `retryPause` | `3000` |
+     * | `port` | `3671` |
+     */
     public constructor(ip: string, options: KnxLinkConstructorOptions = {}) {
         this.options = {
             maxTelegramsPerSecond: 24,
@@ -74,7 +89,7 @@ export class KnxLink {
         return this.connection.disconnect()
     }
 
-    public getDatapoint<T extends IDPT>({ address, DataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
+    public getDatapoint<T extends DataPointAbstract<unknown>>({ address, DataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
         const dataPoint = new DataType(address, this, this.options)
 
         if (init) {

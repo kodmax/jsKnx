@@ -1,9 +1,7 @@
 import { KnxCemiFrame } from '@repo/knx-message'
 import { KnxDatapointLink, RequiredKnxLinkOptions } from '@repo/knx-common'
 
-export function createF32<T>(
-    DataType: new (address: string, link: KnxDatapointLink<KnxCemiFrame>, options: RequiredKnxLinkOptions) => T
-): T {
+export function createF32<T>(DataType: new (address: string, link: KnxDatapointLink<KnxCemiFrame>, options: RequiredKnxLinkOptions) => T): T {
     const link = { sendCemiFrame: jest.fn().mockResolvedValue(undefined) } as unknown as KnxDatapointLink<KnxCemiFrame>
     const options = { readTimeout: 1000 } as RequiredKnxLinkOptions
 

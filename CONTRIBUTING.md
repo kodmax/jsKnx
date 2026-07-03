@@ -31,7 +31,7 @@ Use clear, imperative subject lines. Examples:
 
 - `fix connection guard when connect() is called twice`
 - `add tests for tunnel-request timeout`
-- `document KnxLinkOptions in README`
+- `document KnxLinkConstructorOptions in README`
 
 ## Reporting issues
 

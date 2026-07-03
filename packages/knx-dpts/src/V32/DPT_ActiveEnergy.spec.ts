@@ -2,9 +2,7 @@ import { KnxCemiFrame } from '@repo/knx-message'
 import { KnxDatapointLink, RequiredKnxLinkOptions } from '@repo/knx-common'
 import { DPT_ActiveEnergy } from './DPT_ActiveEnergy'
 
-function createV32<T>(
-    DataType: new (address: string, link: KnxDatapointLink<KnxCemiFrame>, options: RequiredKnxLinkOptions) => T
-): T {
+function createV32<T>(DataType: new (address: string, link: KnxDatapointLink<KnxCemiFrame>, options: RequiredKnxLinkOptions) => T): T {
     const link = { sendCemiFrame: jest.fn().mockResolvedValue(undefined) } as unknown as KnxDatapointLink<KnxCemiFrame>
     const options = { readTimeout: 1000 } as RequiredKnxLinkOptions
 

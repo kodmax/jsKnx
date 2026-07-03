@@ -1,11 +1,9 @@
 import { Socket } from 'dgram'
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
-import type { IDPT } from '@repo/knx-dpts'
-import type { KnxLinkException } from '@repo/knx-common'
+import type { DataPointAbstract } from '@repo/knx-dpts'
 import type { KnxLink } from './KnxLink'
 
 export type {
-    KnxLinkOptions,
     RequiredKnxLinkOptions,
     KnxLinkConstructorOptions,
     LinkInfo,
@@ -16,8 +14,6 @@ export type {
     KnxReconnectingEvent,
     KnxDisconnectedEvent
 } from '@repo/knx-common'
-
-export type OnError = (error: KnxLinkException) => void
 
 export type InternalLinkInfo = {
     connectionType: KnxConnectionType
@@ -31,6 +27,6 @@ export type InternalLinkInfo = {
     ip: string
 }
 
-export type DatapointConstructor<T extends IDPT> = import('@repo/knx-common').DatapointConstructor<T, KnxLink>
+export type DatapointConstructor<T extends DataPointAbstract<unknown>> = import('@repo/knx-common').DatapointConstructor<T, KnxLink>
 
-export type KnxGroupSchema<T extends IDPT> = import('@repo/knx-common').KnxGroupSchema<T, KnxLink>
+export type KnxGroupSchema<T extends DataPointAbstract<unknown>> = import('@repo/knx-common').KnxGroupSchema<T, KnxLink>

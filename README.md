@@ -8,14 +8,14 @@ Zero runtime dependencies. Works on Node.js 20+.
 
 This repository is a [Turborepo](https://turbo.build/) monorepo:
 
-| Path                                       | Package           | Description                                                                      |
-| ------------------------------------------ | ----------------- | -------------------------------------------------------------------------------- |
-| [`packages/js-knx`](packages/js-knx)       | `js-knx`          | Published library + CLI (`knx-read`, `knx-write`)                                |
-| [`packages/knx-common`](packages/knx-common) | `@repo/knx-common` | Private workspace package; shared Knx types and utilities vendored into `js-knx` dist at build time |
-| [`packages/knx-message`](packages/knx-message) | `@repo/knx-message` | Private workspace package; cEMI message types vendored into `js-knx` dist at build time |
-| [`packages/knx-dpts`](packages/knx-dpts)   | `@repo/knx-dpts`  | Private workspace package; DPT classes vendored into `js-knx` dist at build time        |
-| [`packages/knx-enums`](packages/knx-enums) | `@repo/knx-enums` | Private workspace package; enum code vendored into `js-knx` dist at build time   |
-| [`apps/examples`](apps/examples)           | `@jsknx/examples` | Local demo and schema samples                                                    |
+| Path                                           | Package             | Description                                                                                         |
+| ---------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------- |
+| [`packages/js-knx`](packages/js-knx)           | `js-knx`            | Published library + CLI (`knx-read`, `knx-write`)                                                   |
+| [`packages/knx-common`](packages/knx-common)   | `@repo/knx-common`  | Private workspace package; shared Knx types and utilities vendored into `js-knx` dist at build time |
+| [`packages/knx-message`](packages/knx-message) | `@repo/knx-message` | Private workspace package; cEMI message types vendored into `js-knx` dist at build time             |
+| [`packages/knx-dpts`](packages/knx-dpts)       | `@repo/knx-dpts`    | Private workspace package; DPT classes vendored into `js-knx` dist at build time                    |
+| [`packages/knx-enums`](packages/knx-enums)     | `@repo/knx-enums`   | Private workspace package; enum code vendored into `js-knx` dist at build time                      |
+| [`apps/examples`](apps/examples)               | `@jsknx/examples`   | Local demo and schema samples                                                                       |
 
 Root scripts orchestrate all workspaces via Turbo (`yarn build`, `yarn test`, `yarn lint`, `yarn typecheck`, `yarn dev`).
 
@@ -203,20 +203,21 @@ Each DPT is a class exported from `js-knx`. Instantiate via `knx.getDatapoint({ 
 
 Several DPT classes expose convenience methods (e.g. `DPT_Switch.on()` / `.off()`, `DPT_HVACMode` mode constants).
 
-## `KnxLinkOptions`
+## `KnxLinkConstructorOptions`
 
-All options are optional when calling `KnxLink.connect(ip, options)`.
+All options are optional when calling `new KnxLink(ip, options)`.
 
-| Option                  | Default            | Description                                                                                 |
-| ----------------------- | ------------------ | ------------------------------------------------------------------------------------------- |
-| `readTimeout`           | `10000`            | Timeout (ms) for `read()` waiting for a group response                                      |
-| `connectionTimeout`     | `10000`            | Timeout (ms) for the initial KNX/IP tunnel handshake                                        |
-| `maxRetry`              | `Infinity`         | Retries when the gateway rejects connection (e.g. both tunnel slots busy)                   |
-| `retryPause`            | `3000`             | Pause (ms) between connection retries; also used for automatic reconnect after network loss |
-| `maxConcurrentMessages` | `16`               | Max telegrams awaiting gateway ACK before back-pressure                                     |
-| `maxTelegramsPerSecond` | `24`               | Send rate limit; lower if you see read timeouts on busy buses                               |
-| `port`                  | `3671`             | KNX/IP UDP port of the gateway                                                              |
-| `events`                | new `EventEmitter` | Event bus for `error` and `cemi-frame` events                                               |
+| Option                  | Default    | Description                                                                                 |
+| ----------------------- | ---------- | ------------------------------------------------------------------------------------------- |
+| `readTimeout`           | `10000`    | Timeout (ms) for `read()` waiting for a group response                                      |
+| `connectionTimeout`     | `10000`    | Timeout (ms) for the initial KNX/IP tunnel handshake                                        |
+| `maxRetry`              | `Infinity` | Retries when the gateway rejects connection (e.g. both tunnel slots busy)                   |
+| `retryPause`            | `3000`     | Pause (ms) between connection retries; also used for automatic reconnect after network loss |
+| `maxConcurrentMessages` | `16`       | Max telegrams awaiting gateway ACK before back-pressure                                     |
+| `maxTelegramsPerSecond` | `24`       | Send rate limit; lower if you see read timeouts on busy buses                               |
+| `port`                  | `3671`     | KNX/IP UDP port of the gateway                                                              |
+
+Subscribe to link events with `knx.on('error', …)` and `knx.on('cemi-frame', …)`.
 
 ### Connection behaviour
 
@@ -226,17 +227,17 @@ All options are optional when calling `KnxLink.connect(ip, options)`.
 
 ## Datapoint API
 
-Every DPT instance implements `IDPT`:
+Every DPT class extends `DataPointAbstract`:
 
-| Method                 | Description                                          |
-| ---------------------- | ---------------------------------------------------- |
-| `read()`               | Send group read, wait for response (`KnxReading<T>`) |
-| `write(value)`         | Send group write (DPT-specific value type)           |
-| `requestValue()`       | Send group read without waiting                      |
-| `addValueListener(cb)` | Subscribe to incoming group writes/responses         |
-| `getAddress()`         | Group address string                                 |
-| `getLink()`            | Parent `KnxLink`                                     |
-| `toString(value?)`     | Human-readable label                                 |
+| Method                 | Description                                                |
+| ---------------------- | ---------------------------------------------------------- |
+| `read()`               | Send group read, wait for response (`KnxReading<T>`)       |
+| `write(value)`         | Send group write (DPT-specific value type)                 |
+| `requestValue()`       | Send group read without waiting                            |
+| `addValueListener(cb)` | Subscribe to incoming group writes/responses               |
+| `getAddress()`         | Group address string                                       |
+| `getLink()`            | Parent link (`KnxDatapointLink`; implemented by `KnxLink`) |
+| `toString(value?)`     | Human-readable label                                       |
 
 `KnxReading` shape:
 

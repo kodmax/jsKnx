@@ -1,1 +1,1 @@
-export { IDPT, DataPointAbstract } from './DataPointAbstract'
+export { DataPointAbstract } from './DataPointAbstract'

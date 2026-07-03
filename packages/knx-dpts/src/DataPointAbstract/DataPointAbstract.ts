@@ -3,7 +3,7 @@ import { KnxCemiFrame } from '@repo/knx-message'
 import { APCI, DPT, KnxCemiCode } from '@repo/knx-enums'
 import EventEmitter from 'events'
 
-export interface IDPT {
+interface IDPT {
     readonly type: DPT
     readonly unit: string
     read(): Promise<KnxReading<unknown>>

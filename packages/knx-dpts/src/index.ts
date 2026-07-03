@@ -1,4 +1,4 @@
-export { DataPointAbstract, IDPT } from './DataPointAbstract'
+export { DataPointAbstract } from './DataPointAbstract'
 export * from './B1'
 export * from './U8'
 export * from './V32'

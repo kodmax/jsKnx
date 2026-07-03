@@ -11,7 +11,6 @@ export type Connect = (
 ) => Promise<InternalLinkInfo>
 
 export type {
-    KnxLinkOptions,
     RequiredKnxLinkOptions,
     InternalLinkInfo,
     LinkInfo,
