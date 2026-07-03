@@ -1,8 +1,5 @@
 import { Socket } from 'dgram'
-import { KnxConnection } from '.'
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
-import { KnxLinkException } from '@repo/knx-common'
-import { KnxEventEmitter } from '@repo/knx-common'
 import { KnxCemiFrame } from '@repo/knx-message'
 import { InternalLinkInfo } from '../types'
 import { KnxSession } from './connect/KnxSession'
@@ -10,6 +7,19 @@ import { KnxTransport } from './connect/KnxTransport'
 
 jest.mock('./connect/KnxTransport')
 jest.mock('./connect/KnxSession')
+jest.mock('@repo/knx-common', () => {
+    const actual = jest.requireActual<typeof import('@repo/knx-common')>('@repo/knx-common')
+
+    return {
+        ...actual,
+        retry: jest.fn(actual.retry)
+    }
+})
+
+import { KnxConnection } from '.'
+import { retry, KnxLinkException, KnxEventEmitter } from '@repo/knx-common'
+
+const retryMock = retry as jest.MockedFunction<typeof retry>
 
 const openTransportMock = KnxTransport.open as jest.MockedFunction<typeof KnxTransport.open>
 const startSessionMock = KnxSession.startSession as jest.MockedFunction<typeof KnxSession.startSession>
@@ -153,6 +163,7 @@ describe('KnxConnection', () => {
         openTransportMock.mockReset()
         startSessionMock.mockReset()
         startSessionMock.mockImplementation(async () => createMockSession() as unknown as KnxSession)
+        retryMock.mockImplementation(async (_maxRetry, _msPause, cb) => cb(jest.fn()))
     })
 
     describe('connect', () => {
@@ -169,17 +180,28 @@ describe('KnxConnection', () => {
         })
 
         it('throws CONNECTION_IN_PROGRESS while connect is in progress', async () => {
-            openTransportMock.mockImplementation(async () => new Promise(() => {}))
+            let rejectTransportOpen!: (error: Error) => void
+
+            openTransportMock.mockImplementation(
+                () =>
+                    new Promise((_resolve, reject) => {
+                        rejectTransportOpen = reject
+                    })
+            )
 
             const connection = createConnection()
+            events.on('error', () => {})
 
-            void connection.connect()
+            const firstConnect = connection.connect().catch(() => {})
 
             await expect(connection.connect()).rejects.toMatchObject({
                 code: 'CONNECTION_IN_PROGRESS'
             } satisfies Partial<KnxLinkException>)
 
             expect(openTransportMock).toHaveBeenCalledTimes(1)
+
+            rejectTransportOpen(new Error('abort pending connect'))
+            await firstConnect
         })
 
         it('resets connecting after transport open failure', async () => {
@@ -238,6 +260,81 @@ describe('KnxConnection', () => {
         })
     })
 
+    describe('connect retry', () => {
+        beforeEach(() => {
+            const { retry: realRetry } = jest.requireActual<typeof import('@repo/knx-common')>('@repo/knx-common')
+            retryMock.mockImplementation(realRetry)
+        })
+
+        afterEach(() => {
+            jest.clearAllTimers()
+            jest.useRealTimers()
+        })
+
+        it('calls startSession 1 + maxRetry times before failing', async () => {
+            jest.useFakeTimers()
+            events.on('error', () => {})
+            openTransportMock.mockResolvedValue(createMockTransport() as unknown as KnxTransport)
+            startSessionMock.mockRejectedValue(
+                new KnxLinkException('CONNECTION_ERROR', 'Error connecting to KNX/IP Gateway: NO_MORE_CHANNELS', { knxErrorCode: 37 })
+            )
+
+            const connection = new KnxConnection(
+                { ...options, maxRetry: 3, retryPause: 1000 },
+                '192.168.0.8',
+                KnxConnectionType.TUNNEL_CONNECTION,
+                KnxLayer.LINK_LAYER,
+                events
+            )
+
+            const connectPromise = connection.connect()
+            const assertion = expect(connectPromise).rejects.toMatchObject({ code: 'CONNECTION_ERROR' })
+
+            await jest.advanceTimersByTimeAsync(3000)
+
+            await assertion
+            expect(retryMock).toHaveBeenCalledWith(3, 1000, expect.any(Function))
+            expect(startSessionMock).toHaveBeenCalledTimes(4)
+        })
+
+        it('emits starting-session on each connect retry attempt', async () => {
+            jest.useFakeTimers()
+            const startingSession = jest.fn()
+
+            events.on('error', () => {})
+            events.on('starting-session', startingSession)
+            openTransportMock.mockResolvedValue(createMockTransport() as unknown as KnxTransport)
+
+            let attempts = 0
+            startSessionMock.mockImplementation(async () => {
+                attempts++
+
+                if (attempts < 4) {
+                    throw new KnxLinkException('CONNECTION_ERROR', 'Error connecting to KNX/IP Gateway: NO_MORE_CHANNELS', { knxErrorCode: 37 })
+                }
+
+                return createMockSession() as unknown as KnxSession
+            })
+
+            const connection = new KnxConnection(
+                { ...options, maxRetry: 3, retryPause: 1000 },
+                '192.168.0.8',
+                KnxConnectionType.TUNNEL_CONNECTION,
+                KnxLayer.LINK_LAYER,
+                events
+            )
+
+            const connectPromise = connection.connect()
+
+            await jest.advanceTimersByTimeAsync(3000)
+            await connectPromise
+
+            expect(startSessionMock).toHaveBeenCalledTimes(4)
+            expect(startingSession).toHaveBeenCalledTimes(4)
+            expect(startingSession).toHaveBeenCalledWith({ ip: '192.168.0.8', port: 3671 })
+        })
+    })
+
     describe('lifecycle events', () => {
         it('emits connecting, network-connection-established, starting-session, and connected on successful connect', async () => {
             const connecting = jest.fn()
@@ -281,44 +378,6 @@ describe('KnxConnection', () => {
             await expect(createConnection().connect()).rejects.toThrow('socket error')
 
             expect(startingSession).not.toHaveBeenCalled()
-        })
-
-        it('emits starting-session on each startSession retry', async () => {
-            jest.useFakeTimers()
-            const startingSession = jest.fn()
-
-            events.on('error', () => {})
-            events.on('starting-session', startingSession)
-            openTransportMock.mockResolvedValue(createMockTransport() as unknown as KnxTransport)
-
-            let attempts = 0
-            startSessionMock.mockImplementation(async () => {
-                attempts++
-
-                if (attempts < 3) {
-                    throw new KnxLinkException('CONNECTION_ERROR', 'Error connecting to KNX/IP Gateway: NO_MORE_CHANNELS', { knxErrorCode: 37 })
-                }
-
-                return createMockSession() as unknown as KnxSession
-            })
-
-            const connection = new KnxConnection(
-                { ...options, maxRetry: 5, retryPause: 1000 },
-                '192.168.0.8',
-                KnxConnectionType.TUNNEL_CONNECTION,
-                KnxLayer.LINK_LAYER,
-                events
-            )
-
-            const connectPromise = connection.connect()
-
-            await jest.advanceTimersByTimeAsync(2000)
-            await connectPromise
-
-            expect(startingSession).toHaveBeenCalledTimes(3)
-            expect(startingSession).toHaveBeenCalledWith({ ip: '192.168.0.8', port: 3671 })
-
-            jest.useRealTimers()
         })
 
         it('does not emit network-connection-established when transport open fails', async () => {

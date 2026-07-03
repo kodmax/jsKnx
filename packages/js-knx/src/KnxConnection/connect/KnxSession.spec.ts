@@ -36,6 +36,15 @@ function createMockSocket(): MockSocket {
     return socket
 }
 
+const activeTunnels: MockSocket[] = []
+
+function createMockTunnel(): MockSocket {
+    const tunnel = createMockSocket()
+    activeTunnels.push(tunnel)
+
+    return tunnel
+}
+
 function knxIpBuffer(serviceId: KnxServiceId): Buffer {
     return KnxIpMessage.compose(serviceId, []).getBuffer()
 }
@@ -77,12 +86,20 @@ describe('KnxSession', () => {
     beforeEach(() => {
         connectMock.mockReset()
         onCemiFrame.mockReset()
+        activeTunnels.length = 0
+    })
+
+    afterEach(() => {
+        for (const tunnel of activeTunnels) {
+            tunnel.emit('close')
+        }
+        activeTunnels.length = 0
     })
 
     describe('startSession', () => {
         it('creates session from connect handshake', async () => {
             const gateway = createMockSocket()
-            const tunnel = createMockSocket()
+            const tunnel = createMockTunnel()
             const transport = createMockTransport(gateway, tunnel)
 
             connectMock.mockResolvedValue(linkInfo(gateway, tunnel))
@@ -104,7 +121,7 @@ describe('KnxSession', () => {
     describe('onDisconnectRequest', () => {
         it('fires callback on gateway DISCONNECT_REQUEST', async () => {
             const gateway = createMockSocket()
-            const tunnel = createMockSocket()
+            const tunnel = createMockTunnel()
             const transport = createMockTransport(gateway, tunnel)
 
             connectMock.mockResolvedValue(linkInfo(gateway, tunnel))
@@ -120,7 +137,7 @@ describe('KnxSession', () => {
 
         it('ignores other gateway messages', async () => {
             const gateway = createMockSocket()
-            const tunnel = createMockSocket()
+            const tunnel = createMockTunnel()
             const transport = createMockTransport(gateway, tunnel)
 
             connectMock.mockResolvedValue(linkInfo(gateway, tunnel))
@@ -138,7 +155,7 @@ describe('KnxSession', () => {
     describe('onDisconnectResponse', () => {
         it('fires callback on gateway DISCONNECT_RESPONSE', async () => {
             const gateway = createMockSocket()
-            const tunnel = createMockSocket()
+            const tunnel = createMockTunnel()
             const transport = createMockTransport(gateway, tunnel)
 
             connectMock.mockResolvedValue(linkInfo(gateway, tunnel))
@@ -156,7 +173,7 @@ describe('KnxSession', () => {
     describe('requestDisconnect', () => {
         it('sends DISCONNECT_REQUEST with channel and hpai', async () => {
             const gateway = createMockSocket()
-            const tunnel = createMockSocket()
+            const tunnel = createMockTunnel()
             const transport = createMockTransport(gateway, tunnel)
 
             connectMock.mockResolvedValue(linkInfo(gateway, tunnel))

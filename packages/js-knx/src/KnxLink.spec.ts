@@ -17,6 +17,25 @@ import connect from './KnxConnection/connect/connect'
 const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
 const connectMock = connect as jest.MockedFunction<typeof connect>
 
+const activeTunnels: EventEmitter[] = []
+const activeLinks: KnxLink[] = []
+
+function trackTunnel(tunnel: EventEmitter): EventEmitter {
+    activeTunnels.push(tunnel)
+
+    return tunnel
+}
+
+function trackConnectedLink(link: KnxLink): KnxLink {
+    activeLinks.push(link)
+
+    return link
+}
+
+function createTestLink(ip = '192.168.0.8'): KnxLink {
+    return new KnxLink(ip, { maxRetry: 0 })
+}
+
 function mockLinkInfo(gateway: EventEmitter, tunnel: EventEmitter): InternalLinkInfo {
     return {
         individualAddress: '1.1.1',
@@ -34,17 +53,31 @@ describe('KnxLink', () => {
     beforeEach(() => {
         connectSocketsMock.mockReset()
         connectMock.mockReset()
+        activeTunnels.length = 0
+    })
+
+    afterEach(() => {
+        for (const link of activeLinks) {
+            ;(link as unknown as { connection: { explicitDisconnect: boolean } }).connection.explicitDisconnect = true
+        }
+
+        for (const tunnel of activeTunnels) {
+            tunnel.emit('close')
+        }
+
+        activeLinks.length = 0
+        activeTunnels.length = 0
     })
 
     it('connect() warns when no error listener is registered', async () => {
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
         const gateway = new EventEmitter()
-        const tunnel = new EventEmitter()
+        const tunnel = trackTunnel(new EventEmitter())
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
-        const link = new KnxLink('192.168.0.8')
+        const link = trackConnectedLink(createTestLink())
         await link.connect()
 
         expect(warn).toHaveBeenCalledWith(
@@ -57,12 +90,12 @@ describe('KnxLink', () => {
     it('connect() does not warn when error listener is registered before connect()', async () => {
         const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
         const gateway = new EventEmitter()
-        const tunnel = new EventEmitter()
+        const tunnel = trackTunnel(new EventEmitter())
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
-        const link = new KnxLink('192.168.0.8')
+        const link = trackConnectedLink(createTestLink())
         link.on('error', () => {})
         await link.connect()
 
@@ -73,12 +106,12 @@ describe('KnxLink', () => {
 
     it('connect() creates link with default options', async () => {
         const gateway = new EventEmitter()
-        const tunnel = new EventEmitter()
+        const tunnel = trackTunnel(new EventEmitter())
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
-        const link = new KnxLink('192.168.0.8')
+        const link = trackConnectedLink(createTestLink())
         link.on('error', () => {})
         await link.connect()
 
@@ -95,12 +128,12 @@ describe('KnxLink', () => {
     it('connecting listener registered before connect() is invoked', async () => {
         const connecting = jest.fn()
         const gateway = new EventEmitter()
-        const tunnel = new EventEmitter()
+        const tunnel = trackTunnel(new EventEmitter())
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
-        const link = new KnxLink('192.168.0.8')
+        const link = trackConnectedLink(createTestLink())
         link.on('error', () => {})
         link.on('connecting', connecting)
         await link.connect()
@@ -112,14 +145,14 @@ describe('KnxLink', () => {
         const onError = jest.fn()
         const onCemiFrame = jest.fn()
         const gateway = new EventEmitter()
-        const tunnel = Object.assign(new EventEmitter(), { send: jest.fn() })
+        const tunnel = trackTunnel(Object.assign(new EventEmitter(), { send: jest.fn() }))
         const cemiBuffer = KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '1/2/3', Buffer.from([0x00, 0x01]))
         const cemiFrame = KnxCemiFrame.decode(cemiBuffer)
 
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue(mockLinkInfo(gateway, tunnel))
 
-        const link = new KnxLink('192.168.0.8')
+        const link = trackConnectedLink(createTestLink())
         link.on('error', onError)
         link.on('cemi-frame', onCemiFrame)
         await link.connect()

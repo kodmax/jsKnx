@@ -15,7 +15,18 @@ function createMockTunnel(): MockTunnel {
     const tunnel = new EventEmitter() as MockTunnel
 
     tunnel.send = jest.fn()
-    tunnel.close = jest.fn()
+    tunnel.close = jest.fn(() => {
+        tunnel.emit('close')
+    })
+
+    return tunnel
+}
+
+const activeTunnels: MockTunnel[] = []
+
+function trackMockTunnel(): MockTunnel {
+    const tunnel = createMockTunnel()
+    activeTunnels.push(tunnel)
 
     return tunnel
 }
@@ -31,14 +42,21 @@ function tunnelResponse(channel: number, seq: number): Buffer {
 describe('KnxTunnel', () => {
     beforeEach(() => {
         jest.useFakeTimers()
+        activeTunnels.length = 0
     })
 
     afterEach(() => {
+        for (const tunnel of activeTunnels) {
+            tunnel.emit('close')
+        }
+
+        activeTunnels.length = 0
+        jest.clearAllTimers()
         jest.useRealTimers()
     })
 
     it('queues and sends cEMI frame, resolves on tunnel ACK', async () => {
-        const tunnel = createMockTunnel()
+        const tunnel = trackMockTunnel()
         const knxTunnel = new KnxTunnel(tunnel as never, 3, jest.fn(), tunnelOptions())
         const cemi = KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', '1/2/3')
 
@@ -56,7 +74,7 @@ describe('KnxTunnel', () => {
     })
 
     it('retries once before rejecting when ACK is missing', async () => {
-        const tunnel = createMockTunnel()
+        const tunnel = trackMockTunnel()
         const knxTunnel = new KnxTunnel(tunnel as never, 1, jest.fn(), tunnelOptions())
         const sendPromise = knxTunnel.sendCemiFrame(Buffer.from([0x11]))
 
@@ -76,7 +94,7 @@ describe('KnxTunnel', () => {
     })
 
     it('throws NO_CONNECTION after tunnel is closed', async () => {
-        const tunnel = createMockTunnel()
+        const tunnel = trackMockTunnel()
         const knxTunnel = new KnxTunnel(tunnel as never, 1, jest.fn(), tunnelOptions())
 
         tunnel.emit('close')
@@ -85,7 +103,7 @@ describe('KnxTunnel', () => {
     })
 
     it('ignores corrupted KNX/IP packets', () => {
-        const tunnel = createMockTunnel()
+        const tunnel = trackMockTunnel()
         const onCemiFrame = jest.fn()
         new KnxTunnel(tunnel as never, 1, onCemiFrame, tunnelOptions())
 
@@ -96,7 +114,7 @@ describe('KnxTunnel', () => {
     })
 
     it('forwards L_Data_Indication to onCemiFrame and sends tunnel ACK', () => {
-        const tunnel = createMockTunnel()
+        const tunnel = trackMockTunnel()
         const onCemiFrame = jest.fn()
         new KnxTunnel(tunnel as never, 2, onCemiFrame, tunnelOptions())
 
@@ -112,7 +130,7 @@ describe('KnxTunnel', () => {
     })
 
     it('ignores corrupt cEMI inside valid tunnel request', () => {
-        const tunnel = createMockTunnel()
+        const tunnel = trackMockTunnel()
         const onCemiFrame = jest.fn()
         new KnxTunnel(tunnel as never, 2, onCemiFrame, tunnelOptions())
 
@@ -125,7 +143,7 @@ describe('KnxTunnel', () => {
     })
 
     it('respects maxConcurrentMessages before dequeuing next telegram', async () => {
-        const tunnel = createMockTunnel()
+        const tunnel = trackMockTunnel()
         const knxTunnel = new KnxTunnel(tunnel as never, 1, jest.fn(), tunnelOptions(1))
 
         knxTunnel.sendCemiFrame(Buffer.from([0x11]))
@@ -143,10 +161,18 @@ describe('KnxTunnel', () => {
 })
 
 describe('KnxTunnel KnxLinkException', () => {
+    afterEach(() => {
+        for (const tunnel of activeTunnels) {
+            tunnel.emit('close')
+        }
+
+        activeTunnels.length = 0
+    })
+
     it('uses KnxLinkException for closed connection', async () => {
         jest.useRealTimers()
 
-        const tunnel = createMockTunnel()
+        const tunnel = trackMockTunnel()
         const knxTunnel = new KnxTunnel(tunnel as never, 1, jest.fn(), tunnelOptions())
         tunnel.emit('close')
 
