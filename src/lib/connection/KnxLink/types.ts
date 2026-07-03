@@ -49,7 +49,7 @@ export type InternalLinkInfo = {
     sendCemiFrame: SendCemiFrame
 
     connectionType: KnxConnectionType
-    gatewayAddress: string
+    individualAddress: string
     channel: number
     layer: KnxLayer
 
@@ -61,7 +61,7 @@ export type InternalLinkInfo = {
 
 export type LinkInfo = {
     connectionType: KnxConnectionType
-    gatewayAddress: string
+    individualAddress: string
     layer: KnxLayer
     channel: number
     port: number

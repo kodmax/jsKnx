@@ -46,7 +46,7 @@ export class KnxSession {
     public getLinkInfo(): LinkInfo {
         return {
             connectionType: this.linkInfo.connectionType,
-            gatewayAddress: this.linkInfo.gatewayAddress,
+            individualAddress: this.linkInfo.individualAddress,
             channel: this.linkInfo.channel,
             layer: this.linkInfo.layer,
             port: this.linkInfo.port,

@@ -11,7 +11,7 @@ const connect: Connect = async (options, gateway, tunnel, connectionType, layer,
     return {
         sendCemiFrame: messageHandler(tunnel, channel, options.maxConcurrentMessages, options.maxTelegramsPerSecond, onCemiFrame),
 
-        gatewayAddress: [address >> 12, (address >> 8) & 0xf, address & 0xff].join('.'),
+        individualAddress: [address >> 12, (address >> 8) & 0xf, address & 0xff].join('.'),
         ip: Uint8Array.from(connectionInfo.slice(10, 14)).join('.'),
         port: connectionInfo.readUint16BE(14),
 

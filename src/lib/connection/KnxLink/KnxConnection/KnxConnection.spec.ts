@@ -51,7 +51,7 @@ function createMockSession(linkInfo?: Partial<InternalLinkInfo>): MockKnxSession
     const info: InternalLinkInfo = {
         sendCemiFrame: jest.fn(),
         connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-        gatewayAddress: '1.1.1',
+        individualAddress: '1.1.1',
         channel: 1,
         layer: KnxLayer.LINK_LAYER,
         port: 3671,
@@ -70,7 +70,7 @@ function createMockSession(linkInfo?: Partial<InternalLinkInfo>): MockKnxSession
         }),
         getLinkInfo: jest.fn(() => ({
             connectionType: info.connectionType,
-            gatewayAddress: info.gatewayAddress,
+            individualAddress: info.individualAddress,
             channel: info.channel,
             layer: info.layer,
             port: info.port,
@@ -204,7 +204,7 @@ describe('KnxConnection', () => {
             await connection.connect()
 
             expect(startSessionMock).toHaveBeenCalledWith(transport, options, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, expect.any(Function))
-            expect(connection.getLinkInfo().gatewayAddress).toBe('1.1.1')
+            expect(connection.getLinkInfo().individualAddress).toBe('1.1.1')
         })
 
         it('emits error when transport open fails', async () => {
@@ -261,7 +261,7 @@ describe('KnxConnection', () => {
             expect(startingSession).toHaveBeenCalledWith(endpoint)
             expect(connected).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    gatewayAddress: '1.1.1',
+                    individualAddress: '1.1.1',
                     ip: '192.168.0.8',
                     port: 3671
                 })

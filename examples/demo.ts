@@ -1,9 +1,7 @@
 import { DPT_HVACMode, KnxLink } from '../src/lib'
 
 async function main(): Promise<void> {
-    console.log('Connecting ...')
-
-    const knx = new KnxLink('192.168.1.18', { readTimeout: 500 })
+    const knx = new KnxLink('192.168.1.8', { readTimeout: 500 })
     knx.on('error', e => {
         console.error(e)
     })
@@ -20,7 +18,7 @@ async function main(): Promise<void> {
     await knx.connect()
 
     const linkInfo = knx.getLinkInfo()
-    console.log(`KNX Link established. Gateway address: ${linkInfo.gatewayAddress}, channel: ${Number(linkInfo.channel).toString(16)}.`)
+    console.log(`KNX Link established. Gateway address: ${linkInfo.individualAddress}, channel: ${Number(linkInfo.channel).toString(16)}.`)
 
     const livingroom = await knx.getDatapoint({ DataType: DPT_HVACMode, address: '2/0/4' }).read()
     const bathroom = await knx.getDatapoint({ DataType: DPT_HVACMode, address: '2/1/4' }).read()

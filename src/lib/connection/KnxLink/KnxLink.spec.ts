@@ -29,7 +29,7 @@ describe('KnxLink', () => {
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue({
             sendCemiFrame: jest.fn(),
-            gatewayAddress: '1.1.1',
+            individualAddress: '1.1.1',
             ip: '192.168.0.8',
             port: 3671,
             connectionType: KnxConnectionType.TUNNEL_CONNECTION,
@@ -57,7 +57,7 @@ describe('KnxLink', () => {
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue({
             sendCemiFrame: jest.fn(),
-            gatewayAddress: '1.1.1',
+            individualAddress: '1.1.1',
             ip: '192.168.0.8',
             port: 3671,
             connectionType: KnxConnectionType.TUNNEL_CONNECTION,
@@ -84,7 +84,7 @@ describe('KnxLink', () => {
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue({
             sendCemiFrame,
-            gatewayAddress: '1.1.1',
+            individualAddress: '1.1.1',
             ip: '192.168.0.8',
             port: 3671,
             connectionType: KnxConnectionType.TUNNEL_CONNECTION,
@@ -100,7 +100,7 @@ describe('KnxLink', () => {
 
         expect(link.getLinkInfo()).toEqual({
             connectionType: KnxConnectionType.TUNNEL_CONNECTION,
-            gatewayAddress: '1.1.1',
+            individualAddress: '1.1.1',
             channel: 1,
             layer: KnxLayer.LINK_LAYER,
             port: 3671,
@@ -116,7 +116,7 @@ describe('KnxLink', () => {
         connectSocketsMock.mockResolvedValue([gateway, tunnel] as never)
         connectMock.mockResolvedValue({
             sendCemiFrame: jest.fn(),
-            gatewayAddress: '1.1.1',
+            individualAddress: '1.1.1',
             ip: '192.168.0.8',
             port: 3671,
             connectionType: KnxConnectionType.TUNNEL_CONNECTION,
@@ -147,7 +147,7 @@ describe('KnxLink', () => {
 
             return {
                 sendCemiFrame: jest.fn(),
-                gatewayAddress: '1.1.1',
+                individualAddress: '1.1.1',
                 ip: '192.168.0.8',
                 port: 3671,
                 connectionType: KnxConnectionType.TUNNEL_CONNECTION,

@@ -67,7 +67,7 @@ describe('connect', () => {
         const linkInfo = await connect(options, gateway as never, tunnel as never, KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, onCemiFrame)
 
         expect(linkInfo.channel).toBe(5)
-        expect(linkInfo.gatewayAddress).toBe('1.2.3')
+        expect(linkInfo.individualAddress).toBe('1.2.3')
         expect(linkInfo.ip).toBe('192.168.0.8')
         expect(linkInfo.port).toBe(3671)
         expect(linkInfo.sendCemiFrame).toBe(sendCemiFrame)
