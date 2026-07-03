@@ -8,14 +8,13 @@ Zero runtime dependencies. Works on Node.js 20+.
 
 This repository is a [Turborepo](https://turbo.build/) monorepo:
 
-| Path                                           | Package             | Description                                                                                         |
-| ---------------------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------- |
-| [`packages/js-knx`](packages/js-knx)           | `js-knx`            | Published library + CLI (`knx-read`, `knx-write`)                                                   |
-| [`packages/knx-common`](packages/knx-common)   | `@repo/knx-common`  | Private workspace package; shared Knx types and utilities vendored into `js-knx` dist at build time |
-| [`packages/knx-message`](packages/knx-message) | `@repo/knx-message` | Private workspace package; cEMI message types vendored into `js-knx` dist at build time             |
-| [`packages/knx-dpts`](packages/knx-dpts)       | `@repo/knx-dpts`    | Private workspace package; DPT classes vendored into `js-knx` dist at build time                    |
-| [`packages/knx-enums`](packages/knx-enums)     | `@repo/knx-enums`   | Private workspace package; enum code vendored into `js-knx` dist at build time                      |
-| [`apps/examples`](apps/examples)               | `@jsknx/examples`   | Local demo and schema samples                                                                       |
+| Path                                         | Package            | Description                                                                                         |
+| -------------------------------------------- | ------------------ | --------------------------------------------------------------------------------------------------- |
+| [`packages/js-knx`](packages/js-knx)         | `js-knx`           | Published library + CLI (`knx-read`, `knx-write`)                                                   |
+| [`packages/knx-common`](packages/knx-common) | `@repo/knx-common` | Private workspace package; shared KNX types, protocol helpers, and cEMI vendored into `js-knx` dist |
+| [`packages/knx-dpts`](packages/knx-dpts)     | `@repo/knx-dpts`   | Private workspace package; DPT classes vendored into `js-knx` dist at build time                    |
+| [`packages/knx-enums`](packages/knx-enums)   | `@repo/knx-enums`  | Private workspace package; enum code vendored into `js-knx` dist at build time                      |
+| [`apps/examples`](apps/examples)             | `@jsknx/examples`  | Local demo and schema samples                                                                       |
 
 Root scripts orchestrate all workspaces via Turbo (`yarn build`, `yarn test`, `yarn lint`, `yarn typecheck`, `yarn dev`).
 

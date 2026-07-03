@@ -8,7 +8,6 @@ module.exports = {
     moduleNameMapper: {
         '^@repo/knx-dpts$': '<rootDir>/../knx-dpts/src/index.ts',
         '^@repo/knx-enums$': '<rootDir>/../knx-enums/src/index.ts',
-        '^@repo/knx-message$': '<rootDir>/../knx-message/src/index.ts',
         '^@repo/knx-common$': '<rootDir>/../knx-common/src/index.ts'
     },
     collectCoverageFrom: ['src/**/*.ts', '!**/*.spec.ts'],

@@ -1,4 +1,4 @@
-import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxCemiFrame } from '@repo/knx-common'
 import { KnxDatapointLink, RequiredKnxLinkOptions } from '@repo/knx-common'
 
 export function createB1<T>(DataType: new (address: string, link: KnxDatapointLink<KnxCemiFrame>, options: RequiredKnxLinkOptions) => T, address = '2/0/4'): T {

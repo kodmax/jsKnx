@@ -1,12 +1,10 @@
-import { hpai } from '../KnxTunnel/message/hpai'
+import connect, { hpai } from './helpers'
 import { KnxIpMessage } from '@repo/knx-common'
 import { KnxConnectionType, KnxLayer, KnxServiceId } from '@repo/knx-enums'
 import { InternalLinkInfo } from '../../types'
 import { RequiredKnxLinkOptions, LinkInfo, knxNetworkError } from '@repo/knx-common'
-import connect from './connect'
-import { KnxTransport } from '../KnxTransport/KnxTransport'
-import { KnxTunnel } from '../KnxTunnel/KnxTunnel'
-import { OnCemiFrame } from '../KnxTunnel/types'
+import { KnxTransport } from './KnxTransport'
+import { KnxTunnel, OnCemiFrame } from './KnxTunnel'
 
 export class KnxSession {
     private readonly knxTunnel: KnxTunnel

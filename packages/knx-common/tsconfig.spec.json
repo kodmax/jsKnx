@@ -1,0 +1,12 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+        "types": ["node", "jest"],
+        "baseUrl": ".",
+        "paths": {
+            "@repo/knx-enums": ["../knx-enums/src/index.ts"]
+        }
+    },
+    "exclude": ["node_modules"],
+    "include": ["src/**/*.ts"]
+}

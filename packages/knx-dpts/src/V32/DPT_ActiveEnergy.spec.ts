@@ -1,4 +1,4 @@
-import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxCemiFrame } from '@repo/knx-common'
 import { KnxDatapointLink, RequiredKnxLinkOptions } from '@repo/knx-common'
 import { DPT_ActiveEnergy } from './DPT_ActiveEnergy'
 

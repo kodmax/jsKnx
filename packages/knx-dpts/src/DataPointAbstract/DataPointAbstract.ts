@@ -1,5 +1,5 @@
 import { KnxLinkException, KnxReading, KnxDatapointLink, RequiredKnxLinkOptions } from '@repo/knx-common'
-import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxCemiFrame } from '@repo/knx-common'
 import { APCI, DPT, KnxCemiCode } from '@repo/knx-enums'
 import EventEmitter from 'events'
 

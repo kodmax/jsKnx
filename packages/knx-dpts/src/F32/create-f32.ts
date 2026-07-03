@@ -1,4 +1,4 @@
-import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxCemiFrame } from '@repo/knx-common'
 import { KnxDatapointLink, RequiredKnxLinkOptions } from '@repo/knx-common'
 
 export function createF32<T>(DataType: new (address: string, link: KnxDatapointLink<KnxCemiFrame>, options: RequiredKnxLinkOptions) => T): T {

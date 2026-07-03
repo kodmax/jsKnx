@@ -6,7 +6,6 @@
         "paths": {
             "@repo/knx-dpts": ["../knx-dpts/src/index.ts"],
             "@repo/knx-enums": ["../knx-enums/src/index.ts"],
-            "@repo/knx-message": ["../knx-message/src/index.ts"],
             "@repo/knx-common": ["../knx-common/src/index.ts"]
         }
     },

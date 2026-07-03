@@ -53,7 +53,7 @@ function walkAndRewrite(dir, knxCommonDir, enumsDir) {
         const fullPath = path.join(dir, entry.name)
 
         if (entry.isDirectory()) {
-            if (entry.name === 'enums' || entry.name === 'dpts' || entry.name === 'knx-common' || entry.name === 'knx-message') {
+            if (entry.name === 'enums' || entry.name === 'dpts' || entry.name === 'knx-common') {
                 continue
             }
 

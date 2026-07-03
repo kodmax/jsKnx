@@ -1,8 +1,15 @@
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
 import { KnxConnection } from './KnxConnection'
 import { DataPointAbstract } from '@repo/knx-dpts'
-import { KnxCemiFrame } from '@repo/knx-message'
-import { KnxEventEmitter, type KnxEventMap, type KnxEventName, type KnxLinkConstructorOptions, type LinkInfo, type RequiredKnxLinkOptions } from '@repo/knx-common'
+import { KnxCemiFrame } from '@repo/knx-common'
+import {
+    KnxEventEmitter,
+    type KnxEventMap,
+    type KnxEventName,
+    type KnxLinkConstructorOptions,
+    type LinkInfo,
+    type RequiredKnxLinkOptions
+} from '@repo/knx-common'
 import { KnxGroupSchema } from './types'
 
 type KnxEventListener<K extends KnxEventName<KnxCemiFrame>> = (arg: KnxEventMap<KnxCemiFrame>[K]) => void

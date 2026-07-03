@@ -28,7 +28,6 @@
     "license": "GPL-3.0",
     "devDependencies": {
         "@repo/knx-enums": "*",
-        "@repo/knx-message": "*",
         "@repo/knx-common": "*"
     }
 }

@@ -1,5 +1,5 @@
 import { APCI, DPT, KnxCemiCode } from '@repo/knx-enums'
-import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxCemiFrame } from '@repo/knx-common'
 import { KnxDatapointLink, KnxReading, RequiredKnxLinkOptions } from '@repo/knx-common'
 import { DataPointAbstract } from './DataPointAbstract'
 import { U8 } from '../U8'

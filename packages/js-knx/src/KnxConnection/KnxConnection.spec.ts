@@ -1,11 +1,11 @@
 import { Socket } from 'dgram'
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
-import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxCemiFrame } from '@repo/knx-common'
 import { InternalLinkInfo } from '../types'
 import { KnxSession } from './KnxSession/KnxSession'
-import { KnxTransport } from './KnxTransport/KnxTransport'
+import { KnxTransport } from './KnxSession/KnxTransport'
 
-jest.mock('./KnxTransport/KnxTransport')
+jest.mock('./KnxSession/KnxTransport')
 jest.mock('./KnxSession/KnxSession')
 jest.mock('@repo/knx-common', () => {
     const actual = jest.requireActual<typeof import('@repo/knx-common')>('@repo/knx-common')
