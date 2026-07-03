@@ -1,0 +1,12 @@
+{
+    "name": "@jsknx/examples",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "ts-node --project tsconfig.json src/demo.ts",
+        "typecheck": "tsc --noEmit"
+    },
+    "dependencies": {
+        "js-knx": "*"
+    }
+}

@@ -24,9 +24,6 @@ jobs:
             - name: Install dependencies
               run: yarn install --frozen-lockfile
 
-            - name: Build
-              run: yarn build
-
             - name: Format
               run: yarn format:ci
 
@@ -35,6 +32,9 @@ jobs:
 
             - name: Typecheck
               run: yarn typecheck
+
+            - name: Build
+              run: yarn build
 
             - name: Test
               run: yarn test

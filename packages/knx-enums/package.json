@@ -1,0 +1,28 @@
+{
+    "name": "@repo/knx-enums",
+    "version": "0.0.0",
+    "private": true,
+    "description": "KNX protocol enums for js-knx",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/esm/index.js",
+            "require": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/patch-esm-extensions.mjs",
+        "lint": "eslint . --fix",
+        "lint:ci": "eslint .",
+        "typecheck": "tsc --noEmit && tsc -p tsconfig.esm.json --noEmit"
+    },
+    "license": "GPL-3.0"
+}

@@ -4,6 +4,19 @@ TypeScript/JavaScript client for KNX/IP gateways (tunneling connection, link lay
 
 Zero runtime dependencies. Works on Node.js 20+.
 
+## Monorepo
+
+This repository is a [Turborepo](https://turbo.build/) monorepo:
+
+| Path                                       | Package           | Description                                                                      |
+| ------------------------------------------ | ----------------- | -------------------------------------------------------------------------------- |
+| [`packages/js-knx`](packages/js-knx)       | `js-knx`          | Published library + CLI (`knx-read`, `knx-write`)                                |
+| [`packages/knx-dpts`](packages/knx-dpts)   | `@repo/knx-dpts`  | Private workspace package; DPT classes vendored into `js-knx` dist at build time |
+| [`packages/knx-enums`](packages/knx-enums) | `@repo/knx-enums` | Private workspace package; enum code vendored into `js-knx` dist at build time   |
+| [`apps/examples`](apps/examples)           | `@jsknx/examples` | Local demo and schema samples                                                    |
+
+Root scripts orchestrate all workspaces via Turbo (`yarn build`, `yarn test`, `yarn lint`, `yarn typecheck`, `yarn dev`).
+
 ## Installation
 
 ```bash

@@ -1,0 +1,55 @@
+{
+    "name": "js-knx",
+    "version": "2.20.0",
+    "description": "KNX IP/Gateway client",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/kodmax/jsKnx.git",
+        "directory": "packages/js-knx"
+    },
+    "bugs": {
+        "url": "https://github.com/kodmax/jsKnx/issues"
+    },
+    "homepage": "https://github.com/kodmax/jsKnx#readme",
+    "keywords": [
+        "KNX"
+    ],
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/esm/index.js",
+            "require": "./dist/index.js",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "bin",
+        "LICENSE.md",
+        "README.md"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "scripts": {
+        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/vendor-knx-enums.mjs && node scripts/vendor-knx-dpts.mjs && node scripts/patch-esm-extensions.mjs",
+        "test": "jest",
+        "lint": "eslint . --fix",
+        "lint:ci": "eslint .",
+        "typecheck": "tsc --noEmit && tsc -p tsconfig.esm.json --noEmit"
+    },
+    "author": "Marcin Malinowski <mm.kodmax@gmail.com>",
+    "license": "GPL-3.0",
+    "devDependencies": {
+        "@repo/knx-dpts": "*",
+        "@repo/knx-enums": "*"
+    },
+    "bin": {
+        "knx-write": "./bin/write.js",
+        "knx-read": "./bin/read.js"
+    }
+}

@@ -16,6 +16,8 @@ yarn typecheck
 yarn test
 ```
 
+The publishable library lives in [`packages/js-knx`](packages/js-knx). KNX enums and datapoint types live in private workspace packages [`packages/knx-enums`](packages/knx-enums) and [`packages/knx-dpts`](packages/knx-dpts) — vendored into `js-knx` during build, not published separately. Examples are in [`apps/examples`](apps/examples).
+
 ## Pull requests
 
 - Keep changes focused — one logical fix or feature per PR

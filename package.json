@@ -1,52 +1,20 @@
 {
-    "name": "js-knx",
-    "version": "2.20.0",
-    "description": "KNX IP/Gateway client",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/kodmax/jsKnx.git"
-    },
-    "bugs": {
-        "url": "https://github.com/kodmax/jsKnx/issues"
-    },
-    "homepage": "https://github.com/kodmax/jsKnx#readme",
-    "keywords": [
-        "KNX"
+    "name": "jsknx-monorepo",
+    "private": true,
+    "workspaces": [
+        "packages/*",
+        "apps/*"
     ],
-    "main": "./dist/index.js",
-    "types": "./dist/index.d.ts",
-    "sideEffects": false,
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "import": "./dist/esm/index.js",
-            "require": "./dist/index.js",
-            "default": "./dist/index.js"
-        },
-        "./package.json": "./package.json"
-    },
-    "files": [
-        "dist",
-        "bin",
-        "LICENSE.md",
-        "README.md"
-    ],
-    "engines": {
-        "node": ">=20"
-    },
     "scripts": {
-        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/patch-esm-extensions.mjs",
-        "test": "jest",
+        "build": "turbo run build",
+        "test": "turbo run test",
+        "lint": "turbo run lint",
+        "lint:ci": "turbo run lint:ci",
+        "typecheck": "turbo run typecheck",
         "format": "prettier --write .",
         "format:ci": "prettier --check .",
-        "lint": "eslint . --fix",
-        "lint:ci": "eslint .",
-        "typecheck": "tsc --noEmit && tsc -p tsconfig.esm.json --noEmit",
-        "dev": "ts-node --project tsconfig.examples.json examples/demo.ts",
-        "prepublishOnly": "npm run build && npm test"
+        "dev": "turbo run dev"
     },
-    "author": "Marcin Malinowski <mm.kodmax@gmail.com>",
-    "license": "GPL-3.0",
     "devDependencies": {
         "@eslint/js": "^9.28.0",
         "@types/jest": "^29.5.14",
@@ -57,11 +25,12 @@
         "prettier": "^3.5.3",
         "ts-jest": "^29.3.4",
         "ts-node": "^10.9.2",
+        "turbo": "^2.5.4",
         "typescript": "^5.8.3",
         "typescript-eslint": "^8.33.0"
     },
-    "bin": {
-        "knx-write": "./bin/write.js",
-        "knx-read": "./bin/read.js"
+    "packageManager": "yarn@1.22.22",
+    "engines": {
+        "node": ">=20"
     }
 }
