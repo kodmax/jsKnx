@@ -1,4 +1,4 @@
-import { tunnelRequest } from './KnxTunnel/tunnel-request'
+import { tunnelRequest } from '../KnxTunnel/tunnel-request'
 import type { Connect } from './types'
 
 const connect: Connect = async (options, gateway, tunnel, connectionType, layer) => {

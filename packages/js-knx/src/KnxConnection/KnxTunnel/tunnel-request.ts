@@ -2,7 +2,7 @@ import { KnxConnectionType, KnxErrorCode, KnxLayer, KnxServiceId } from '@repo/k
 import { KnxLinkException, knxNetworkError } from '@repo/knx-common'
 import { cri } from './message/cri'
 import { hpai } from './message/hpai'
-import { KnxIpMessage } from './message/ip-message'
+import { KnxIpMessage } from '@repo/knx-common'
 import { AddressInfo } from 'net'
 import { Socket } from 'dgram'
 

@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import { KnxCemiCode, KnxServiceId } from '@repo/knx-enums'
 import { KnxCemiFrame } from '@repo/knx-message'
-import { KnxIpMessage } from './message/ip-message'
+import { KnxIpMessage } from '@repo/knx-common'
 import { TunnelingFrame } from './message/TunnelingFrame'
 import { KnxLinkException } from '@repo/knx-common'
 import { KnxTunnel } from './KnxTunnel'

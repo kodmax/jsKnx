@@ -1,7 +1,7 @@
 import { KnxCemiCode, KnxServiceId } from '@repo/knx-enums'
 import { KnxLinkException } from '@repo/knx-common'
 import { TunnelingFrame } from './TunnelingFrame'
-import { KnxIpMessage } from './ip-message'
+import { KnxIpMessage } from '@repo/knx-common'
 
 describe('TunnelingFrame', () => {
     it('sequence must match', () => {

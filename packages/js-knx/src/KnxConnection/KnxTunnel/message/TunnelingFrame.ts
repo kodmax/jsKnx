@@ -1,6 +1,6 @@
 import { KnxCemiCode, KnxServiceId } from '@repo/knx-enums'
 import { KnxLinkException } from '@repo/knx-common'
-import { KnxIpMessage } from './ip-message'
+import { KnxIpMessage } from '@repo/knx-common'
 
 export class TunnelingFrame {
     public constructor(private readonly frame: Buffer) {

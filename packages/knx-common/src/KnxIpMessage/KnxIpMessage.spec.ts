@@ -1,8 +1,8 @@
 import { KnxServiceId } from '@repo/knx-enums'
-import { KnxLinkException } from '@repo/knx-common'
-import { KnxIpMessage } from './ip-message'
+import { KnxLinkException } from '../KnxLinkException'
+import { KnxIpMessage } from './KnxIpMessage'
 
-describe('KNX IP Message', () => {
+describe('KnxIpMessage', () => {
     it('header', () => {
         const message = KnxIpMessage.compose(KnxServiceId.DESCRIPTION_REQUEST, [Buffer.from([1]), Buffer.from([2]), Buffer.from([3])])
         expect(message.getBuffer()).toEqual(Buffer.from([0x06, 0x10, 0x02, 0x03, 0x00, 0x09, 0x01, 0x02, 0x3]))

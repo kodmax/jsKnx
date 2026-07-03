@@ -1,8 +1,7 @@
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
-import { RequiredKnxLinkOptions, LinkInfo, KnxDisconnectedReason } from '../types'
-import { retry, KnxLinkException, KnxEventEmitter } from '@repo/knx-common'
-import { KnxSession } from './connect/KnxSession'
-import { KnxTransport } from './connect/KnxTransport'
+import { retry, KnxLinkException, KnxEventEmitter, RequiredKnxLinkOptions, LinkInfo, KnxDisconnectedReason } from '@repo/knx-common'
+import { KnxSession } from './KnxSession/KnxSession'
+import { KnxTransport } from './KnxTransport/KnxTransport'
 import { KnxCemiFrame } from '@repo/knx-message'
 
 const DISCONNECT_RESPONSE_TIMEOUT_MS = 30_000

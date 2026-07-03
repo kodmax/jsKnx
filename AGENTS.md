@@ -4,7 +4,7 @@ Guidance for automated refactors, reviews, and “leak” fixes. Read before cha
 
 ## `KnxTunnel.ts` — timers are not leaks
 
-File: [`packages/js-knx/src/KnxConnection/connect/KnxTunnel/KnxTunnel.ts`](packages/js-knx/src/KnxConnection/connect/KnxTunnel/KnxTunnel.ts)
+File: [`packages/js-knx/src/KnxConnection/KnxTunnel/KnxTunnel.ts`](packages/js-knx/src/KnxConnection/KnxTunnel/KnxTunnel.ts)
 
 Jest may print _“A worker process has failed to exit gracefully… Active timers”_ after the full suite. That warning is **not** evidence of a production timer leak in `KnxTunnel`. The timers below are **session-scoped** and **bounded**.
 

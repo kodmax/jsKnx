@@ -1,4 +1,5 @@
-import type { KnxCemiFrame, KnxIpMessage } from './message'
+import type { KnxIpMessage } from '@repo/knx-common'
+import type { KnxCemiFrame } from './message'
 import type { KnxLinkException } from '@repo/knx-common'
 
 export type KnxTunnelOptions = {

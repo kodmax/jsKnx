@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 import { KnxConnectionType, KnxErrorCode, KnxLayer, KnxServiceId } from '@repo/knx-enums'
-import { KnxIpMessage } from './message/ip-message'
+import { KnxIpMessage } from '@repo/knx-common'
 import { KnxLinkException } from '@repo/knx-common'
 import { tunnelRequest } from './tunnel-request'
 

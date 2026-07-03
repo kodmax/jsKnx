@@ -2,9 +2,9 @@ import EventEmitter from 'events'
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
 import { KnxLinkException } from '@repo/knx-common'
 import connect from './connect'
-import { tunnelRequest } from './KnxTunnel/tunnel-request'
+import { tunnelRequest } from '../KnxTunnel/tunnel-request'
 
-jest.mock('./KnxTunnel/tunnel-request')
+jest.mock('../KnxTunnel/tunnel-request')
 
 const tunnelRequestMock = tunnelRequest as jest.MockedFunction<typeof tunnelRequest>
 
