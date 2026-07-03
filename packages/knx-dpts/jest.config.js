@@ -3,9 +3,8 @@ module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
     moduleNameMapper: {
-        '^@js-knx-internal/types$': '<rootDir>/../js-knx/src/lib/types',
-        '^@js-knx-internal/connection$': '<rootDir>/../js-knx/src/lib/connection',
-        '^@js-knx-internal/message$': '<rootDir>/../js-knx/src/lib/message',
+        '^@repo/knx-common$': '<rootDir>/../knx-common/src/index.ts',
+        '^@repo/knx-message$': '<rootDir>/../knx-message/src/index.ts',
         '^@repo/knx-enums$': '<rootDir>/../knx-enums/src/index.ts'
     },
     collectCoverageFrom: ['src/**/*.ts', '!**/*.spec.ts']

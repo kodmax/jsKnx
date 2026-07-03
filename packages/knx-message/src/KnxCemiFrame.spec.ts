@@ -1,6 +1,6 @@
 import { APCI, KnxCemiCode } from '@repo/knx-enums'
-import { KnxLinkException } from '../../../../../../types'
-import { KnxCemiFrame } from './cemi-frame'
+import { KnxLinkException } from '@repo/knx-common'
+import { KnxCemiFrame } from './KnxCemiFrame'
 
 describe('cEMI frame', () => {
     it('compose GroupValueWrite', () => {

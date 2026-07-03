@@ -1,5 +1,5 @@
 export { TunnelingFrame } from '../connection/KnxLink/KnxConnection/connect/KnxTunnel/message/TunnelingFrame'
 export { KnxIpMessage } from '../connection/KnxLink/KnxConnection/connect/KnxTunnel/message/ip-message'
-export { KnxCemiFrame } from '../connection/KnxLink/KnxConnection/connect/KnxTunnel/message/cemi-frame'
+export { KnxCemiFrame } from '@repo/knx-message'
 export { hpai, KnxIpProtocol } from '../connection/KnxLink/KnxConnection/connect/KnxTunnel/message/hpai'
 export { cri } from '../connection/KnxLink/KnxConnection/connect/KnxTunnel/message/cri'

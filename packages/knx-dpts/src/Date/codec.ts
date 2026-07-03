@@ -1,4 +1,4 @@
-import { KnxLinkException } from '@js-knx-internal/types'
+import { KnxLinkException } from '@repo/knx-common'
 
 export function fromBuffer(data: Buffer): number[] {
     const d = data.readUint8(1)

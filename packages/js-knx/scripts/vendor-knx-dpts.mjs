@@ -5,12 +5,6 @@ const pkgRoot = path.resolve(import.meta.dirname, '..')
 const knxDptsDist = path.resolve(pkgRoot, '../knx-dpts/dist')
 const jsKnxDist = path.resolve(pkgRoot, 'dist')
 
-const internalTargets = {
-    '@js-knx-internal/types': 'types',
-    '@js-knx-internal/connection': 'connection',
-    '@js-knx-internal/message': 'message'
-}
-
 function copyRecursive(src, dest, { excludeDirs = [] } = {}) {
     if (!fs.existsSync(src)) {
         throw new Error(`Missing knx-dpts build output: ${src}`)
@@ -44,27 +38,25 @@ function toRelativeImport(fromFile, targetDir) {
     return relative
 }
 
-function rewriteVendoredFile(filePath, enumsDir, internalBase) {
+function rewriteVendoredFile(filePath, enumsDir, knxCommonDir, knxMessageDir) {
     let content = fs.readFileSync(filePath, 'utf8')
     let updated = content.replace(/@repo\/knx-enums/g, toRelativeImport(filePath, enumsDir))
-
-    for (const [specifier, targetName] of Object.entries(internalTargets)) {
-        updated = updated.replaceAll(specifier, toRelativeImport(filePath, path.join(internalBase, targetName)))
-    }
+    updated = updated.replace(/@repo\/knx-common/g, toRelativeImport(filePath, knxCommonDir))
+    updated = updated.replace(/@repo\/knx-message/g, toRelativeImport(filePath, knxMessageDir))
 
     if (updated !== content) {
         fs.writeFileSync(filePath, updated)
     }
 }
 
-function walkVendoredDpts(dir, enumsDir, internalBase) {
+function walkVendoredDpts(dir, enumsDir, knxCommonDir, knxMessageDir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const fullPath = path.join(dir, entry.name)
 
         if (entry.isDirectory()) {
-            walkVendoredDpts(fullPath, enumsDir, internalBase)
+            walkVendoredDpts(fullPath, enumsDir, knxCommonDir, knxMessageDir)
         } else if (/\.(js|d\.ts)$/.test(entry.name)) {
-            rewriteVendoredFile(fullPath, enumsDir, internalBase)
+            rewriteVendoredFile(fullPath, enumsDir, knxCommonDir, knxMessageDir)
         }
     }
 }
@@ -74,7 +66,7 @@ function rewriteJsKnxPackageImports(rootDir, dptsDir) {
         const fullPath = path.join(rootDir, entry.name)
 
         if (entry.isDirectory()) {
-            if (entry.name === 'dpts' || entry.name === 'enums') {
+            if (entry.name === 'dpts' || entry.name === 'enums' || entry.name === 'knx-common' || entry.name === 'knx-message') {
                 continue
             }
 
@@ -90,13 +82,28 @@ function rewriteJsKnxPackageImports(rootDir, dptsDir) {
     }
 }
 
-function vendorInto(rootDir, enumsDir, internalBase, dptsSource, dptsDest) {
+function vendorInto(rootDir, enumsDir, knxCommonDir, knxMessageDir, dptsSource, dptsDest) {
+    fs.rmSync(dptsDest, { recursive: true, force: true })
     copyRecursive(dptsSource, dptsDest, { excludeDirs: ['esm'] })
-    walkVendoredDpts(dptsDest, enumsDir, internalBase)
+    walkVendoredDpts(dptsDest, enumsDir, knxCommonDir, knxMessageDir)
     rewriteJsKnxPackageImports(rootDir, dptsDest)
 }
 
-vendorInto(jsKnxDist, path.join(jsKnxDist, 'enums'), jsKnxDist, knxDptsDist, path.join(jsKnxDist, 'dpts'))
+vendorInto(
+    jsKnxDist,
+    path.join(jsKnxDist, 'enums'),
+    path.join(jsKnxDist, 'knx-common'),
+    path.join(jsKnxDist, 'knx-message'),
+    knxDptsDist,
+    path.join(jsKnxDist, 'dpts')
+)
 
 const esmRoot = path.join(jsKnxDist, 'esm')
-vendorInto(esmRoot, path.join(esmRoot, 'enums'), esmRoot, path.join(knxDptsDist, 'esm'), path.join(esmRoot, 'dpts'))
+vendorInto(
+    esmRoot,
+    path.join(esmRoot, 'enums'),
+    path.join(esmRoot, 'knx-common'),
+    path.join(esmRoot, 'knx-message'),
+    path.join(knxDptsDist, 'esm'),
+    path.join(esmRoot, 'dpts')
+)

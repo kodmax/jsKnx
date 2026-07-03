@@ -6,9 +6,8 @@
         "paths": {
             "@repo/knx-dpts": ["../knx-dpts/src/index.ts"],
             "@repo/knx-enums": ["../knx-enums/src/index.ts"],
-            "@js-knx-internal/types": ["src/lib/types.ts"],
-            "@js-knx-internal/connection": ["src/lib/connection/index.ts"],
-            "@js-knx-internal/message": ["src/lib/message/index.ts"]
+            "@repo/knx-message": ["../knx-message/src/index.ts"],
+            "@repo/knx-common": ["../knx-common/src/index.ts"]
         }
     },
     "exclude": ["node_modules"],

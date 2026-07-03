@@ -36,7 +36,7 @@
         "node": ">=20"
     },
     "scripts": {
-        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/vendor-knx-enums.mjs && node scripts/vendor-knx-dpts.mjs && node scripts/patch-esm-extensions.mjs",
+        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/vendor-knx-enums.mjs && node scripts/vendor-knx-common.mjs && node scripts/vendor-knx-message.mjs && node scripts/vendor-knx-dpts.mjs && node scripts/patch-esm-extensions.mjs",
         "test": "jest",
         "lint": "eslint . --fix",
         "lint:ci": "eslint .",
@@ -46,7 +46,9 @@
     "license": "GPL-3.0",
     "devDependencies": {
         "@repo/knx-dpts": "*",
-        "@repo/knx-enums": "*"
+        "@repo/knx-enums": "*",
+        "@repo/knx-message": "*",
+        "@repo/knx-common": "*"
     },
     "bin": {
         "knx-write": "./bin/write.js",

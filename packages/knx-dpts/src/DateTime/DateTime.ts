@@ -1,4 +1,4 @@
-import { KnxReading } from '@js-knx-internal/types'
+import { KnxReading } from '@repo/knx-common'
 import { DataPointAbstract } from '../DataPointAbstract'
 import * as codec from './codec'
 import { KnxDateTime } from './types'

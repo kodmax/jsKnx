@@ -2,7 +2,7 @@ import { DateTime } from './DateTime'
 import { DTStatus } from './DTStatus'
 import type { KnxDateTime } from './types'
 import { DPT } from '@repo/knx-enums'
-import { KnxLinkException } from '@js-knx-internal/types'
+import { KnxLinkException } from '@repo/knx-common'
 import { datePattern, timePattern } from './patterns'
 
 export class DPT_DateTime extends DateTime {

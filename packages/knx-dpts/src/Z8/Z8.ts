@@ -1,6 +1,6 @@
 import { DataPointAbstract } from '../DataPointAbstract'
 import { B8 } from '../B8'
-import { KnxReading } from '@js-knx-internal/types'
+import { KnxReading } from '@repo/knx-common'
 import { KnxStandardStatus } from './types'
 
 export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {

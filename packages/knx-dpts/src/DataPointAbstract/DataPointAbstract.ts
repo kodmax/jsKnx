@@ -1,7 +1,6 @@
-import { KnxLinkException, KnxReading } from '@js-knx-internal/types'
-import { KnxLink, RequiredKnxLinkOptions } from '@js-knx-internal/connection'
+import { KnxLinkException, KnxReading, KnxDatapointLink, RequiredKnxLinkOptions } from '@repo/knx-common'
+import { KnxCemiFrame } from '@repo/knx-message'
 import { APCI, DPT, KnxCemiCode } from '@repo/knx-enums'
-import { KnxCemiFrame } from '@js-knx-internal/message'
 import EventEmitter from 'events'
 
 export interface IDPT {
@@ -11,7 +10,7 @@ export interface IDPT {
     requestValue(): Promise<void>
     addValueListener(cb: (reading: KnxReading<unknown>) => void): void
     getAddress(): string
-    getLink(): KnxLink
+    getLink(): KnxDatapointLink<KnxCemiFrame>
     toString(value?: unknown): string
 }
 
@@ -101,13 +100,13 @@ export abstract class DataPointAbstract<T> implements IDPT {
         })
     }
 
-    public getLink(): KnxLink {
+    public getLink(): KnxDatapointLink<KnxCemiFrame> {
         return this.link
     }
 
     public constructor(
         protected readonly address: string,
-        private readonly link: KnxLink,
+        private readonly link: KnxDatapointLink<KnxCemiFrame>,
         private readonly options: RequiredKnxLinkOptions
     ) {}
 

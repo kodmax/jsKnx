@@ -1,4 +1,4 @@
-import { KnxLinkException } from '@js-knx-internal/types'
+import { KnxLinkException } from '@repo/knx-common'
 import { DayOfWeek } from './DayOfWeek'
 
 export function fromBuffer(data: Buffer): number[] {

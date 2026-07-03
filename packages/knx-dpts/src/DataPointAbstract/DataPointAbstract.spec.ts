@@ -1,7 +1,6 @@
 import { APCI, DPT, KnxCemiCode } from '@repo/knx-enums'
-import { KnxCemiFrame } from '@js-knx-internal/message'
-import { KnxReading } from '@js-knx-internal/types'
-import { KnxEventEmitter, KnxLink, RequiredKnxLinkOptions } from '@js-knx-internal/connection'
+import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxDatapointLink, KnxReading, RequiredKnxLinkOptions } from '@repo/knx-common'
 import { DataPointAbstract } from './DataPointAbstract'
 import { U8 } from '../U8'
 
@@ -28,23 +27,37 @@ class TestU8 extends DataPointAbstract<number> {
     }
 }
 
-function createMockLink(): { link: KnxLink; emitCemiFrame: (frame: KnxCemiFrame) => void } {
-    const events = new KnxEventEmitter()
-    events.on('error', () => {})
-    const link = {
+function createMockLink(): { link: KnxDatapointLink<KnxCemiFrame>; emitCemiFrame: (frame: KnxCemiFrame) => void } {
+    type CemiListener = (frame: KnxCemiFrame) => void
+    const cemiListeners = new Set<CemiListener>()
+    const link: KnxDatapointLink<KnxCemiFrame> = {
         sendCemiFrame: jest.fn().mockResolvedValue(undefined),
-        on: (...args: Parameters<KnxEventEmitter['on']>) => events.on(...args),
-        off: (...args: Parameters<KnxEventEmitter['off']>) => events.off(...args),
-        emit: (...args: Parameters<KnxEventEmitter['emit']>) => events.emit(...args)
-    } as unknown as KnxLink
+        on(event, listener) {
+            if (event === 'cemi-frame') {
+                cemiListeners.add(listener)
+            }
+
+            return this
+        },
+        off(event, listener) {
+            if (event === 'cemi-frame') {
+                cemiListeners.delete(listener)
+            }
+
+            return this
+        },
+        emit() {
+            return true
+        }
+    }
 
     return {
         link,
-        emitCemiFrame: frame => events.emit('cemi-frame', frame)
+        emitCemiFrame: frame => cemiListeners.forEach(listener => listener(frame))
     }
 }
 
-function createTestDatapoint(): { dp: TestU8; emitCemiFrame: (frame: KnxCemiFrame) => void; link: KnxLink } {
+function createTestDatapoint(): { dp: TestU8; emitCemiFrame: (frame: KnxCemiFrame) => void; link: KnxDatapointLink<KnxCemiFrame> } {
     const { link, emitCemiFrame } = createMockLink()
     const options = {
         readTimeout: 1000

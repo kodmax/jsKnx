@@ -19,7 +19,7 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/patch-esm-extensions.mjs",
+        "build": "rm -rf dist && tsc && tsc -p tsconfig.esm.json && node scripts/patch-esm-extensions.mjs",
         "test": "jest",
         "lint": "eslint . --fix",
         "lint:ci": "eslint .",
@@ -27,6 +27,8 @@
     },
     "license": "GPL-3.0",
     "devDependencies": {
-        "@repo/knx-enums": "*"
+        "@repo/knx-enums": "*",
+        "@repo/knx-message": "*",
+        "@repo/knx-common": "*"
     }
 }

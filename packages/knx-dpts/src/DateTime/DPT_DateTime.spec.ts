@@ -1,6 +1,6 @@
 import { DPT_DateTime } from './DPT_DateTime'
 import { DTStatus } from './DTStatus'
-import { KnxLinkException } from '@js-knx-internal/types'
+import { KnxLinkException } from '@repo/knx-common'
 
 describe('DPT_DateTime', () => {
     describe('setDateTime', () => {

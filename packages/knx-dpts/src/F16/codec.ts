@@ -1,4 +1,4 @@
-import { KnxLinkException } from '@js-knx-internal/types'
+import { KnxLinkException } from '@repo/knx-common'
 
 export function fromBuffer(buf: Buffer): number {
     const f16 = buf.readUint16BE(1)

@@ -1,31 +1,12 @@
 import EventEmitter from 'events'
-import { KnxCemiFrame } from '../../message'
-import { KnxLinkException } from '../../types'
-import type {
-    KnxConnectingEvent,
-    KnxDisconnectedEvent,
-    KnxStartingSessionEvent,
-    KnxNetworkConnectionEstablishedEvent,
-    KnxReconnectingEvent,
-    LinkInfo
-} from './types'
+import { KnxCemiFrame } from '@repo/knx-message'
+import type { KnxEventMap as KnxEventMapBase } from '@repo/knx-common'
 
-export type KnxEventMap = {
-    error: KnxLinkException
-    'cemi-frame': KnxCemiFrame
-    connecting: KnxConnectingEvent
-    'network-connection-established': KnxNetworkConnectionEstablishedEvent
-    'starting-session': KnxStartingSessionEvent
-    connected: LinkInfo
-    reconnecting: KnxReconnectingEvent
-    disconnected: KnxDisconnectedEvent
-}
+export type KnxEventMap = KnxEventMapBase<KnxCemiFrame>
 
 export type KnxEventName = keyof KnxEventMap
 
-type KnxEventListener<K extends KnxEventName> = (arg: KnxEventMap[K]) => void
-
-export type { KnxEventListener }
+export type KnxEventListener<K extends KnxEventName> = (arg: KnxEventMap[K]) => void
 
 export class KnxEventEmitter {
     private readonly emitter = new EventEmitter()

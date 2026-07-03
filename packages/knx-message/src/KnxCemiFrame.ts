@@ -1,9 +1,5 @@
 import { CemiSequenceType, KnxCemiCode, CemiPacketType, APCI } from '@repo/knx-enums'
-import { KnxLinkException } from '../../../../../../types'
-
-// function decodeAddress (address: number) {
-//     return [address >> 12, (address >> 8) & 0xf, address & 0xff]
-// }
+import { KnxLinkException } from '@repo/knx-common'
 
 export class KnxCemiFrame {
     public readonly source: string

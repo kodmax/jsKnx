@@ -1,5 +1,5 @@
 import { DataPointAbstract } from '../DataPointAbstract'
-import { KnxReading } from '@js-knx-internal/types'
+import { KnxReading } from '@repo/knx-common'
 import * as codec from './codec'
 
 export abstract class U8 extends DataPointAbstract<number> {
