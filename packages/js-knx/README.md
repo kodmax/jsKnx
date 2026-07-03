@@ -91,28 +91,6 @@ DPT names accept short form (`Switch`, `HVACMode`) or full export name (`DPT_Swi
 
 Numeric string values are coerced to numbers automatically (`"1"` → `1`). Time/date strings are passed through as-is.
 
-## Project schema (recommended pattern)
-
-Organise group addresses and DPT types in a schema file instead of scattering magic strings:
-
-```typescript
-import { DPT_Switch, DPT_Value_Temp, KnxLink } from 'js-knx'
-
-export const lights = {
-    livingRoom: {
-        command: { address: '14/0/0', DataType: DPT_Switch },
-        state: { address: '14/0/1', DataType: DPT_Switch }
-    }
-}
-
-export async function readTemperature(knx: KnxLink) {
-    const sensor = knx.getDatapoint({ address: '6/1/0', DataType: DPT_Value_Temp })
-    return sensor.read()
-}
-```
-
-See [`examples/home.knx-schema.ts`](examples/home.knx-schema.ts) for a larger real-world example.
-
 ## Supported DPT types
 
 Each DPT is a class exported from `js-knx`. Instantiate via `knx.getDatapoint({ address, DataType })`.

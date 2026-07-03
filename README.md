@@ -14,7 +14,7 @@ This repository is a [Turborepo](https://turbo.build/) monorepo:
 | [`packages/knx-common`](packages/knx-common) | `@repo/knx-common` | Private workspace package; shared KNX types, protocol helpers, and cEMI vendored into `js-knx` dist |
 | [`packages/knx-dpts`](packages/knx-dpts)     | `@repo/knx-dpts`   | Private workspace package; DPT classes vendored into `js-knx` dist at build time                    |
 | [`packages/knx-enums`](packages/knx-enums)   | `@repo/knx-enums`  | Private workspace package; enum code vendored into `js-knx` dist at build time                      |
-| [`apps/examples`](apps/examples)             | `@jsknx/examples`  | Local demo and schema samples                                                                       |
+| [`apps/examples`](apps/examples)             | `@jsknx/examples`  | Local demo                                                                                          |
 
 Root scripts orchestrate all workspaces via Turbo (`yarn build`, `yarn test`, `yarn lint`, `yarn typecheck`, `yarn dev`).
 
@@ -104,28 +104,6 @@ knx-write 192.168.0.8 2/0/4 Scaling 50
 DPT names accept short form (`Switch`, `HVACMode`) or full export name (`DPT_Switch`).
 
 Numeric string values are coerced to numbers automatically (`"1"` → `1`). Time/date strings are passed through as-is.
-
-## Project schema (recommended pattern)
-
-Organise group addresses and DPT types in a schema file instead of scattering magic strings:
-
-```typescript
-import { DPT_Switch, DPT_Value_Temp, KnxLink } from 'js-knx'
-
-export const lights = {
-    livingRoom: {
-        command: { address: '14/0/0', DataType: DPT_Switch },
-        state: { address: '14/0/1', DataType: DPT_Switch }
-    }
-}
-
-export async function readTemperature(knx: KnxLink) {
-    const sensor = knx.getDatapoint({ address: '6/1/0', DataType: DPT_Value_Temp })
-    return sensor.read()
-}
-```
-
-See [`examples/home.knx-schema.ts`](examples/home.knx-schema.ts) for a larger real-world example.
 
 ## Supported DPT types
 
