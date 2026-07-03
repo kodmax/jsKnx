@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
-import { KnxLinkException } from '../../../../types'
+import { KnxLinkException } from '@repo/knx-common'
 import connect from './connect'
 import { tunnelRequest } from './KnxTunnel/tunnel-request'
 

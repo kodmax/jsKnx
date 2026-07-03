@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import { Socket } from 'dgram'
 import { KnxConnectionType, KnxLayer, KnxServiceId } from '@repo/knx-enums'
-import { KnxIpMessage } from '../../../../message'
+import { KnxIpMessage } from './KnxTunnel/message/ip-message'
 import connect from './connect'
 import { KnxSession } from './KnxSession'
 import { InternalLinkInfo } from '../../types'

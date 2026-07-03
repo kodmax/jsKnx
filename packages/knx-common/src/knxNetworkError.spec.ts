@@ -1,4 +1,4 @@
-import { knxNetworkError } from './types'
+import { knxNetworkError } from './knxNetworkError'
 
 describe('knxNetworkError', () => {
     it('wraps socket errors as NETWORK_ERROR', () => {

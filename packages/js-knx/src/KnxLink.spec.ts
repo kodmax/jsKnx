@@ -3,7 +3,9 @@ import { KnxConnectionType, KnxLayer, KnxCemiCode, KnxServiceId } from '@repo/kn
 import { KnxConnection } from './KnxConnection'
 import { KnxLink } from './KnxLink'
 import { DPT_Switch } from '@repo/knx-dpts'
-import { KnxCemiFrame, KnxIpMessage, TunnelingFrame } from '../../message'
+import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxIpMessage } from './KnxConnection/connect/KnxTunnel/message/ip-message'
+import { TunnelingFrame } from './KnxConnection/connect/KnxTunnel/message/TunnelingFrame'
 import { InternalLinkInfo } from './types'
 
 jest.mock('./KnxConnection/connect/connect-sockets')

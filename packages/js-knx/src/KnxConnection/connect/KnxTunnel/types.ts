@@ -1,5 +1,5 @@
 import type { KnxCemiFrame, KnxIpMessage } from './message'
-import type { KnxLinkException } from '../../../../../types'
+import type { KnxLinkException } from '@repo/knx-common'
 
 export type KnxTunnelOptions = {
     maxConcurrentMessages: number

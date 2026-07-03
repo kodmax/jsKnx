@@ -1,5 +1,5 @@
 import { KnxServiceId } from '@repo/knx-enums'
-import { KnxLinkException } from '../../../../../../types'
+import { KnxLinkException } from '@repo/knx-common'
 
 export class KnxIpMessage {
     private readonly serviceId: KnxServiceId

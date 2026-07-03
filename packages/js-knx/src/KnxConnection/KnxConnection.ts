@@ -1,10 +1,11 @@
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
 import { RequiredKnxLinkOptions, LinkInfo, KnxDisconnectedReason } from '../types'
 import { retry } from './retry'
-import { KnxLinkException } from '../../../types'
+import { KnxLinkException } from '@repo/knx-common'
 import { KnxSession } from './connect/KnxSession'
 import { KnxTransport } from './connect/KnxTransport'
-import { KnxEventEmitter } from '../KnxEventEmitter'
+import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxEventEmitter } from '@repo/knx-common'
 
 const DISCONNECT_RESPONSE_TIMEOUT_MS = 30_000
 
@@ -28,7 +29,7 @@ export class KnxConnection {
         private readonly ip: string,
         private readonly connectionType: KnxConnectionType,
         private readonly layer: KnxLayer,
-        private readonly events: KnxEventEmitter
+        private readonly events: KnxEventEmitter<KnxCemiFrame>
     ) {}
 
     public async connect(): Promise<void> {

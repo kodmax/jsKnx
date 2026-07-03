@@ -11,7 +11,7 @@ module.exports = {
         '^@repo/knx-message$': '<rootDir>/../knx-message/src/index.ts',
         '^@repo/knx-common$': '<rootDir>/../knx-common/src/index.ts'
     },
-    collectCoverageFrom: ['src/lib/**/*.ts', '!**/*.spec.ts'],
+    collectCoverageFrom: ['src/**/*.ts', '!**/*.spec.ts'],
     coverageThreshold: {
         global: {
             lines: 60

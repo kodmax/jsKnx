@@ -4,7 +4,7 @@ import { KnxTunnelOptions, PendingMessage } from './types'
 import { sequence } from './sequence'
 import { KnxCemiFrame, KnxIpMessage, TunnelingFrame } from './message'
 import { KnxCemiCode, KnxServiceId } from '@repo/knx-enums'
-import { KnxLinkException } from '../../../../../types'
+import { KnxLinkException } from '@repo/knx-common'
 
 export class KnxTunnel {
     private readonly nextSeq = sequence(255)

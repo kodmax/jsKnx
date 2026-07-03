@@ -1,7 +1,7 @@
 import EventEmitter from 'events'
 import { createSocket, Socket } from 'dgram'
 import { connectSockets } from './connect-sockets'
-import { KnxLinkException } from '../../../../types'
+import { KnxLinkException } from '@repo/knx-common'
 
 jest.mock('dgram')
 

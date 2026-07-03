@@ -1,8 +1,9 @@
 import { Socket } from 'dgram'
 import { KnxConnection } from '.'
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
-import { KnxLinkException } from '../../../types'
-import { KnxEventEmitter } from '../KnxEventEmitter'
+import { KnxLinkException } from '@repo/knx-common'
+import { KnxEventEmitter } from '@repo/knx-common'
+import { KnxCemiFrame } from '@repo/knx-message'
 import { InternalLinkInfo } from '../types'
 import { KnxSession } from './connect/KnxSession'
 import { KnxTransport } from './connect/KnxTransport'
@@ -110,7 +111,7 @@ async function waitForDisconnectPending(): Promise<void> {
 }
 
 describe('KnxConnection', () => {
-    let events: KnxEventEmitter
+    let events: KnxEventEmitter<KnxCemiFrame>
     const options = {
         maxConcurrentMessages: 16,
         maxTelegramsPerSecond: 24,
@@ -148,7 +149,7 @@ describe('KnxConnection', () => {
     }
 
     beforeEach(() => {
-        events = new KnxEventEmitter()
+        events = new KnxEventEmitter<KnxCemiFrame>()
         openTransportMock.mockReset()
         startSessionMock.mockReset()
         startSessionMock.mockImplementation(async () => createMockSession() as unknown as KnxSession)

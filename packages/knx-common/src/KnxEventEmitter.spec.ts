@@ -1,17 +1,17 @@
 import { KnxCemiCode } from '@repo/knx-enums'
-import { KnxCemiFrame } from '../../message'
-import { KnxLinkException } from '../../types'
+import { KnxCemiFrame } from '@repo/knx-message'
+import { KnxLinkException } from './KnxLinkException'
 import { KnxEventEmitter } from './KnxEventEmitter'
 
 describe('KnxEventEmitter', () => {
     it('emit("error") throws when no listeners are registered', () => {
-        const events = new KnxEventEmitter()
+        const events = new KnxEventEmitter<KnxCemiFrame>()
 
         expect(() => events.emit('error', new KnxLinkException('CONNECTION_TIMEOUT', 'timeout', {}))).toThrow()
     })
 
     it('notifies error listeners', () => {
-        const events = new KnxEventEmitter()
+        const events = new KnxEventEmitter<KnxCemiFrame>()
         const listener = jest.fn()
         const error = new KnxLinkException('CONNECTION_TIMEOUT', 'timeout', {})
 
@@ -22,7 +22,7 @@ describe('KnxEventEmitter', () => {
     })
 
     it('notifies cemi-frame listeners', () => {
-        const events = new KnxEventEmitter()
+        const events = new KnxEventEmitter<KnxCemiFrame>()
         const listener = jest.fn()
         const frame = KnxCemiFrame.decode(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '1/2/3', Buffer.from([0x00, 0x01])))
 
@@ -33,7 +33,7 @@ describe('KnxEventEmitter', () => {
     })
 
     it('removes listeners with off', () => {
-        const events = new KnxEventEmitter()
+        const events = new KnxEventEmitter<KnxCemiFrame>()
         const errorListener = jest.fn()
         const cemiListener = jest.fn()
 
@@ -51,7 +51,7 @@ describe('KnxEventEmitter', () => {
     })
 
     it('once invokes listener only once', () => {
-        const events = new KnxEventEmitter()
+        const events = new KnxEventEmitter<KnxCemiFrame>()
         const listener = jest.fn()
         const error = new KnxLinkException('CONNECTION_TIMEOUT', 'timeout', {})
 

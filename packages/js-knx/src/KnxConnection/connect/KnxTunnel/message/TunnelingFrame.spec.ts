@@ -1,5 +1,5 @@
 import { KnxCemiCode, KnxServiceId } from '@repo/knx-enums'
-import { KnxLinkException } from '../../../../../../types'
+import { KnxLinkException } from '@repo/knx-common'
 import { TunnelingFrame } from './TunnelingFrame'
 import { KnxIpMessage } from './ip-message'
 

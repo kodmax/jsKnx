@@ -1,6 +1,8 @@
 import { KnxConnectionType, KnxErrorCode, KnxLayer, KnxServiceId } from '@repo/knx-enums'
-import { KnxLinkException, knxNetworkError } from '../../../../../types'
-import { cri, hpai, KnxIpMessage } from '../../../../../message'
+import { KnxLinkException, knxNetworkError } from '@repo/knx-common'
+import { cri } from './message/cri'
+import { hpai } from './message/hpai'
+import { KnxIpMessage } from './message/ip-message'
 import { AddressInfo } from 'net'
 import { Socket } from 'dgram'
 
