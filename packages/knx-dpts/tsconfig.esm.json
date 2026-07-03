@@ -6,6 +6,6 @@
         "module": "ES2020",
         "moduleResolution": "node"
     },
-    "exclude": ["node_modules", "**/*.spec.ts"],
+    "exclude": ["node_modules", "**/*.spec.ts", "**/create-*.ts"],
     "include": ["src/**/*.ts"]
 }
