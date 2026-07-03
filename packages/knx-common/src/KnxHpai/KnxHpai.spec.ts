@@ -1,4 +1,4 @@
-import { hpai } from './hpai'
+import { hpai } from './KnxHpai'
 
 describe('HPAI', () => {
     it('hpai', () => {

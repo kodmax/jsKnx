@@ -1,8 +1,7 @@
-import connect, { hpai } from './helpers'
-import { KnxIpMessage } from '@repo/knx-common'
+import connect from './handshake'
+import { KnxIpMessage, RequiredKnxLinkOptions, LinkInfo, knxNetworkError, hpai } from '@repo/knx-common'
 import { KnxConnectionType, KnxLayer, KnxServiceId } from '@repo/knx-enums'
-import { InternalLinkInfo } from '../../types'
-import { RequiredKnxLinkOptions, LinkInfo, knxNetworkError } from '@repo/knx-common'
+import type { InternalLinkInfo } from './types'
 import { KnxTransport } from './KnxTransport'
 import { KnxTunnel, OnCemiFrame } from './KnxTunnel'
 

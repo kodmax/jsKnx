@@ -19,6 +19,7 @@
         "dist"
     ],
     "scripts": {
+        "clean": "rm -rf dist",
         "build": "rm -rf dist && tsc && tsc -p tsconfig.esm.json && node scripts/patch-esm-extensions.mjs",
         "test": "jest",
         "lint": "eslint . --fix",

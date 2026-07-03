@@ -19,7 +19,8 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/patch-esm-extensions.mjs",
+        "clean": "rm -rf dist",
+        "build": "rm -rf dist && tsc && tsc -p tsconfig.esm.json && node scripts/patch-esm-extensions.mjs",
         "lint": "eslint . --fix",
         "lint:ci": "eslint .",
         "typecheck": "tsc --noEmit && tsc -p tsconfig.esm.json --noEmit"

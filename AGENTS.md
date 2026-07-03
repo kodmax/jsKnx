@@ -2,6 +2,21 @@
 
 Guidance for automated refactors, reviews, and “leak” fixes. Read before changing connection-layer timing code.
 
+## Module boundaries
+
+| Package      | What belongs here                                        | Examples                                                                   |
+| ------------ | -------------------------------------------------------- | -------------------------------------------------------------------------- |
+| `knx-enums`  | Protocol constants                                       | `KnxServiceId`, `KnxCemiCode`                                              |
+| `knx-common` | Shared API types and **pure** codecs (no sockets/timers) | `KnxCemiFrame`, `KnxIpMessage`, `KnxHpai`, `KnxCri`, `KnxReading`, `retry` |
+| `knx-dpts`   | Datapoint encode/decode                                  | `DPT_Switch`, `DataPointAbstract`                                          |
+| `js-knx`     | Session orchestration (sockets, timers, reconnect)       | `KnxConnection`, `KnxTunnel`, `connect()`                                  |
+
+**Decision rule:** if a module does not touch sockets or timers and is used from more than one workspace package → `knx-common`. Handshake orchestration (`connect`, `tunnel-request`) stays under `js-knx` → `KnxSession/handshake/`.
+
+**Naming:** `knx-common/src/link/` holds link-layer **types** (not the `KnxLink` class in `js-knx`).
+
+---
+
 ## `KnxTunnel.ts` — timers are not leaks
 
 File: [`packages/js-knx/src/KnxConnection/KnxSession/KnxTunnel/KnxTunnel.ts`](packages/js-knx/src/KnxConnection/KnxSession/KnxTunnel/KnxTunnel.ts)
@@ -47,7 +62,7 @@ Jest may print _“A worker process has failed to exit gracefully… Active time
 
 ---
 
-## Related: `tunnel-request.ts`
+## Related: `handshake/tunnel-request.ts`
 
 Separate from `KnxTunnel`. Handshake uses one `setTimeout(connectionTimeout)` cleared on `gateway.once('message')`. Known improvement backlog (not shipped): if timeout wins the race, the `once('message')` listener remains until the next connection attempt on the same socket. Documented here so agents do not attribute that to `KnxTunnel`.
 

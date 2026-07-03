@@ -5,13 +5,13 @@ import { KnxLink } from './KnxLink'
 import { DPT_Switch } from '@repo/knx-dpts'
 import { KnxCemiFrame } from '@repo/knx-common'
 import { KnxIpMessage, TunnelingFrame } from '@repo/knx-common'
-import { InternalLinkInfo } from './types'
+import { InternalLinkInfo } from './KnxConnection/KnxSession/types'
 
 jest.mock('./KnxConnection/KnxSession/KnxTransport/helpers')
-jest.mock('./KnxConnection/KnxSession/helpers/connect')
+jest.mock('./KnxConnection/KnxSession/handshake/connect')
 
 import { connectSockets } from './KnxConnection/KnxSession/KnxTransport/helpers'
-import connect from './KnxConnection/KnxSession/helpers/connect'
+import connect from './KnxConnection/KnxSession/handshake/connect'
 
 const connectSocketsMock = connectSockets as jest.MockedFunction<typeof connectSockets>
 const connectMock = connect as jest.MockedFunction<typeof connect>

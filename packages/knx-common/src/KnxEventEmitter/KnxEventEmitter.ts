@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 import type { KnxLinkException } from '../KnxLinkException'
-import type { LinkInfo } from '../KnxLink'
+import type { LinkInfo } from '../link'
 import type {
     KnxConnectingEvent,
     KnxDisconnectedEvent,

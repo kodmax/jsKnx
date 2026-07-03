@@ -1,5 +1,5 @@
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
-import { cri } from './cri'
+import { cri } from './KnxCri'
 
 describe('CRI', () => {
     it('cri', () => {

@@ -36,7 +36,8 @@
         "node": ">=20"
     },
     "scripts": {
-        "build": "tsc && tsc -p tsconfig.esm.json && node scripts/vendor-knx-enums.mjs && node scripts/vendor-knx-common.mjs && node scripts/vendor-knx-dpts.mjs && node scripts/patch-esm-extensions.mjs",
+        "clean": "rm -rf dist",
+        "build": "rm -rf dist && tsc && tsc -p tsconfig.esm.json && node scripts/vendor-knx-enums.mjs && node scripts/vendor-knx-common.mjs && node scripts/vendor-knx-dpts.mjs && node scripts/patch-esm-extensions.mjs",
         "test": "jest",
         "lint": "eslint . --fix",
         "lint:ci": "eslint .",

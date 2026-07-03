@@ -2,12 +2,12 @@ import EventEmitter from 'events'
 import { Socket } from 'dgram'
 import { KnxConnectionType, KnxLayer, KnxServiceId } from '@repo/knx-enums'
 import { KnxIpMessage } from '@repo/knx-common'
-import connect from './helpers/connect'
+import connect from './handshake/connect'
 import { KnxSession } from './KnxSession'
-import { InternalLinkInfo } from '../../types'
+import { InternalLinkInfo } from './types'
 import { KnxTransport } from './KnxTransport'
 
-jest.mock('./helpers/connect')
+jest.mock('./handshake/connect')
 
 const connectMock = connect as jest.MockedFunction<typeof connect>
 

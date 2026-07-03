@@ -1,7 +1,7 @@
 import { Socket } from 'dgram'
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
 import { KnxCemiFrame } from '@repo/knx-common'
-import { InternalLinkInfo } from '../types'
+import { InternalLinkInfo } from './KnxSession/types'
 import { KnxSession } from './KnxSession/KnxSession'
 import { KnxTransport } from './KnxSession/KnxTransport'
 

@@ -6,6 +6,7 @@
         "apps/*"
     ],
     "scripts": {
+        "clean": "turbo run clean",
         "build": "turbo run build",
         "test": "turbo run test",
         "lint": "turbo run lint",
