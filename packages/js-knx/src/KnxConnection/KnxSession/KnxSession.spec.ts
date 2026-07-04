@@ -78,6 +78,7 @@ describe('KnxSession', () => {
         port: 3671,
         maxRetry: 0,
         retryPause: 1000,
+        autoReconnect: true,
         connectionTimeout: 10000
     }
 
