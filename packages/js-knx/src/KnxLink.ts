@@ -34,6 +34,7 @@ export class KnxLink {
      * | `connectionTimeout` | `10000` |
      * | `maxRetry` | `Infinity` |
      * | `retryPause` | `3000` |
+     * | `autoReconnect` | `true` |
      * | `port` | `3671` |
      */
     public constructor(ip: string, options: KnxLinkConstructorOptions = {}) {
@@ -45,6 +46,7 @@ export class KnxLink {
             connectionTimeout: 10000,
             maxRetry: +Infinity,
             retryPause: 3000,
+            autoReconnect: true,
 
             port: 3671,
 

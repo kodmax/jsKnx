@@ -36,6 +36,12 @@ export type KnxLinkOptions = {
     retryPause: number
 
     /**
+     * Whether to automatically reconnect after gateway or network disconnects.
+     * @default true
+     */
+    autoReconnect: boolean
+
+    /**
      * Timeout (ms) for the initial KNX/IP tunnel handshake.
      * @default 10000
      */

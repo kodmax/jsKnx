@@ -116,7 +116,7 @@ export class KnxConnection {
     }
 
     private scheduleReconnect(): void {
-        if (this.explicitDisconnect || this.reconnectTimeoutId !== undefined) {
+        if (!this.options.autoReconnect || this.explicitDisconnect || this.reconnectTimeoutId !== undefined) {
             return
         }
 

@@ -17,6 +17,14 @@ Guidance for automated refactors, reviews, and “leak” fixes. Read before cha
 
 ---
 
+## Workspace package builds
+
+`js-knx` consumes other workspace packages through their package entrypoints, which point at generated `dist` files. After changing shared packages such as `knx-common`, `knx-dpts`, or `knx-enums`, build those packages before relying on `js-knx` typecheck, tests, or IDE diagnostics. Otherwise `js-knx` may see stale declarations or runtime files from the previous build.
+
+Example: after changing `knx-common`, run `yarn workspace @repo/knx-common build` before `yarn workspace js-knx typecheck`.
+
+---
+
 ## `KnxTunnel.ts` — timers are not leaks
 
 File: [`packages/js-knx/src/KnxConnection/KnxSession/KnxTunnel/KnxTunnel.ts`](packages/js-knx/src/KnxConnection/KnxSession/KnxTunnel/KnxTunnel.ts)

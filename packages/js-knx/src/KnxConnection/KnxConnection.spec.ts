@@ -129,11 +129,12 @@ describe('KnxConnection', () => {
         port: 3671,
         maxRetry: 0,
         retryPause: RETRY_PAUSE_MS,
+        autoReconnect: true,
         connectionTimeout: 10000
     }
 
-    function createConnection(): KnxConnection {
-        return new KnxConnection(options, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, events)
+    function createConnection(overrides: Partial<typeof options> = {}): KnxConnection {
+        return new KnxConnection({ ...options, ...overrides }, '192.168.0.8', KnxConnectionType.TUNNEL_CONNECTION, KnxLayer.LINK_LAYER, events)
     }
 
     async function setupConnected(): Promise<{
@@ -504,6 +505,18 @@ describe('KnxConnection', () => {
             ;(connection as unknown as { session?: KnxSession }).session = createMockSession() as unknown as KnxSession
 
             ;(connection as unknown as { teardown: (reason: string) => void; scheduleReconnect: () => void }).teardown('gateway-request')
+            ;(connection as unknown as { scheduleReconnect: () => void }).scheduleReconnect()
+
+            expect(setTimeoutSpy).not.toHaveBeenCalled()
+
+            setTimeoutSpy.mockRestore()
+        })
+
+        it('does not reconnect when auto reconnect is disabled', () => {
+            const setTimeoutSpy = jest.spyOn(global, 'setTimeout').mockImplementation(() => 0 as unknown as ReturnType<typeof setTimeout>)
+
+            const connection = createConnection({ autoReconnect: false })
+
             ;(connection as unknown as { scheduleReconnect: () => void }).scheduleReconnect()
 
             expect(setTimeoutSpy).not.toHaveBeenCalled()
