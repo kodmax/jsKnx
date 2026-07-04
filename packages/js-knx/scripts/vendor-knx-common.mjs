@@ -68,7 +68,7 @@ copyRecursive(knxCommonDist, path.join(jsKnxDist, 'knx-common'), { excludeDirs: 
 fs.rmSync(path.join(jsKnxDist, 'knx-types'), { recursive: true, force: true })
 walkAndRewrite(jsKnxDist, path.join(jsKnxDist, 'knx-common'), path.join(jsKnxDist, 'enums'))
 walkAndRewrite(path.join(jsKnxDist, 'knx-common'), path.join(jsKnxDist, 'knx-common'), path.join(jsKnxDist, 'enums'), {
-    skipDirs: [],
+    skipDirs: []
 })
 
 const esmRoot = path.join(jsKnxDist, 'esm')
@@ -76,5 +76,5 @@ copyRecursive(path.join(knxCommonDist, 'esm'), path.join(esmRoot, 'knx-common'))
 fs.rmSync(path.join(esmRoot, 'knx-types'), { recursive: true, force: true })
 walkAndRewrite(esmRoot, path.join(esmRoot, 'knx-common'), path.join(esmRoot, 'enums'))
 walkAndRewrite(path.join(esmRoot, 'knx-common'), path.join(esmRoot, 'knx-common'), path.join(esmRoot, 'enums'), {
-    skipDirs: [],
+    skipDirs: []
 })
