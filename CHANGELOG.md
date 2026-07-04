@@ -6,42 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Breaking
-
-- **`KnxLink.connect()` removed.** Use `new KnxLink(ip, options)` then `await knx.connect()`. Lifecycle listeners (`connecting`, `connected`, …) can be registered before `connect()`.
-
-**Migration from 2.20:**
-
-```typescript
-// Before
-const knx = await KnxLink.connect('192.168.0.8', { onError, onCemiFrame })
-
-// After
-const knx = new KnxLink('192.168.0.8')
-knx.on('error', onError)
-knx.on('cemi-frame', onCemiFrame)
-knx.on('connecting', e => { ... })
-await knx.connect()
-```
-
-### Changed
-
-- **`onError` and `onCemiFrame` removed from constructor options.** Subscribe via `knx.on('error', …)` and `knx.on('cemi-frame', …)` before `connect()`.
-- `connect()` logs a **console warning** when no `error` listener is registered. Without one, Node.js throws on unhandled `error` events.
-- `KnxDisconnectedReason`: `explicit` → `graceful` (disconnect response received), disconnect timeout → `disconnect-timeout`; removed `gateway-response`
-
-### Added
-
-- Lifecycle events on `KnxLink`: `connecting`, `connected`, `reconnecting`, and `disconnected` (optional via `knx.on(...)`)
-- Session lifecycle events: `network-connection-established` (UDP transport ready), `starting-session` (KNX/IP handshake starting, emitted before each `startSession` attempt including retries); session ready is `connected` after `KnxSession.startSession()` succeeds
-- `KnxDisconnectedReason` and related event payload types
-
 ## [2.20.0]
 
 ### Breaking
 
 - **KnxLink event API rework.** `events` was removed from `KnxLinkOptions`; you can no longer inject a custom `EventEmitter` or subscribe via `knx.events`.
-- **`KnxLink.connect()` now accepts optional `onError` and `onCemiFrame`.** When provided, both callbacks are registered on the link before the tunnel session starts.
+- **`KnxLink.connect()` removed.** Use `new KnxLink(ip, options)` then `await knx.connect()`. Lifecycle listeners (`connecting`, `connected`, …) can be registered before `connect()`.
+- **`onError` and `onCemiFrame` removed from constructor options.** Subscribe via `knx.on('error', …)` and `knx.on('cemi-frame', …)` before `connect()`.
+- **`LinkInfo.gatewayAddress` renamed to `individualAddress`.**
+- **`KnxDisconnectedReason`:** `explicit` → `graceful` (disconnect response received), disconnect timeout → `disconnect-timeout`; removed `gateway-response`.
 
 **Migration from 2.19.x and earlier:**
 
@@ -55,25 +28,24 @@ const knx = await KnxLink.connect('192.168.0.8', { events, readTimeout: 5000 })
 knx.events.on('cemi-frame', frame => { ... })
 
 // After
-const knx = await KnxLink.connect('192.168.0.8', {
-  readTimeout: 5000,
-  onError: err => { ... },
-  onCemiFrame: frame => { ... },
-})
-
-// Optional: add more listeners on the link itself
-knx.on('cemi-frame', anotherListener)
+const knx = new KnxLink('192.168.0.8', { readTimeout: 5000 })
+knx.on('error', err => { ... })
+knx.on('cemi-frame', frame => { ... })
+knx.on('connecting', e => { ... })
+await knx.connect()
 ```
 
-- Replace every `KnxLink.connect(ip)` call with `KnxLink.connect(ip, { onError, onCemiFrame })` when you want constructor-time handlers, or use `knx.on(...)` after creating the link.
 - Replace `knx.events.on(...)` / `knx.events.emit(...)` with `knx.on(...)` / `knx.emit(...)`.
-- `emit('error', …)` still follows Node.js semantics: register `onError` (or `knx.on('error', …)`) before errors can occur, or an unhandled exception will be thrown.
+- `emit('error', …)` still follows Node.js semantics: register `knx.on('error', …)` before errors can occur, or an unhandled exception will be thrown.
 
 ### Added
 
-- Typed `KnxEventEmitter` with `on` / `off` / `once` / `emit` for `error` and `cemi-frame` only
+- Typed `KnxEventEmitter` with `on` / `off` / `once` / `emit`
 - `KnxLink.on()` / `off()` / `once()` / `emit()` — same event API exposed directly on the link
-- Export of `KnxEventEmitter`, `KnxLinkConnectOptions`, and `OnError`
+- Lifecycle events on `KnxLink`: `connecting`, `connected`, `reconnecting`, and `disconnected`
+- Session lifecycle events: `network-connection-established` (UDP transport ready), `starting-session` (KNX/IP handshake starting, emitted before each `startSession` attempt including retries); session ready is `connected` after `KnxSession.startSession()` succeeds
+- `KnxDisconnectedReason` and related event payload types
+- `autoReconnect` option in `KnxLinkOptions` (default `true`) to disable automatic reconnect after gateway or network disconnects
 - Dual package exports: CommonJS (`require`) and native ESM (`import`) via `package.json` `exports`
 - `examples/` directory with demo script and home schema (moved out of `src/`)
 - GitHub Actions CI (build, format, lint, typecheck, test on Node 26)
@@ -86,6 +58,7 @@ knx.on('cemi-frame', anotherListener)
 
 ### Changed
 
+- `connect()` logs a **console warning** when no `error` listener is registered. Without one, Node.js throws on unhandled `error` events.
 - `DataPointAbstract` constructor no longer requires `KnxConnection` (only `KnxLink`)
 - `read()` rejects its promise on `DATA_LENGTH_MISMATCH` responses
 - `KnxIpMessage.decode` / `KnxCemiFrame.decode` throw `KnxLinkException` instead of generic `Error`
