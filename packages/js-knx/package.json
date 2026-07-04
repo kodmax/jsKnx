@@ -1,6 +1,6 @@
 {
     "name": "js-knx",
-    "version": "2.20.0",
+    "version": "2.20.1",
     "description": "KNX IP/Gateway client",
     "repository": {
         "type": "git",
@@ -37,7 +37,7 @@
     },
     "scripts": {
         "clean": "rm -rf dist",
-        "build": "rm -rf dist && tsc && tsc -p tsconfig.esm.json && node scripts/vendor-knx-enums.mjs && node scripts/vendor-knx-common.mjs && node scripts/vendor-knx-dpts.mjs && node scripts/patch-esm-extensions.mjs",
+        "build": "rm -rf dist && tsc && tsc -p tsconfig.esm.json && node scripts/vendor-knx-enums.mjs && node scripts/vendor-knx-common.mjs && node scripts/vendor-knx-dpts.mjs && node scripts/patch-esm-extensions.mjs && node scripts/verify-vendored-dist.mjs",
         "test": "jest",
         "lint": "eslint . --fix",
         "lint:ci": "eslint .",

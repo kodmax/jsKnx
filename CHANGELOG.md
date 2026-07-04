@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [2.20.1]
+
+### Fixed
+
+- Published `dist/knx-common` no longer references workspace packages such as `@repo/knx-enums`; vendored dependencies are rewritten to relative imports during build.
+
 ## [2.20.0]
 
 ### Breaking
@@ -80,7 +86,8 @@ Release on npm before the KnxLink event API rework below.
 
 Baseline published on npm before the maintenance roadmap above.
 
-[Unreleased]: https://github.com/kodmax/jsKnx/compare/v2.20.0...HEAD
+[Unreleased]: https://github.com/kodmax/jsKnx/compare/v2.20.1...HEAD
+[2.20.1]: https://github.com/kodmax/jsKnx/compare/v2.20.0...v2.20.1
 [2.20.0]: https://github.com/kodmax/jsKnx/compare/v2.19.0...v2.20.0
 [2.19.0]: https://github.com/kodmax/jsKnx/compare/v2.18.0...v2.19.0
 [2.18.0]: https://github.com/kodmax/jsKnx/releases/tag/v2.18.0

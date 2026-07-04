@@ -48,16 +48,16 @@ function rewriteFile(filePath, knxCommonDir, enumsDir) {
     }
 }
 
-function walkAndRewrite(dir, knxCommonDir, enumsDir) {
+function walkAndRewrite(dir, knxCommonDir, enumsDir, { skipDirs = ['enums', 'dpts', 'knx-common'] } = {}) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const fullPath = path.join(dir, entry.name)
 
         if (entry.isDirectory()) {
-            if (entry.name === 'enums' || entry.name === 'dpts' || entry.name === 'knx-common') {
+            if (skipDirs.includes(entry.name)) {
                 continue
             }
 
-            walkAndRewrite(fullPath, knxCommonDir, enumsDir)
+            walkAndRewrite(fullPath, knxCommonDir, enumsDir, { skipDirs })
         } else if (/\.(js|d\.ts)$/.test(entry.name)) {
             rewriteFile(fullPath, knxCommonDir, enumsDir)
         }
@@ -67,8 +67,14 @@ function walkAndRewrite(dir, knxCommonDir, enumsDir) {
 copyRecursive(knxCommonDist, path.join(jsKnxDist, 'knx-common'), { excludeDirs: ['esm'] })
 fs.rmSync(path.join(jsKnxDist, 'knx-types'), { recursive: true, force: true })
 walkAndRewrite(jsKnxDist, path.join(jsKnxDist, 'knx-common'), path.join(jsKnxDist, 'enums'))
+walkAndRewrite(path.join(jsKnxDist, 'knx-common'), path.join(jsKnxDist, 'knx-common'), path.join(jsKnxDist, 'enums'), {
+    skipDirs: [],
+})
 
 const esmRoot = path.join(jsKnxDist, 'esm')
 copyRecursive(path.join(knxCommonDist, 'esm'), path.join(esmRoot, 'knx-common'))
 fs.rmSync(path.join(esmRoot, 'knx-types'), { recursive: true, force: true })
 walkAndRewrite(esmRoot, path.join(esmRoot, 'knx-common'), path.join(esmRoot, 'enums'))
+walkAndRewrite(path.join(esmRoot, 'knx-common'), path.join(esmRoot, 'knx-common'), path.join(esmRoot, 'enums'), {
+    skipDirs: [],
+})

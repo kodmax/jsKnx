@@ -28,7 +28,7 @@ jobs:
               run: yarn install --frozen-lockfile
 
             - name: Build
-              run: yarn build
+              run: yarn turbo run build --force
 
             - name: Test
               run: yarn test
