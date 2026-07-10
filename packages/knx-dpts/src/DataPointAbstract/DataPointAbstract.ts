@@ -14,6 +14,14 @@ interface IDPT {
     toString(value?: unknown): string
 }
 
+/**
+ * Base class for typed KNX group clients (DPT implementations).
+ *
+ * Instances are created via `KnxLink.group()`. Subclasses define encoding,
+ * decoding, and DPT-specific write helpers.
+ *
+ * @typeParam T Decoded value type for this DPT.
+ */
 export abstract class DataPointAbstract<T> implements IDPT {
     protected cemiFrameEvent: EventEmitter = new EventEmitter()
     protected valueEvent: EventEmitter = new EventEmitter()
@@ -21,13 +29,20 @@ export abstract class DataPointAbstract<T> implements IDPT {
     private pendingReadReject?: (error: KnxLinkException) => void
 
     protected abstract valueByteLength: number
-    public abstract readonly unit: string
+    /** KNX datapoint type identifier (e.g. `1.001`). */
     public abstract readonly type: DPT
+    /** Display unit for numeric values; empty string when not applicable. */
+    public abstract readonly unit: string
 
     protected abstract decode(data: Buffer, cemiFrame: KnxCemiFrame): T
+
+    /** Send a group write with a DPT-encoded value. */
     protected abstract write(value: T): Promise<void>
 
+    /** Subscribe to incoming group writes and read responses for this address. */
     public abstract addValueListener(cb: (reading: KnxReading<T>) => void): void
+
+    /** Format a decoded value for display; without `value`, returns address and DPT id. */
     public abstract toString(value?: T): string
 
     protected isCemiFrameValueByteLengthOk(cemiFrame: KnxCemiFrame): boolean {
@@ -62,10 +77,16 @@ export abstract class DataPointAbstract<T> implements IDPT {
         await this.link.sendCemiFrame(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value))
     }
 
+    /** Send a group-read telegram without waiting for a response. */
     public async requestValue(): Promise<void> {
         await this.link.sendCemiFrame(KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', this.address))
     }
 
+    /**
+     * Send a group read and wait for a response.
+     *
+     * @throws `READ_TIMEOUT` when no response arrives within the link `readTimeout`.
+     */
     public async read(): Promise<KnxReading<T>> {
         await this.requestValue()
         return await new Promise((resolve, reject) => {
@@ -100,6 +121,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
         })
     }
 
+    /** Return the parent KNX link used for bus communication. */
     public getLink(): KnxDatapointLink<KnxCemiFrame> {
         return this.link
     }
@@ -110,6 +132,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
         private readonly options: RequiredKnxLinkOptions
     ) {}
 
+    /** Return the bound group address (e.g. `2/0/4`). */
     public getAddress(): string {
         return this.address
     }

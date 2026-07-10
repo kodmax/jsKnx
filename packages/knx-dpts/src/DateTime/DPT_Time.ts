@@ -1,6 +1,7 @@
 import { TimeOfDay } from '../TimeOfDay/TimeOfDay'
 import { DPT } from '@repo/knx-enums'
 
+/** KNX DPT 10.001 — Time of day (`HH:MM:SS` string, optional weekday prefix). */
 export class DPT_Time extends TimeOfDay {
     public readonly type: DPT = DPT.Time
     public readonly unit: string = ''

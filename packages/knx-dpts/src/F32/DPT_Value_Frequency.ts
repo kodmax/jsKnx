@@ -1,6 +1,7 @@
 import { F32 } from './F32'
 import { DPT } from '@repo/knx-enums'
 
+/** KNX DPT 14.031 — Frequency (Hz, 4-byte float). */
 export class DPT_Value_Frequency extends F32 {
     public readonly type: DPT = DPT.Value_Frequency
     public readonly unit: string = 'Hz'

@@ -1,14 +1,15 @@
 import { B1 } from './B1'
 import { DPT } from '@repo/knx-enums'
 
+/** KNX DPT 1.017 — Trigger (1-bit impulse). */
 export class DPT_Trigger extends B1 {
     public readonly type: DPT = DPT.Trigger
     public readonly unit: string = ''
 
     /**
-     * Trigger function.
-     * @param value {0|1} value to use. According to KNX specification it should not matter whenever 0 or 1 is used. For some devices, it seems to matter.
-     * @returns
+     * Send a trigger impulse.
+     *
+     * @param value `0` or `1`; the KNX spec treats both as a trigger, though some devices are sensitive to the bit value.
      */
     public async trigger(value: 0 | 1 = 0): Promise<void> {
         return this.write(value)
