@@ -156,7 +156,7 @@ export class KnxLink {
      * @param schema Group address and DPT class from the schema definition.
      * @param init Optional callback invoked on the new instance before it is returned.
      * @returns An instance of `T` bound to `schema.address`. Use `read()`, `write()`,
-     *          and DPT-specific helpers (e.g. `on()` / `off()` on `DPT_Switch`).
+     *          `onValue()`, and DPT-specific helpers (e.g. `on()` / `off()` on `DPT_Switch`).
      */
     public group<T extends DataPointAbstract<unknown>>({ address, DataType }: KnxGroupSchema<T>, init?: (dataPoint: T) => void): T {
         const dataPoint = new DataType(address, this, this.options)

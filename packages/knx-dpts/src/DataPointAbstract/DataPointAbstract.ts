@@ -8,7 +8,12 @@ interface IDPT {
     readonly unit: string
     read(): Promise<KnxReading<unknown>>
     requestValue(): Promise<void>
-    addValueListener(cb: (reading: KnxReading<unknown>) => void): void
+    addWriteListener(cb: (reading: KnxReading<unknown>) => void): void
+    removeWriteListener(cb: (reading: KnxReading<unknown>) => void): void
+    addResponseListener(cb: (reading: KnxReading<unknown>) => void): void
+    removeResponseListener(cb: (reading: KnxReading<unknown>) => void): void
+    onValue(cb: (reading: KnxReading<unknown>) => void): void
+    offValue(cb: (reading: KnxReading<unknown>) => void): void
     getAddress(): string
     getLink(): KnxDatapointLink<KnxCemiFrame>
     toString(value?: unknown): string
@@ -39,11 +44,44 @@ export abstract class DataPointAbstract<T> implements IDPT {
     /** Send a group write with a DPT-encoded value. */
     protected abstract write(value: T): Promise<void>
 
-    /** Subscribe to incoming group writes and read responses for this address. */
-    public abstract addValueListener(cb: (reading: KnxReading<T>) => void): void
-
     /** Format a decoded value for display; without `value`, returns address and DPT id. */
     public abstract toString(value?: T): string
+
+    /** Subscribe to incoming group writes (`APCI_GROUP_VALUE_WRITE`) for this address. */
+    public addWriteListener(cb: (reading: KnxReading<T>) => void): void {
+        this.valueEvent.addListener('value-received', cb)
+        this.updateSubscription()
+    }
+
+    /** Remove a listener previously added with {@link addWriteListener} or {@link onValue}. */
+    public removeWriteListener(cb: (reading: KnxReading<T>) => void): void {
+        this.valueEvent.removeListener('value-received', cb)
+        this.updateSubscription()
+    }
+
+    /** Subscribe to group-read responses (`APCI_GROUP_VALUE_RESP`), e.g. after {@link requestValue}. */
+    public addResponseListener(cb: (reading: KnxReading<T>) => void): void {
+        this.valueEvent.addListener('resp-received', cb)
+        this.updateSubscription()
+    }
+
+    /** Remove a listener previously added with {@link addResponseListener} or {@link onValue}. */
+    public removeResponseListener(cb: (reading: KnxReading<T>) => void): void {
+        this.valueEvent.removeListener('resp-received', cb)
+        this.updateSubscription()
+    }
+
+    /** Subscribe to both group writes and read responses with one callback. */
+    public onValue(cb: (reading: KnxReading<T>) => void): void {
+        this.addWriteListener(cb)
+        this.addResponseListener(cb)
+    }
+
+    /** Remove a listener previously added with {@link onValue}. */
+    public offValue(cb: (reading: KnxReading<T>) => void): void {
+        this.removeWriteListener(cb)
+        this.removeResponseListener(cb)
+    }
 
     protected isCemiFrameValueByteLengthOk(cemiFrame: KnxCemiFrame): boolean {
         if (cemiFrame.value.byteLength !== this.valueByteLength) {
@@ -94,7 +132,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
                 clearTimeout(timeoutId)
                 this.valueEvent.removeListener('resp-received', recv)
                 this.pendingReadReject = undefined
-                this.updateSubscription('resp-received')
+                this.updateSubscription()
             }
 
             const recv = (reading: KnxReading<T>) => {
@@ -108,7 +146,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
             }
 
             this.valueEvent.addListener('resp-received', recv)
-            this.updateSubscription('resp-received')
+            this.updateSubscription()
 
             const timeoutId = setTimeout(() => {
                 cleanup()
@@ -176,8 +214,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected updateSubscription(_eventName: 'value-received' | 'resp-received'): void {
+    protected updateSubscription(): void {
         const lc = this.valueEvent.listenerCount('value-received') + this.valueEvent.listenerCount('resp-received')
 
         if (lc === 0 && this.hasSubscribed) {

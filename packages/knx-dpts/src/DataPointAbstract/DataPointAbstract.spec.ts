@@ -17,11 +17,6 @@ class TestU8 extends DataPointAbstract<number> {
         return this.send(U8.toBuffer(value, Buffer.alloc(this.valueByteLength)))
     }
 
-    public addValueListener(cb: (reading: KnxReading<number>) => void): void {
-        this.valueEvent.addListener('value-received', cb)
-        this.updateSubscription('value-received')
-    }
-
     public toString(value?: number): string {
         return value === undefined ? this.address : String(value)
     }
@@ -124,11 +119,11 @@ describe('DataPointAbstract', () => {
         expect(link.sendCemiFrame).toHaveBeenCalledWith(expect.any(Buffer))
     })
 
-    it('addValueListener receives group value writes for matching address', async () => {
+    it('addWriteListener receives group value writes for matching address', async () => {
         const { dp, emitCemiFrame } = createTestDatapoint()
         const listener = jest.fn()
 
-        dp.addValueListener(listener)
+        dp.addWriteListener(listener)
         emitCemiFrame(groupValueWriteFrame(Buffer.from([0x00, 0x07])))
 
         expect(listener).toHaveBeenCalledWith(
@@ -140,11 +135,51 @@ describe('DataPointAbstract', () => {
         )
     })
 
+    it('addResponseListener receives group value read responses', async () => {
+        const { dp, emitCemiFrame } = createTestDatapoint()
+        const listener = jest.fn()
+
+        dp.addResponseListener(listener)
+        emitCemiFrame(groupValueRespFrame(Buffer.from([0x00, 0x2a])))
+
+        expect(listener).toHaveBeenCalledWith(
+            expect.objectContaining({
+                value: 42,
+                target: '1/2/3',
+                source: '1.0.0'
+            })
+        )
+    })
+
+    it('onValue receives both group writes and read responses', async () => {
+        const { dp, emitCemiFrame } = createTestDatapoint()
+        const listener = jest.fn()
+
+        dp.onValue(listener)
+        emitCemiFrame(groupValueWriteFrame(Buffer.from([0x00, 0x03])))
+        emitCemiFrame(groupValueRespFrame(Buffer.from([0x00, 0x05])))
+
+        expect(listener).toHaveBeenCalledTimes(2)
+        expect(listener).toHaveBeenNthCalledWith(1, expect.objectContaining({ value: 3 }))
+        expect(listener).toHaveBeenNthCalledWith(2, expect.objectContaining({ value: 5 }))
+    })
+
+    it('offValue removes a listener registered with onValue', async () => {
+        const { dp, emitCemiFrame } = createTestDatapoint()
+        const listener = jest.fn()
+
+        dp.onValue(listener)
+        dp.offValue(listener)
+        emitCemiFrame(groupValueWriteFrame(Buffer.from([0x00, 0x07])))
+
+        expect(listener).not.toHaveBeenCalled()
+    })
+
     it('ignores cEMI frames for other group addresses', async () => {
         const { dp, emitCemiFrame } = createTestDatapoint()
         const listener = jest.fn()
 
-        dp.addValueListener(listener)
+        dp.addWriteListener(listener)
         emitCemiFrame(KnxCemiFrame.decode(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Indication, '1.0.0', '9/9/9', Buffer.from([0x00, 0x01]))))
 
         expect(listener).not.toHaveBeenCalled()

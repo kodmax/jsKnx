@@ -73,7 +73,7 @@ const light = knx.group({ address: '14/0/0', DataType: DPT_Switch })
 
 await light.on()
 
-light.addValueListener(reading => {
+light.onValue(reading => {
     console.log('state:', reading.text)
 })
 
@@ -206,15 +206,17 @@ Subscribe to link events with `knx.on('error', â€¦)` and `knx.on('cemi-frame', â
 
 Every DPT class extends `DataPointAbstract`:
 
-| Method                 | Description                                                |
-| ---------------------- | ---------------------------------------------------------- |
-| `read()`               | Send group read, wait for response (`KnxReading<T>`)       |
-| `write(value)`         | Send group write (DPT-specific value type)                 |
-| `requestValue()`       | Send group read without waiting                            |
-| `addValueListener(cb)` | Subscribe to incoming group writes/responses               |
-| `getAddress()`         | Group address string                                       |
-| `getLink()`            | Parent link (`KnxDatapointLink`; implemented by `KnxLink`) |
-| `toString(value?)`     | Human-readable label                                       |
+| Method                         | Description                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| `read()`                       | Send group read, wait for response (`KnxReading<T>`)          |
+| `write(value)`                 | Send group write (DPT-specific value type)                    |
+| `requestValue()`               | Send group read without waiting                               |
+| `addWriteListener(cb)`         | Subscribe to incoming group writes                            |
+| `addResponseListener(cb)`      | Subscribe to group-read responses (e.g. after `requestValue`) |
+| `onValue(cb)` / `offValue(cb)` | Subscribe to both writes and read responses                   |
+| `getAddress()`                 | Group address string                                          |
+| `getLink()`                    | Parent link (`KnxDatapointLink`; implemented by `KnxLink`)    |
+| `toString(value?)`             | Human-readable label                                          |
 
 `KnxReading` shape:
 

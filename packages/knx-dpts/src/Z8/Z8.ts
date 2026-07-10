@@ -1,6 +1,5 @@
 import { DataPointAbstract } from '../DataPointAbstract'
 import { B8 } from '../B8'
-import { KnxReading } from '@repo/knx-common'
 import { KnxStandardStatus } from './types'
 
 export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
@@ -26,16 +25,6 @@ export abstract class Z8 extends DataPointAbstract<KnxStandardStatus> {
                 Buffer.alloc(this.valueByteLength)
             )
         )
-    }
-
-    public removeValueListener(cb: (reading: KnxReading<KnxStandardStatus>) => void) {
-        this.valueEvent.removeListener('value-received', cb)
-        this.updateSubscription('value-received')
-    }
-
-    public addValueListener(cb: (reading: KnxReading<KnxStandardStatus>) => void) {
-        this.valueEvent.addListener('value-received', cb)
-        this.updateSubscription('value-received')
     }
 
     public toString(status?: KnxStandardStatus): string {

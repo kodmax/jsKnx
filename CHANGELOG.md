@@ -6,6 +6,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.1.0]
+
+### Breaking
+
+- **`addValueListener` / `removeValueListener` replaced** with explicit write/response listeners:
+  - `addWriteListener` / `removeWriteListener` — `APCI_GROUP_VALUE_WRITE` (unsolicited group writes)
+  - **`addResponseListener` / `removeResponseListener`** — **`APCI_GROUP_VALUE_RESP`** (answers to `requestValue()`; not available in 2.x via `addValueListener`)
+  - `onValue` / `offValue` — subscribe to both writes and read responses with one callback
+
+**Migration from 3.0.x:**
+
+```typescript
+// Before
+light.addValueListener(reading => { ... })
+
+// After — monitor bus writes only (same as old default behaviour)
+light.addWriteListener(reading => { ... })
+
+// After — monitor read responses (e.g. after requestValue())
+light.addResponseListener(reading => { ... })
+await light.requestValue()
+
+// After — monitor writes and read responses together
+light.onValue(reading => { ... })
+```
+
+### Added
+
+- **`addResponseListener` / `removeResponseListener`** — subscribe to group-read responses without using `read()`
+- Group value listeners consolidated on `DataPointAbstract`: `addWriteListener`, `onValue`, `offValue`
+
 ## [3.0.0]
 
 ### Breaking
@@ -110,7 +141,8 @@ Release on npm before the KnxLink event API rework below.
 
 Baseline published on npm before the maintenance roadmap above.
 
-[Unreleased]: https://github.com/kodmax/jsKnx/compare/v3.0.0...HEAD
+[Unreleased]: https://github.com/kodmax/jsKnx/compare/v3.1.0...HEAD
+[3.1.0]: https://github.com/kodmax/jsKnx/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/kodmax/jsKnx/compare/v2.20.2...v3.0.0
 [2.20.1]: https://github.com/kodmax/jsKnx/compare/v2.20.0...v2.20.1
 [2.20.0]: https://github.com/kodmax/jsKnx/compare/v2.19.0...v2.20.0
