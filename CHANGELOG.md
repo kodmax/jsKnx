@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.0.0]
+
+### Breaking
+
+- **`KnxLink.getDatapoint()` renamed to `KnxLink.group()`.** The method still creates a typed client for a KNX group address (same arguments and return type); only the name changed to reflect KNX terminology (group address + DPT).
+
+**Migration from 2.x:**
+
+```typescript
+// Before
+const light = knx.getDatapoint({ address: '2/0/4', DataType: DPT_Switch })
+await light.on()
+
+// After
+const light = knx.group({ address: '2/0/4', DataType: DPT_Switch })
+await light.on()
+```
+
+Search and replace `getDatapoint` → `group` in application code. The `knx-read` and `knx-write` CLIs were updated internally; no CLI flag changes.
+
+### Added
+
+- JSDoc on `KnxLink` (including `group()`, `connect()`, `disconnect()`), `DataPointAbstract`, `KnxReading`, and all exported DPT classes
+
 ## [2.20.1]
 
 ### Fixed
@@ -86,7 +110,8 @@ Release on npm before the KnxLink event API rework below.
 
 Baseline published on npm before the maintenance roadmap above.
 
-[Unreleased]: https://github.com/kodmax/jsKnx/compare/v2.20.1...HEAD
+[Unreleased]: https://github.com/kodmax/jsKnx/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/kodmax/jsKnx/compare/v2.20.2...v3.0.0
 [2.20.1]: https://github.com/kodmax/jsKnx/compare/v2.20.0...v2.20.1
 [2.20.0]: https://github.com/kodmax/jsKnx/compare/v2.19.0...v2.20.0
 [2.19.0]: https://github.com/kodmax/jsKnx/compare/v2.18.0...v2.19.0
