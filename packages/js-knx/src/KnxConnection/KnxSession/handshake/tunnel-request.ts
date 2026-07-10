@@ -20,19 +20,23 @@ const tunnelRequest: TunnelRequest = async (gateway, tunnelAddress, connectionTi
 
     return new Promise((resolve, reject) => {
         gateway.once('message', (msg: Buffer) => {
-            clearTimeout(connectionTimeoutTimerId)
-            const serviceId = msg.readUInt16BE(2)
-            if (serviceId === KnxServiceId.CONNECTION_RESPONSE) {
-                const knxErrorCode = msg.readUint8(7)
+            try {
+                clearTimeout(connectionTimeoutTimerId)
+                const serviceId = msg.readUInt16BE(2)
+                if (serviceId === KnxServiceId.CONNECTION_RESPONSE) {
+                    const knxErrorCode = msg.readUint8(7)
 
-                if (knxErrorCode === 0) {
-                    resolve(msg)
+                    if (knxErrorCode === 0) {
+                        resolve(msg)
+                    } else {
+                        const error = (KnxErrorCode[knxErrorCode] ?? KnxErrorCode[KnxErrorCode.UNKNOWN_ERROR]) as keyof typeof KnxErrorCode
+                        reject(new KnxLinkException('CONNECTION_ERROR', 'Error connecting to KNX/IP Gateway: ' + error, { knxErrorCode }))
+                    }
                 } else {
-                    const error = (KnxErrorCode[knxErrorCode] ?? KnxErrorCode[KnxErrorCode.UNKNOWN_ERROR]) as keyof typeof KnxErrorCode
-                    reject(new KnxLinkException('CONNECTION_ERROR', 'Error connecting to KNX/IP Gateway: ' + error, { knxErrorCode }))
+                    reject(new KnxLinkException('NOT_A_CONNECTION_RESPONSE', 'Error connecting to KNX/IP Gateway', { serviceId }))
                 }
-            } else {
-                reject(new KnxLinkException('NOT_A_CONNECTION_RESPONSE', 'Error connecting to KNX/IP Gateway', { serviceId }))
+            } catch {
+                reject(new KnxLinkException('PROTOCOL_ERROR', 'Error connecting to KNX/IP Gateway', { data: msg }))
             }
         })
 

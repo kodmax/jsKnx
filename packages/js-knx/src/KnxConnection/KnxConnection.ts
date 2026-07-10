@@ -51,7 +51,11 @@ export class KnxConnection {
             this.events.emit('network-connection-established', endpoint)
 
             this.transport.onClose(() => {
-                this.handleSocketClose()
+                try {
+                    this.handleSocketClose()
+                } catch {
+                    // ignore — uncaught throws in socket callbacks crash the process
+                }
             })
 
             await retry(this.options.maxRetry, this.options.retryPause, async () => {
@@ -61,14 +65,22 @@ export class KnxConnection {
                         this.events.emit('cemi-frame', cemiFrame)
                     )
                     this.session.onDisconnectRequest(() => {
-                        this.teardown('gateway-request')
-                        if (!this.explicitDisconnect) {
-                            this.scheduleReconnect()
+                        try {
+                            this.teardown('gateway-request')
+                            if (!this.explicitDisconnect) {
+                                this.scheduleReconnect()
+                            }
+                        } catch {
+                            // ignore — uncaught throws in socket callbacks crash the process
                         }
                     })
 
                     this.session.onDisconnectResponse(() => {
-                        this.teardown('graceful')
+                        try {
+                            this.teardown('graceful')
+                        } catch {
+                            // ignore — uncaught throws in socket callbacks crash the process
+                        }
                     })
 
                     this.events.emit('connected', this.session.getLinkInfo())

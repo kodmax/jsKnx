@@ -21,37 +21,35 @@ export class KnxTunnel {
         private readonly options: KnxTunnelOptions
     ) {
         this.socket.on('message', msg => {
-            let ipMessage: KnxIpMessage
-
             try {
-                ipMessage = KnxIpMessage.decode(msg)
-            } catch {
-                return
-            }
+                const ipMessage = KnxIpMessage.decode(msg)
 
-            if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
-                const tunneling = new TunnelingFrame(ipMessage.getBody())
-                this.socket.send(tunneling.ack().getBuffer())
+                if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_REQUEST) {
+                    const tunneling = new TunnelingFrame(ipMessage.getBody())
+                    this.socket.send(tunneling.ack().getBuffer())
 
-                if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
-                    try {
+                    if ([KnxCemiCode.L_Data_Indication].includes(tunneling.getCemiCode())) {
                         onCemiFrame(KnxCemiFrame.decode(tunneling.getBody()))
-                    } catch {
-                        // ignore corrupt cEMI frames
+                    }
+                } else if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_RESPONSE) {
+                    const tunneling = new TunnelingFrame(ipMessage.getBody())
+                    const seq = tunneling.getSequenceNumber()
+                    --this.concurrentMessagesCounter
+
+                    if (this.acknowledge.has(seq)) {
+                        const pendingMessage = this.acknowledge.get(seq)!
+                        clearTimeout(pendingMessage.timeoutId)
+                        this.acknowledge.delete(seq)
+                        pendingMessage.ack()
                     }
                 }
-            } else if (ipMessage.getServiceId() === KnxServiceId.TUNNEL_RESPONSE) {
-                const tunneling = new TunnelingFrame(ipMessage.getBody())
-                const seq = tunneling.getSequenceNumber()
-                --this.concurrentMessagesCounter
-
-                if (this.acknowledge.has(seq)) {
-                    const pendingMessage = this.acknowledge.get(seq)!
-                    clearTimeout(pendingMessage.timeoutId)
-                    this.acknowledge.delete(seq)
-                    pendingMessage.ack()
-                }
+            } catch {
+                // ignore corrupt packets — uncaught throws in socket callbacks crash the process
             }
+        })
+
+        this.socket.on('error', () => {
+            // ignore — prevents Unhandled 'error' event when send fails without callback
         })
 
         const sendInterval = setInterval(() => {
@@ -71,29 +69,34 @@ export class KnxTunnel {
     }
 
     private send(message: PendingMessage): void {
-        this.socket.send(message.packet.getBuffer())
         ++this.concurrentMessagesCounter
+
+        this.socket.send(message.packet.getBuffer())
 
         this.acknowledge.set(message.packet.getSequence(), {
             ack: message.resolve,
             timeoutId: setTimeout(() => {
-                this.socket.send(message.packet.getBuffer()) // retry one time
+                try {
+                    this.socket.send(message.packet.getBuffer()) // retry one time
 
-                this.acknowledge.set(message.packet.getSequence(), {
-                    ack: message.resolve,
-                    timeoutId: setTimeout(() => {
-                        this.pendingMessages.splice(0, this.pendingMessages.length)
-                        try {
-                            if (!this.isClosed) {
-                                this.isClosed = true
-                                this.socket.close()
+                    this.acknowledge.set(message.packet.getSequence(), {
+                        ack: message.resolve,
+                        timeoutId: setTimeout(() => {
+                            this.pendingMessages.splice(0, this.pendingMessages.length)
+                            try {
+                                if (!this.isClosed) {
+                                    this.isClosed = true
+                                    this.socket.close()
+                                }
+                            } catch {
+                                // ignore
                             }
-                        } catch {
-                            // ignore
-                        }
-                        message.reject(new KnxLinkException('ACK_TIMEOUT', `Gateway did not acknowledge tunnel telegram`, { channel: this.channel }))
-                    }, 1000)
-                })
+                            message.reject(new KnxLinkException('ACK_TIMEOUT', `Gateway did not acknowledge tunnel telegram`, { channel: this.channel }))
+                        }, 1000)
+                    })
+                } catch {
+                    message.reject(new KnxLinkException('ACK_TIMEOUT', `Gateway did not acknowledge tunnel telegram`, { channel: this.channel }))
+                }
             }, 1000)
         })
     }

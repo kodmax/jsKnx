@@ -35,13 +35,27 @@ export class KnxSession {
 
     onGatewayMessage(cb: (message: KnxIpMessage) => void): void {
         this.linkInfo.gateway.on('message', data => {
-            cb(KnxIpMessage.decode(data))
+            let ipMessage: KnxIpMessage
+
+            try {
+                ipMessage = KnxIpMessage.decode(data)
+            } catch {
+                return
+            }
+
+            cb(ipMessage)
         })
     }
 
     onDisconnectResponse(cb: () => void): void {
         this.linkInfo.gateway.on('message', data => {
-            const ipMessage = KnxIpMessage.decode(data)
+            let ipMessage: KnxIpMessage
+
+            try {
+                ipMessage = KnxIpMessage.decode(data)
+            } catch {
+                return
+            }
 
             if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_RESPONSE) {
                 cb()
@@ -51,7 +65,13 @@ export class KnxSession {
 
     onDisconnectRequest(cb: () => void): void {
         this.linkInfo.gateway.on('message', data => {
-            const ipMessage = KnxIpMessage.decode(data)
+            let ipMessage: KnxIpMessage
+
+            try {
+                ipMessage = KnxIpMessage.decode(data)
+            } catch {
+                return
+            }
 
             if (ipMessage.getServiceId() === KnxServiceId.DISCONNECT_REQUEST) {
                 cb()
