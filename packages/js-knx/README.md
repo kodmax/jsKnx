@@ -27,7 +27,7 @@ knx.events.on('error', err => {
     console.error(err.message, err.code)
 })
 
-const livingRoom = knx.getDatapoint({
+const livingRoom = knx.group({
     address: '2/0/4',
     DataType: DPT_HVACMode
 })
@@ -55,7 +55,7 @@ import { DPT_Switch, KnxLink } from 'js-knx'
 
 const knx = await KnxLink.connect('192.168.0.8')
 
-const light = knx.getDatapoint({ address: '14/0/0', DataType: DPT_Switch })
+const light = knx.group({ address: '14/0/0', DataType: DPT_Switch })
 
 await light.on()
 
@@ -93,7 +93,7 @@ Numeric string values are coerced to numbers automatically (`"1"` → `1`). Time
 
 ## Supported DPT types
 
-Each DPT is a class exported from `js-knx`. Instantiate via `knx.getDatapoint({ address, DataType })`.
+Each DPT is a class exported from `js-knx`. Instantiate via `knx.group({ address, DataType })`.
 
 ### 1.x — Boolean / binary
 
@@ -105,7 +105,7 @@ Each DPT is a class exported from `js-knx`. Instantiate via `knx.getDatapoint({ 
 | `DPT_Alarm`       | 1.005   |
 | `DPT_UpDown`      | 1.008   |
 | `DPT_OpenClose`   | 1.009   |
-| `DPT_Start`       | 1.010   |
+| `DPT_StartStop`   | 1.010   |
 | `DPT_State`       | 1.011   |
 | `DPT_Reset`       | 1.015   |
 | `DPT_Ack`         | 1.016   |

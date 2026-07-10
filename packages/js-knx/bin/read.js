@@ -33,7 +33,7 @@ runMain(async () => {
     })
 
     try {
-        const dp = knx.getDatapoint({ address, DataType })
+        const dp = knx.group({ address, DataType })
         const reading = await dp.read()
         console.log(reading.text)
         await shutdown(0)

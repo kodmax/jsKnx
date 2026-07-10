@@ -28,7 +28,7 @@ runMain(async () => {
     await knx.connect()
 
     try {
-        const dp = knx.getDatapoint({ address, DataType })
+        const dp = knx.group({ address, DataType })
         await dp.write(coerceValue(value))
         await knx.disconnect()
         process.exit(0)

@@ -167,7 +167,7 @@ describe('KnxLink', () => {
         expect(onError).toHaveBeenCalledWith(error)
     })
 
-    describe('getDatapoint without network', () => {
+    describe('group without network', () => {
         beforeEach(() => {
             jest.spyOn(KnxConnection.prototype, 'connect').mockResolvedValue(undefined)
         })
@@ -176,21 +176,21 @@ describe('KnxLink', () => {
             jest.restoreAllMocks()
         })
 
-        it('getDatapoint() returns configured DPT instance', () => {
+        it('group() returns configured DPT instance', () => {
             const link = new KnxLink('192.168.0.8')
 
-            const dp = link.getDatapoint({ address: '2/0/4', DataType: DPT_Switch })
+            const dp = link.group({ address: '2/0/4', DataType: DPT_Switch })
 
             expect(dp.getAddress()).toBe('2/0/4')
             expect(dp.getLink()).toBe(link)
             expect(dp.toString()).toBe('2/0/4 (1.001)')
         })
 
-        it('getDatapoint() runs optional init callback', () => {
+        it('group() runs optional init callback', () => {
             const link = new KnxLink('192.168.0.8')
 
             const init = jest.fn()
-            link.getDatapoint({ address: '2/0/4', DataType: DPT_Switch }, init)
+            link.group({ address: '2/0/4', DataType: DPT_Switch }, init)
 
             expect(init).toHaveBeenCalledTimes(1)
         })

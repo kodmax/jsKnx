@@ -1,7 +1,7 @@
 import { B1 } from './B1'
 import { DPT } from '@repo/knx-enums'
 
-export class DPT_Start extends B1 {
+export class DPT_StartStop extends B1 {
     public readonly type: DPT = DPT.Start
     public readonly unit: string = ''
 

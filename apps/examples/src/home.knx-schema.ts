@@ -3,7 +3,7 @@ import {
     DPT_Alarm,
     DPT_Date,
     DPT_DateTime,
-    DPT_Start,
+    DPT_StartStop,
     DPT_Switch,
     DPT_Time,
     DPT_Value_AirQuality,
@@ -164,9 +164,9 @@ export const energy = {
         reading: { address: '5/2/3', DataType: DPT_ActiveEnergy }
     },
     'Intermediate Consumption Meter': {
-        Start: { address: '5/2/1', DataType: DPT_Start },
-        Stop: { address: '5/2/4', DataType: DPT_Start },
-        Status: { address: '5/2/5', DataType: DPT_Start },
+        Start: { address: '5/2/1', DataType: DPT_StartStop },
+        Stop: { address: '5/2/4', DataType: DPT_StartStop },
+        Status: { address: '5/2/5', DataType: DPT_StartStop },
         Reading: { address: '5/2/2', DataType: DPT_ActiveEnergy }
     },
     Frequency: {

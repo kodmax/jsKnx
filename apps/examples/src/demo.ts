@@ -20,17 +20,20 @@ async function main(): Promise<void> {
     const linkInfo = knx.getLinkInfo()
     console.log(`KNX Link established. Gateway address: ${linkInfo.individualAddress}, channel: ${Number(linkInfo.channel).toString(16)}.`)
 
-    const livingroom = await knx.getDatapoint({ DataType: DPT_HVACMode, address: '2/0/4' }).read()
-    const bathroom = await knx.getDatapoint({ DataType: DPT_HVACMode, address: '2/1/4' }).read()
-    const bedroom = await knx.getDatapoint({ DataType: DPT_HVACMode, address: '2/2/4' }).read()
+    const livingroom = await knx.group({ DataType: DPT_HVACMode, address: '2/0/4' }).read()
+    const bathroom = await knx.group({ DataType: DPT_HVACMode, address: '2/1/4' }).read()
+    const bedroom = await knx.group({ DataType: DPT_HVACMode, address: '2/2/4' }).read()
 
     console.log(livingroom)
     console.log(bathroom)
     console.log(bedroom)
 
-    process.on('SIGINT', () => {
-        knx.disconnect().then(() => process.exit(0))
-    })
+    const shutdown = (code = 0) => {
+        void knx.disconnect().then(() => process.exit(code))
+    }
+
+    process.on('SIGINT', () => shutdown(0))
+    process.on('SIGTERM', () => shutdown(0))
 }
 
 main().catch(error => {
