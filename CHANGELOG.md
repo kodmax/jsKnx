@@ -11,9 +11,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Breaking
 
 - **`addValueListener` / `removeValueListener` replaced** with explicit write/response listeners:
-  - `addWriteListener` / `removeWriteListener` — `APCI_GROUP_VALUE_WRITE` (unsolicited group writes)
-  - **`addResponseListener` / `removeResponseListener`** — **`APCI_GROUP_VALUE_RESP`** (answers to `requestValue()`; not available in 2.x via `addValueListener`)
-  - `onValue` / `offValue` — subscribe to both writes and read responses with one callback
+    - `addWriteListener` / `removeWriteListener` — `APCI_GROUP_VALUE_WRITE` (unsolicited group writes)
+    - **`addResponseListener` / `removeResponseListener`** — **`APCI_GROUP_VALUE_RESP`** (answers to `requestValue()`; not available in 2.x via `addValueListener`)
+    - `onValue` / `offValue` — subscribe to both writes and read responses with one callback
 
 **Migration from 3.0.x:**
 
