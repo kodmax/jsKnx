@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.3.0]
+
+### Added
+
+- **OpenTelemetry tracing** for solicited group operations (`read`, `request_value`, `write`): span name `knx.group` with attributes `knx.group_address`, `knx.operation`, `knx.dpt`
+- **`read()` span events:** `knx.read_sent` after the group-read telegram is sent, `knx.value_received` when the response is decoded (optional event attribute `knx.value` for short values)
+- **OpenTelemetry metrics:** counter `knx.group.operations` and histogram `knx.group.operation.duration` (labels: `knx.operation`, `knx.group_address`, `knx.dpt`)
+- **Push receive metrics** for spontaneous `APCI_GROUP_VALUE_WRITE` telegrams (`knx.operation=receive`) — no trace spans for push traffic
+- Optional **`onReceive`** callback on `KnxLink` options, invoked after a push group write is decoded (`KnxReceiveContext`: `groupAddress`, `dpt`, `source`)
+
+### Changed
+
+- **Runtime dependency:** `@opentelemetry/api` — tracing and metrics are no-ops until the host process registers an OpenTelemetry SDK (standard library instrumentation pattern)
+
 ## [3.2.0]
 
 ### Added
@@ -148,7 +162,9 @@ Release on npm before the KnxLink event API rework below.
 
 Baseline published on npm before the maintenance roadmap above.
 
-[Unreleased]: https://github.com/kodmax/jsKnx/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/kodmax/jsKnx/compare/v3.3.0...HEAD
+[3.3.0]: https://github.com/kodmax/jsKnx/compare/v3.2.0...v3.3.0
+[3.2.0]: https://github.com/kodmax/jsKnx/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/kodmax/jsKnx/compare/v3.0.0...v3.1.0
 [3.0.0]: https://github.com/kodmax/jsKnx/compare/v2.20.2...v3.0.0
 [2.20.1]: https://github.com/kodmax/jsKnx/compare/v2.20.0...v2.20.1

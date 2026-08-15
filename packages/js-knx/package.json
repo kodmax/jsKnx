@@ -1,6 +1,6 @@
 {
     "name": "js-knx",
-    "version": "3.2.0",
+    "version": "3.3.0",
     "description": "KNX IP/Gateway client",
     "repository": {
         "type": "git",
@@ -45,6 +45,9 @@
     },
     "author": "Marcin Malinowski <mm.kodmax@gmail.com>",
     "license": "GPL-3.0",
+    "dependencies": {
+        "@opentelemetry/api": "^1.9.0"
+    },
     "devDependencies": {
         "@repo/knx-dpts": "*",
         "@repo/knx-enums": "*",

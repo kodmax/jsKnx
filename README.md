@@ -2,7 +2,14 @@
 
 TypeScript/JavaScript client for KNX/IP gateways (tunneling connection, link layer).
 
-Zero runtime dependencies. Works on Node.js 20+.
+Depends on [`@opentelemetry/api`](https://www.npmjs.com/package/@opentelemetry/api) for optional tracing and metrics (no-op until the host process registers an OpenTelemetry SDK). Works on Node.js 20+.
+
+See [CHANGELOG](CHANGELOG.md) for release notes. Recent versions:
+
+- **3.3.0** — OpenTelemetry spans and metrics for group read/write/request; push receive metrics; optional `onReceive` callback
+- **3.2.0** — Per group address read timeout counters (`getReadTimeoutStats()`)
+- **3.1.0** — `addResponseListener` / explicit write vs read-response listeners (replaces `addValueListener`)
+- **3.0.0** — `KnxLink.group()` (renamed from `getDatapoint()`)
 
 ## Monorepo
 
@@ -33,13 +40,13 @@ The package ships as a **dual package**: use `require('js-knx')` in CommonJS or 
 ```typescript
 import { DPT_HVACMode, KnxLink } from 'js-knx'
 
-const knx = await KnxLink.connect('192.168.0.8', {
-    readTimeout: 5000
-})
+const knx = new KnxLink('192.168.0.8', { readTimeout: 5000 })
 
-knx.events.on('error', err => {
+knx.on('error', err => {
     console.error(err.message, err.code)
 })
+
+await knx.connect()
 
 const livingRoom = knx.group({
     address: '2/0/4',
@@ -57,7 +64,7 @@ Group addresses use KNX notation (`main/middle/sub`, e.g. `2/0/4`).
 ### Listen for bus traffic
 
 ```typescript
-knx.events.on('cemi-frame', frame => {
+knx.on('cemi-frame', frame => {
     console.log(frame.source, '->', frame.target, frame.value)
 })
 ```
@@ -67,7 +74,9 @@ knx.events.on('cemi-frame', frame => {
 ```typescript
 import { DPT_Switch, KnxLink } from 'js-knx'
 
-const knx = await KnxLink.connect('192.168.0.8')
+const knx = new KnxLink('192.168.0.8')
+knx.on('error', err => console.error(err))
+await knx.connect()
 
 const light = knx.group({ address: '14/0/0', DataType: DPT_Switch })
 
@@ -193,8 +202,41 @@ All options are optional when calling `new KnxLink(ip, options)`.
 | `maxConcurrentMessages` | `16`       | Max telegrams awaiting gateway ACK before back-pressure                                     |
 | `maxTelegramsPerSecond` | `24`       | Send rate limit; lower if you see read timeouts on busy buses                               |
 | `port`                  | `3671`     | KNX/IP UDP port of the gateway                                                              |
+| `autoReconnect`         | `true`     | Reconnect automatically after gateway or network loss (not after `disconnect()`)            |
+| `onReceive`             | —          | Optional callback after a push group write is decoded (see below)                           |
 
 Subscribe to link events with `knx.on('error', …)` and `knx.on('cemi-frame', …)`.
+
+### Push receive callback (`onReceive`)
+
+Since **3.3.0**, you can observe spontaneous bus writes without trace spans:
+
+```typescript
+const knx = new KnxLink('192.168.0.8', {
+    onReceive: ({ groupAddress, dpt, source }) => {
+        console.log('push', source, '->', groupAddress, dpt)
+    }
+})
+```
+
+Push telegrams also increment the OpenTelemetry metric `knx.group.operations` with `knx.operation=receive` when a metrics exporter is configured in the host process.
+
+## OpenTelemetry (3.3.0+)
+
+When the host application registers an OpenTelemetry SDK, js-knx emits:
+
+| Signal      | What is instrumented                                       |
+| ----------- | ---------------------------------------------------------- |
+| **Traces**  | `read()`, `requestValue()`, `write()` — span `knx.group`   |
+| **Metrics** | All of the above plus push `receive` (counter + histogram) |
+
+Trace attributes: `knx.group_address`, `knx.operation` (`read` \| `request_value` \| `write`), `knx.dpt`.
+
+- **`read()`** — one span for the full round-trip; span events `knx.read_sent` and `knx.value_received`
+- **`requestValue()`** — short span covering the group-read send only (no span events, no wait for response)
+- **Push writes** — metrics only (no spans), to avoid noise and unrelated HTTP trace parents
+
+Export traces and metrics from the host app (e.g. OTLP for traces, Prometheus exporter for metrics). Without an SDK, instrumentation is a no-op.
 
 ### Connection behaviour
 
@@ -206,17 +248,19 @@ Subscribe to link events with `knx.on('error', …)` and `knx.on('cemi-frame', �
 
 Every DPT class extends `DataPointAbstract`:
 
-| Method                         | Description                                                   |
-| ------------------------------ | ------------------------------------------------------------- |
-| `read()`                       | Send group read, wait for response (`KnxReading<T>`)          |
-| `write(value)`                 | Send group write (DPT-specific value type)                    |
-| `requestValue()`               | Send group read without waiting                               |
-| `addWriteListener(cb)`         | Subscribe to incoming group writes                            |
-| `addResponseListener(cb)`      | Subscribe to group-read responses (e.g. after `requestValue`) |
-| `onValue(cb)` / `offValue(cb)` | Subscribe to both writes and read responses                   |
-| `getAddress()`                 | Group address string                                          |
-| `getLink()`                    | Parent link (`KnxDatapointLink`; implemented by `KnxLink`)    |
-| `toString(value?)`             | Human-readable label                                          |
+| Method                         | Description                                                      |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `read()`                       | Send group read, wait for response (`KnxReading<T>`)             |
+| `write(value)`                 | Send group write (DPT-specific value type)                       |
+| `requestValue()`               | Send group read without waiting                                  |
+| `addWriteListener(cb)`         | Subscribe to incoming group writes                               |
+| `addResponseListener(cb)`      | Subscribe to group-read responses (e.g. after `requestValue`)    |
+| `onValue(cb)` / `offValue(cb)` | Subscribe to both writes and read responses                      |
+| `getAddress()`                 | Group address string                                             |
+| `getReadTimeoutStats()`        | Cumulative and consecutive `read()` timeout counts (since 3.2.0) |
+| `resetReadTimeoutStats()`      | Reset read timeout counters to zero                              |
+| `getLink()`                    | Parent link (`KnxDatapointLink`; implemented by `KnxLink`)       |
+| `toString(value?)`             | Human-readable label                                             |
 
 `KnxReading` shape:
 
@@ -234,19 +278,19 @@ Every DPT class extends `DataPointAbstract`:
 
 Errors are thrown as `KnxLinkException` with a `code` field:
 
-| Code                             | Typical cause                                       |
-| -------------------------------- | --------------------------------------------------- |
-| `CONNECTION_TIMEOUT`             | Gateway did not respond during handshake            |
-| `CONNECTION_ERROR`               | Gateway rejected connection (busy, wrong layer, …)  |
-| `CONNECTION_ALREADY_ESTABLISHED` | `connect()` called twice                            |
-| `READ_TIMEOUT`                   | No bus response within `readTimeout`                |
-| `DATA_LENGTH_MISMATCH`           | Received payload size does not match DPT            |
-| `PROTOCOL_ERROR`                 | Invalid KNX/IP or cEMI frame                        |
-| `NO_CONNECTION`                  | Send attempted after disconnect                     |
-| `ACK_TIMEOUT`                    | Gateway did not ACK a tunnel telegram (after retry) |
-| `NETWORK_ERROR`                  | UDP socket connect or send failure                  |
+| Code                             | Typical cause                                                                                                           |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `CONNECTION_TIMEOUT`             | Gateway did not respond during handshake                                                                                |
+| `CONNECTION_ERROR`               | Gateway rejected connection (busy, wrong layer, …)                                                                      |
+| `CONNECTION_ALREADY_ESTABLISHED` | `connect()` called twice                                                                                                |
+| `READ_TIMEOUT`                   | No bus response within `readTimeout`; `details` includes `readTimeoutCount` and `consecutiveReadTimeouts` (since 3.2.0) |
+| `DATA_LENGTH_MISMATCH`           | Received payload size does not match DPT                                                                                |
+| `PROTOCOL_ERROR`                 | Invalid KNX/IP or cEMI frame                                                                                            |
+| `NO_CONNECTION`                  | Send attempted after disconnect                                                                                         |
+| `ACK_TIMEOUT`                    | Gateway did not ACK a tunnel telegram (after retry)                                                                     |
+| `NETWORK_ERROR`                  | UDP socket connect or send failure                                                                                      |
 
-Listen on `knx.events.on('error', …)` for non-fatal bus/protocol errors during operation.
+Listen on `knx.on('error', …)` for non-fatal bus/protocol errors during operation.
 
 ## Protocol references
 

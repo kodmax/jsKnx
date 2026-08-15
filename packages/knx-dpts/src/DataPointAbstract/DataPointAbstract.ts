@@ -1,7 +1,10 @@
 import { KnxLinkException, KnxReading, KnxDatapointLink, RequiredKnxLinkOptions, ReadTimeoutStats } from '@repo/knx-common'
 import { KnxCemiFrame } from '@repo/knx-common'
 import { APCI, DPT, KnxCemiCode } from '@repo/knx-enums'
+import { Span } from '@opentelemetry/api'
 import EventEmitter from 'events'
+import { observeKnxGroup } from '../tracing/observeKnxGroup'
+import { recordKnxReceive } from '../tracing/knxMetrics'
 
 interface IDPT {
     readonly type: DPT
@@ -19,6 +22,14 @@ interface IDPT {
     resetReadTimeoutStats(): void
     getLink(): KnxDatapointLink<KnxCemiFrame>
     toString(value?: unknown): string
+}
+
+const valueReceivedEventAttributes = (reading: KnxReading<unknown>): Record<string, string> | undefined => {
+    if (reading.text.length <= 64) {
+        return { 'knx.value': reading.text }
+    }
+
+    return undefined
 }
 
 /**
@@ -116,12 +127,20 @@ export abstract class DataPointAbstract<T> implements IDPT {
     }
 
     protected async send(value: Buffer): Promise<void> {
-        await this.link.sendCemiFrame(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value))
+        return observeKnxGroup('write', this, async () => {
+            await this.link.sendCemiFrame(KnxCemiFrame.groupValueWrite(KnxCemiCode.L_Data_Request, '0.0.0', this.address, value))
+        })
+    }
+
+    private async requestValueInternal(): Promise<void> {
+        await this.link.sendCemiFrame(KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', this.address))
     }
 
     /** Send a group-read telegram without waiting for a response. */
     public async requestValue(): Promise<void> {
-        await this.link.sendCemiFrame(KnxCemiFrame.groupValueRead(KnxCemiCode.L_Data_Request, '0.0.0', this.address))
+        return observeKnxGroup('request_value', this, async () => {
+            await this.requestValueInternal()
+        })
     }
 
     /**
@@ -130,8 +149,15 @@ export abstract class DataPointAbstract<T> implements IDPT {
      * @throws `READ_TIMEOUT` when no response arrives within the link `readTimeout`.
      */
     public async read(): Promise<KnxReading<T>> {
-        await this.requestValue()
-        return await new Promise((resolve, reject) => {
+        return observeKnxGroup('read', this, async span => {
+            await this.requestValueInternal()
+            span.addEvent('knx.read_sent')
+            return this.readAwaitResponse(span)
+        })
+    }
+
+    private readAwaitResponse(span: Span): Promise<KnxReading<T>> {
+        return new Promise((resolve, reject) => {
             const cleanup = (): void => {
                 clearTimeout(timeoutId)
                 this.valueEvent.removeListener('resp-received', recv)
@@ -141,6 +167,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
             const recv = (reading: KnxReading<T>) => {
                 this.consecutiveReadTimeouts = 0
+                span.addEvent('knx.value_received', valueReceivedEventAttributes(reading))
                 cleanup()
                 resolve(reading)
             }
@@ -204,6 +231,8 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
             switch (cemiFrame.getService()) {
                 case APCI.APCI_GROUP_VALUE_WRITE: {
+                    const receiveStart = Date.now()
+
                     if (this.isCemiFrameValueByteLengthOk(cemiFrame)) {
                         const value = this.decode(cemiFrame.value, cemiFrame)
                         this.valueEvent.emit('value-received', {
@@ -212,6 +241,12 @@ export abstract class DataPointAbstract<T> implements IDPT {
                             target: cemiFrame.target,
                             unit: this.unit,
                             value
+                        })
+                        recordKnxReceive(this, Date.now() - receiveStart)
+                        this.options.onReceive?.({
+                            groupAddress: this.address,
+                            dpt: String(this.type),
+                            source: cemiFrame.source
                         })
                     }
 

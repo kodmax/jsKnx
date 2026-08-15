@@ -1,3 +1,9 @@
+export type KnxReceiveContext = {
+    groupAddress: string
+    dpt: string
+    source: string
+}
+
 export type KnxLinkOptions = {
     /**
      * Max telegrams awaiting gateway ACK before back-pressure.
@@ -46,9 +52,15 @@ export type KnxLinkOptions = {
      * @default 10000
      */
     connectionTimeout: number
+
+    /**
+     * Optional callback invoked after a successful decode of a push group write
+     * (`APCI_GROUP_VALUE_WRITE`). Does not run for read responses.
+     */
+    onReceive?: (ctx: KnxReceiveContext) => void
 }
 
-export type RequiredKnxLinkOptions = Required<KnxLinkOptions>
+export type RequiredKnxLinkOptions = Required<Omit<KnxLinkOptions, 'onReceive'>> & Pick<KnxLinkOptions, 'onReceive'>
 
 /** Optional link options passed to `new KnxLink(ip, options)`. Omitted fields use the `@default` values from {@link KnxLinkOptions}. */
 export type KnxLinkConstructorOptions = Partial<RequiredKnxLinkOptions>
