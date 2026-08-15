@@ -107,7 +107,72 @@ describe('DataPointAbstract', () => {
         const { link } = createMockLink()
         const dp = new TestU8('1/2/3', link, { readTimeout: 30 } as RequiredKnxLinkOptions)
 
+        await expect(dp.read()).rejects.toMatchObject({
+            code: 'READ_TIMEOUT',
+            details: {
+                address: '1/2/3',
+                readTimeoutCount: 1,
+                consecutiveReadTimeouts: 1
+            }
+        })
+        expect(dp.getReadTimeoutStats()).toEqual({ total: 1, consecutive: 1 })
+    })
+
+    it('read() increments consecutive timeout counters across repeated failures', async () => {
+        const { link } = createMockLink()
+        const dp = new TestU8('1/2/3', link, { readTimeout: 30 } as RequiredKnxLinkOptions)
+
         await expect(dp.read()).rejects.toMatchObject({ code: 'READ_TIMEOUT' })
+        await expect(dp.read()).rejects.toMatchObject({
+            code: 'READ_TIMEOUT',
+            details: {
+                readTimeoutCount: 2,
+                consecutiveReadTimeouts: 2
+            }
+        })
+        expect(dp.getReadTimeoutStats()).toEqual({ total: 2, consecutive: 2 })
+    })
+
+    it('read() resets consecutive timeout counter after a successful response', async () => {
+        const { link, emitCemiFrame } = createMockLink()
+        const dp = new TestU8('1/2/3', link, { readTimeout: 30 } as RequiredKnxLinkOptions)
+
+        await expect(dp.read()).rejects.toMatchObject({ code: 'READ_TIMEOUT' })
+
+        const secondRead = dp.read()
+        await flushAsync()
+        emitCemiFrame(groupValueRespFrame(Buffer.from([0x00, 0x2a])))
+        await expect(secondRead).resolves.toMatchObject({ value: 42 })
+        expect(dp.getReadTimeoutStats()).toEqual({ total: 1, consecutive: 0 })
+
+        await expect(dp.read()).rejects.toMatchObject({
+            code: 'READ_TIMEOUT',
+            details: {
+                readTimeoutCount: 2,
+                consecutiveReadTimeouts: 1
+            }
+        })
+    })
+
+    it('read() does not increment timeout counters on DATA_LENGTH_MISMATCH', async () => {
+        const { dp, emitCemiFrame } = createTestDatapoint()
+        const readPromise = dp.read()
+        await flushAsync()
+
+        emitCemiFrame(groupValueRespFrame(Buffer.from([0x00])))
+
+        await expect(readPromise).rejects.toMatchObject({ code: 'DATA_LENGTH_MISMATCH' })
+        expect(dp.getReadTimeoutStats()).toEqual({ total: 0, consecutive: 0 })
+    })
+
+    it('resetReadTimeoutStats() clears both counters', async () => {
+        const { link } = createMockLink()
+        const dp = new TestU8('1/2/3', link, { readTimeout: 30 } as RequiredKnxLinkOptions)
+
+        await expect(dp.read()).rejects.toMatchObject({ code: 'READ_TIMEOUT' })
+        dp.resetReadTimeoutStats()
+
+        expect(dp.getReadTimeoutStats()).toEqual({ total: 0, consecutive: 0 })
     })
 
     it('requestValue() sends group value read cEMI frame', async () => {

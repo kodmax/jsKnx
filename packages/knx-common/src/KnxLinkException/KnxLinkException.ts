@@ -6,6 +6,8 @@ export type KnxLinkExceptionDetails = {
     knxErrorCode: KnxErrorCode
     serviceId: KnxServiceId
     address: string
+    readTimeoutCount: number
+    consecutiveReadTimeouts: number
     target: string
     channel: number
     source: string
@@ -49,7 +51,11 @@ export class KnxLinkException extends Error {
     )
 
     public constructor(code: 'CONNECTION_ERROR', message: string, details: { knxErrorCode: KnxErrorCode })
-    public constructor(code: 'READ_TIMEOUT', message: string, details: { address: string })
+    public constructor(
+        code: 'READ_TIMEOUT',
+        message: string,
+        details: { address: string; readTimeoutCount: number; consecutiveReadTimeouts: number }
+    )
     public constructor(code: 'INVALID_VALUE', message: string, details: { value: unknown })
     public constructor(code: 'PROTOCOL_ERROR', message: string, details: { data: Buffer })
     public constructor(code: 'CONNECTION_TIMEOUT', message: string, details: {})

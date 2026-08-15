@@ -13,5 +13,5 @@ export type { KnxEventMap, KnxEventName, KnxEventListener, KnxDatapointLink } fr
 export { KnxEventEmitter } from '@repo/knx-common'
 export { KnxLink } from './KnxLink'
 export { type DatapointConstructor, type KnxGroupSchema } from './types'
-export { KnxLinkException, KnxLinkExceptionCode, KnxLinkExceptionDetails, KnxReading } from '@repo/knx-common'
+export { KnxLinkException, KnxLinkExceptionCode, KnxLinkExceptionDetails, KnxReading, ReadTimeoutStats } from '@repo/knx-common'
 export * from '@repo/knx-dpts'

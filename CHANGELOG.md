@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.2.0]
+
+### Added
+
+- Per group address read timeout counters on DPT instances: `getReadTimeoutStats()`, `resetReadTimeoutStats()`
+- `READ_TIMEOUT` exception details now include `readTimeoutCount` and `consecutiveReadTimeouts`
+
 ## [3.1.0]
 
 ### Breaking

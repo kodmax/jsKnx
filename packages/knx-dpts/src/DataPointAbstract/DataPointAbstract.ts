@@ -1,4 +1,4 @@
-import { KnxLinkException, KnxReading, KnxDatapointLink, RequiredKnxLinkOptions } from '@repo/knx-common'
+import { KnxLinkException, KnxReading, KnxDatapointLink, RequiredKnxLinkOptions, ReadTimeoutStats } from '@repo/knx-common'
 import { KnxCemiFrame } from '@repo/knx-common'
 import { APCI, DPT, KnxCemiCode } from '@repo/knx-enums'
 import EventEmitter from 'events'
@@ -15,6 +15,8 @@ interface IDPT {
     onValue(cb: (reading: KnxReading<unknown>) => void): void
     offValue(cb: (reading: KnxReading<unknown>) => void): void
     getAddress(): string
+    getReadTimeoutStats(): ReadTimeoutStats
+    resetReadTimeoutStats(): void
     getLink(): KnxDatapointLink<KnxCemiFrame>
     toString(value?: unknown): string
 }
@@ -32,6 +34,8 @@ export abstract class DataPointAbstract<T> implements IDPT {
     protected valueEvent: EventEmitter = new EventEmitter()
     protected hasSubscribed = false
     private pendingReadReject?: (error: KnxLinkException) => void
+    private readTimeoutCount = 0
+    private consecutiveReadTimeouts = 0
 
     protected abstract valueByteLength: number
     /** KNX datapoint type identifier (e.g. `1.001`). */
@@ -136,6 +140,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
             }
 
             const recv = (reading: KnxReading<T>) => {
+                this.consecutiveReadTimeouts = 0
                 cleanup()
                 resolve(reading)
             }
@@ -150,9 +155,13 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
             const timeoutId = setTimeout(() => {
                 cleanup()
+                this.readTimeoutCount++
+                this.consecutiveReadTimeouts++
                 reject(
                     new KnxLinkException('READ_TIMEOUT', `Timeout waiting for ${this.address} response`, {
-                        address: this.address
+                        address: this.address,
+                        readTimeoutCount: this.readTimeoutCount,
+                        consecutiveReadTimeouts: this.consecutiveReadTimeouts
                     })
                 )
             }, this.options.readTimeout)
@@ -173,6 +182,20 @@ export abstract class DataPointAbstract<T> implements IDPT {
     /** Return the bound group address (e.g. `2/0/4`). */
     public getAddress(): string {
         return this.address
+    }
+
+    /** Return cumulative and consecutive read timeout counters for this group address. */
+    public getReadTimeoutStats(): ReadTimeoutStats {
+        return {
+            total: this.readTimeoutCount,
+            consecutive: this.consecutiveReadTimeouts
+        }
+    }
+
+    /** Reset both read timeout counters to zero. */
+    public resetReadTimeoutStats(): void {
+        this.readTimeoutCount = 0
+        this.consecutiveReadTimeouts = 0
     }
 
     private eventsListener = (cemiFrame: KnxCemiFrame) => {
