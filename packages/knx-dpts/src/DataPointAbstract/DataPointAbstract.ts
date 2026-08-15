@@ -151,12 +151,12 @@ export abstract class DataPointAbstract<T> implements IDPT {
     public async read(): Promise<KnxReading<T>> {
         return observeKnxGroup('read', this, async span => {
             await this.requestValueInternal()
-            span.addEvent('knx.read_sent')
+            span?.addEvent('knx.read_sent')
             return this.readAwaitResponse(span)
         })
     }
 
-    private readAwaitResponse(span: Span): Promise<KnxReading<T>> {
+    private readAwaitResponse(span: Span | undefined): Promise<KnxReading<T>> {
         return new Promise((resolve, reject) => {
             const cleanup = (): void => {
                 clearTimeout(timeoutId)
@@ -167,7 +167,7 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
             const recv = (reading: KnxReading<T>) => {
                 this.consecutiveReadTimeouts = 0
-                span.addEvent('knx.value_received', valueReceivedEventAttributes(reading))
+                span?.addEvent('knx.value_received', valueReceivedEventAttributes(reading))
                 cleanup()
                 resolve(reading)
             }

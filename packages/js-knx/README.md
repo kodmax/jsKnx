@@ -6,6 +6,7 @@ Depends on [`@opentelemetry/api`](https://www.npmjs.com/package/@opentelemetry/a
 
 See [CHANGELOG](https://github.com/kodmax/jsKnx/blob/main/CHANGELOG.md) for release notes. Recent versions:
 
+- **3.4.1** — KNX group trace spans only when a parent span is active (no root spans from js-knx)
 - **3.4.0** — `abortConnect()` to cancel in-flight `connect()` during retry; `CONNECTION_ABORTED` error code
 - **3.3.0** — OpenTelemetry spans and metrics for group read/write/request; push receive metrics; optional `onReceive` callback
 - **3.2.0** — Per group address read timeout counters (`getReadTimeoutStats()`)
@@ -212,10 +213,10 @@ Push telegrams also increment the OpenTelemetry metric `knx.group.operations` wi
 
 When the host application registers an OpenTelemetry SDK, js-knx emits:
 
-| Signal      | What is instrumented                                       |
-| ----------- | ---------------------------------------------------------- |
-| **Traces**  | `read()`, `requestValue()`, `write()` — span `knx.group`   |
-| **Metrics** | All of the above plus push `receive` (counter + histogram) |
+| Signal      | What is instrumented                                                                                                           |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Traces**  | `read()`, `requestValue()`, `write()` — span `knx.group` (child span only; requires an active parent span in the OTEL context) |
+| **Metrics** | All of the above plus push `receive` (counter + histogram)                                                                     |
 
 Trace attributes: `knx.group_address`, `knx.operation` (`read` \| `request_value` \| `write`), `knx.dpt`.
 

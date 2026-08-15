@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.4.1]
+
+### Changed
+
+- **OpenTelemetry traces** for `read()`, `requestValue()`, and `write()` create a `knx.group` span only when an active parent span exists in the context; js-knx no longer starts root trace spans. Metrics are unchanged.
+
 ## [3.4.0]
 
 ### Added

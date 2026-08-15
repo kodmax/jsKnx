@@ -1,4 +1,4 @@
-import { Span, SpanStatusCode, trace } from '@opentelemetry/api'
+import { context, Span, SpanStatusCode, trace } from '@opentelemetry/api'
 import { recordKnxGroupOperation, type KnxGroupOperation } from './knxMetrics'
 
 type KnxDataPoint = {
@@ -15,30 +15,45 @@ const spanAttributes = (operation: KnxGroupOperation, dataPoint: KnxDataPoint, e
     ...extraAttributes
 })
 
+const runWithMetrics = async <T>(operation: KnxGroupOperation, dataPoint: KnxDataPoint, run: () => Promise<T>): Promise<T> => {
+    const start = performance.now()
+    try {
+        return await run()
+    } finally {
+        recordKnxGroupOperation(operation, dataPoint, performance.now() - start)
+    }
+}
+
 export const observeKnxGroup = async <T>(
     operation: KnxGroupOperation,
     dataPoint: KnxDataPoint,
-    fn: (span: Span) => Promise<T>,
+    fn: (span: Span | undefined) => Promise<T>,
     extraAttributes?: Record<string, string>
 ): Promise<T> => {
-    const start = Date.now()
+    const parentSpan = trace.getSpan(context.active())
 
-    return knxTracer.startActiveSpan(
-        'knx.group',
-        {
-            attributes: spanAttributes(operation, dataPoint, extraAttributes)
-        },
-        async span => {
-            try {
-                return await fn(span)
-            } catch (error) {
-                span.recordException(error instanceof Error ? error : new Error(String(error)))
-                span.setStatus({ code: SpanStatusCode.ERROR })
-                throw error
-            } finally {
-                span.end()
-                recordKnxGroupOperation(operation, dataPoint, Date.now() - start)
-            }
-        }
+    return runWithMetrics(
+        operation,
+        dataPoint,
+        parentSpan === undefined
+            ? () => fn(undefined)
+            : () =>
+                  knxTracer.startActiveSpan(
+                      'knx.group',
+                      {
+                          attributes: spanAttributes(operation, dataPoint, extraAttributes)
+                      },
+                      async span => {
+                          try {
+                              return await fn(span)
+                          } catch (error) {
+                              span.recordException(error instanceof Error ? error : new Error(String(error)))
+                              span.setStatus({ code: SpanStatusCode.ERROR })
+                              throw error
+                          } finally {
+                              span.end()
+                          }
+                      }
+                  )
     )
 }
