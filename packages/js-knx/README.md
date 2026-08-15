@@ -6,6 +6,7 @@ Depends on [`@opentelemetry/api`](https://www.npmjs.com/package/@opentelemetry/a
 
 See [CHANGELOG](https://github.com/kodmax/jsKnx/blob/main/CHANGELOG.md) for release notes. Recent versions:
 
+- **3.4.0** — `abortConnect()` to cancel in-flight `connect()` during retry; `CONNECTION_ABORTED` error code
 - **3.3.0** — OpenTelemetry spans and metrics for group read/write/request; push receive metrics; optional `onReceive` callback
 - **3.2.0** — Per group address read timeout counters (`getReadTimeoutStats()`)
 - **3.1.0** — `addResponseListener` / explicit write vs read-response listeners (replaces `addValueListener`)
@@ -227,8 +228,28 @@ Export traces and metrics from the host app (e.g. OTLP for traces, Prometheus ex
 ### Connection behaviour
 
 - **Initial connect** retries with `maxRetry` / `retryPause` until the gateway accepts a tunnel (useful when both tunnel channels are occupied).
-- **Automatic reconnect** runs after unexpected session loss (socket close, gateway disconnect). It does not run after an explicit `disconnect()`.
+- **`abortConnect()`** (since **3.4.0**) — cancel startup while `connect()` is still retrying. Rejects the pending `connect()` with `CONNECTION_ABORTED`, emits `disconnected` with reason `connect-aborted`, and closes any opened UDP transport. No-op when not connecting. Use on process shutdown instead of waiting for retries to finish; call `disconnect()` after a successful connection.
+- **Automatic reconnect** runs after unexpected session loss (socket close, gateway disconnect). It does not run after an explicit `disconnect()` or after `abortConnect()`.
 - **Second `connect()`** on the same `KnxConnection` throws `CONNECTION_ALREADY_ESTABLISHED` or `CONNECTION_IN_PROGRESS`.
+
+```typescript
+import { KnxLink, KnxLinkException } from 'js-knx'
+
+const knx = new KnxLink('192.168.0.8')
+const connectPromise = knx.connect()
+
+process.on('SIGTERM', () => {
+    knx.abortConnect()
+})
+
+try {
+    await connectPromise
+} catch (err) {
+    if (err instanceof KnxLinkException && err.code === 'CONNECTION_ABORTED') {
+        // startup cancelled — e.g. dev server restart
+    }
+}
+```
 
 ## Datapoint API
 
@@ -266,6 +287,7 @@ Errors are thrown as `KnxLinkException` with a `code` field:
 
 | Code                             | Typical cause                                                                                                           |
 | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `CONNECTION_ABORTED`             | `abortConnect()` called while `connect()` was retrying (since 3.4.0)                                                    |
 | `CONNECTION_TIMEOUT`             | Gateway did not respond during handshake                                                                                |
 | `CONNECTION_ERROR`               | Gateway rejected connection (busy, wrong layer, …)                                                                      |
 | `CONNECTION_ALREADY_ESTABLISHED` | `connect()` called twice                                                                                                |

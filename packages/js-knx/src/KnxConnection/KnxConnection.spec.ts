@@ -336,6 +336,63 @@ describe('KnxConnection', () => {
         })
     })
 
+    describe('abortConnect', () => {
+        beforeEach(() => {
+            const { retry: realRetry } = jest.requireActual<typeof import('@repo/knx-common')>('@repo/knx-common')
+            retryMock.mockImplementation(realRetry)
+        })
+
+        afterEach(() => {
+            jest.clearAllTimers()
+            jest.useRealTimers()
+        })
+
+        it('rejects with CONNECTION_ABORTED when aborted during retry pause', async () => {
+            jest.useFakeTimers()
+            events.on('error', () => {})
+
+            const disconnected = jest.fn()
+            events.on('disconnected', disconnected)
+
+            const transport = createMockTransport()
+            openTransportMock.mockResolvedValue(transport as unknown as KnxTransport)
+            startSessionMock.mockRejectedValue(
+                new KnxLinkException('CONNECTION_ERROR', 'Error connecting to KNX/IP Gateway: NO_MORE_CHANNELS', { knxErrorCode: 37 })
+            )
+
+            const connection = createConnection({ maxRetry: 3, retryPause: 3000 })
+            const connectPromise = connection.connect()
+            const assertion = expect(connectPromise).rejects.toMatchObject({
+                code: 'CONNECTION_ABORTED'
+            } satisfies Partial<KnxLinkException>)
+
+            await jest.advanceTimersByTimeAsync(100)
+            connection.abortConnect()
+            await jest.advanceTimersByTimeAsync(100)
+
+            await assertion
+
+            expect(disconnected).toHaveBeenCalledWith({ reason: 'connect-aborted' })
+            expect(transport.close).toHaveBeenCalled()
+            expect(startSessionMock).toHaveBeenCalledTimes(1)
+            expect((connection as unknown as { connecting: boolean }).connecting).toBe(false)
+        })
+
+        it('is a no-op when not connecting', () => {
+            const connection = createConnection()
+
+            connection.abortConnect()
+        })
+
+        it('is a no-op after connect succeeds', async () => {
+            const { connection } = await setupConnected()
+
+            connection.abortConnect()
+
+            expect(connection.getLinkInfo().individualAddress).toBe('1.1.1')
+        })
+    })
+
     describe('lifecycle events', () => {
         it('emits connecting, network-connection-established, starting-session, and connected on successful connect', async () => {
             const connecting = jest.fn()

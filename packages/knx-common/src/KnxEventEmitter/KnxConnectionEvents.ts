@@ -1,4 +1,5 @@
-export type KnxDisconnectedReason = 'graceful' | 'disconnect-timeout' | 'unexpected-socket-close' | 'gateway-request' | 'network-connect-failed'
+export type KnxDisconnectedReason =
+    'graceful' | 'disconnect-timeout' | 'unexpected-socket-close' | 'gateway-request' | 'network-connect-failed' | 'connect-aborted'
 
 export type KnxConnectingEvent = {
     ip: string

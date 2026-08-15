@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.4.0]
+
+### Added
+
+- **`KnxLink.abortConnect()`** — cancel an in-flight `connect()` while the library is retrying (e.g. process shutdown during startup). The pending `connect()` promise rejects with `CONNECTION_ABORTED`; listeners receive `disconnected` with reason `connect-aborted`.
+- **`CONNECTION_ABORTED`** error code on `KnxLinkException`.
+- Abortable retry pause in the internal `retry` helper (`RetryAbortedError`); the connection retry loop stops promptly between attempts when aborted.
+
+### Changed
+
+- Connection retry keeps the abort handle active during inter-attempt pauses so `abortConnect()` works while waiting on `retryPause`.
+
 ## [3.3.0]
 
 ### Added

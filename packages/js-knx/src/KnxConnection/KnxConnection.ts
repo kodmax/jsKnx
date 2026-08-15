@@ -1,5 +1,5 @@
 import { KnxConnectionType, KnxLayer } from '@repo/knx-enums'
-import { retry, KnxLinkException, KnxEventEmitter, RequiredKnxLinkOptions, LinkInfo, KnxDisconnectedReason } from '@repo/knx-common'
+import { retry, RetryAbortedError, KnxLinkException, KnxEventEmitter, RequiredKnxLinkOptions, LinkInfo, KnxDisconnectedReason } from '@repo/knx-common'
 import { KnxSession } from './KnxSession/KnxSession'
 import { KnxTransport } from './KnxSession/KnxTransport'
 import { KnxCemiFrame } from '@repo/knx-common'
@@ -20,6 +20,7 @@ export class KnxConnection {
     private disconnectTimeoutId?: ReturnType<typeof setTimeout>
     private reconnectTimeoutId?: ReturnType<typeof setTimeout>
     private pendingDisconnectResolve?: () => void
+    private abortConnectRetry?: () => void
 
     public constructor(
         private readonly options: RequiredKnxLinkOptions,
@@ -58,7 +59,9 @@ export class KnxConnection {
                 }
             })
 
-            await retry(this.options.maxRetry, this.options.retryPause, async () => {
+            await retry(this.options.maxRetry, this.options.retryPause, async stop => {
+                this.abortConnectRetry = stop
+
                 try {
                     this.events.emit('starting-session', endpoint)
                     this.session = await KnxSession.startSession(this.transport!, this.options, this.connectionType, this.layer, cemiFrame =>
@@ -93,6 +96,11 @@ export class KnxConnection {
                 }
             })
         } catch (e) {
+            if (e instanceof RetryAbortedError) {
+                this.teardown('connect-aborted')
+                throw new KnxLinkException('CONNECTION_ABORTED', 'Connection aborted', {})
+            }
+
             if (this.transport === undefined) {
                 // Fatal: UDP transport failed to open. Without on('error'), emit throws and connect() rejects —
                 // uncaught rejection crashes the process unless the caller catches connect().
@@ -101,6 +109,8 @@ export class KnxConnection {
 
             this.teardown('network-connect-failed')
             throw e
+        } finally {
+            this.abortConnectRetry = undefined
         }
     }
 
@@ -179,6 +189,23 @@ export class KnxConnection {
         this.transport = undefined
         this.connecting = false
         this.tearingDown = false
+    }
+
+    /**
+     * Abort an in-flight {@link connect}. No-op when not connecting.
+     *
+     * @remarks
+     * Call when the consumer cancels startup (e.g. process shutdown) while {@link connect}
+     * is still retrying. Does not replace {@link disconnect} after a successful connection.
+     */
+    public abortConnect(): void {
+        if (!this.connecting) {
+            return
+        }
+
+        this.explicitDisconnect = true
+        this.clearReconnectTimeout()
+        this.abortConnectRetry?.()
     }
 
     /**

@@ -150,6 +150,17 @@ export class KnxLink {
     }
 
     /**
+     * Abort an in-flight {@link connect}. No-op when not connecting.
+     *
+     * @remarks
+     * Call when the consumer cancels startup while {@link connect} is still retrying.
+     * Does not replace {@link disconnect} after a successful connection.
+     */
+    public abortConnect(): void {
+        this.connection.abortConnect()
+    }
+
+    /**
      * Create a typed client for a group address on this link.
      *
      * @template T DPT class from `schema.DataType` (e.g. `DPT_Switch`).

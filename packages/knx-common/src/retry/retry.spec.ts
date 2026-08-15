@@ -1,4 +1,4 @@
-import { retry } from './retry'
+import { ABORTABLE_PAUSE_POLL_MS, retry, RetryAbortedError } from './retry'
 
 describe('retry', () => {
     it('resolves when callback succeeds on first attempt', async () => {
@@ -42,17 +42,17 @@ describe('retry', () => {
         expect(cb).toHaveBeenCalledTimes(1)
     })
 
-    it('stops retrying without throwing when stop is called during a failed attempt', async () => {
+    it('throws RetryAbortedError when stop is called during a failed attempt', async () => {
         const cb = jest.fn(async (stop: () => void) => {
             stop()
             throw new Error('stopped')
         })
 
-        await expect(retry(3, 10, cb)).resolves.toBeUndefined()
+        await expect(retry(3, 10, cb)).rejects.toBeInstanceOf(RetryAbortedError)
         expect(cb).toHaveBeenCalledTimes(1)
     })
 
-    it('stops retrying when stop is called after a failed attempt', async () => {
+    it('throws RetryAbortedError when stop is called after a failed attempt', async () => {
         let calls = 0
         const cb = jest.fn(async (stop: () => void) => {
             calls++
@@ -64,7 +64,7 @@ describe('retry', () => {
             throw new Error('stopped')
         })
 
-        await expect(retry(3, 10, cb)).resolves.toBeUndefined()
+        await expect(retry(3, 10, cb)).rejects.toBeInstanceOf(RetryAbortedError)
         expect(cb).toHaveBeenCalledTimes(2)
     })
 
@@ -88,9 +88,29 @@ describe('retry', () => {
 
         const promise = retry(3, 1000, cb)
 
-        await jest.advanceTimersByTimeAsync(1000)
-        await promise
+        await expect(promise).rejects.toBeInstanceOf(RetryAbortedError)
+        expect(cb).toHaveBeenCalledTimes(1)
 
+        jest.useRealTimers()
+    })
+
+    it('throws RetryAbortedError quickly when stop is called during abortable pause', async () => {
+        jest.useFakeTimers()
+
+        let capturedStop: (() => void) | undefined
+        const cb = jest.fn(async (stop: () => void) => {
+            capturedStop = stop
+            throw new Error('fail once')
+        })
+
+        const promise = retry(3, 3000, cb)
+        const assertion = expect(promise).rejects.toBeInstanceOf(RetryAbortedError)
+
+        await jest.advanceTimersByTimeAsync(100)
+        capturedStop!()
+        await jest.advanceTimersByTimeAsync(ABORTABLE_PAUSE_POLL_MS)
+
+        await assertion
         expect(cb).toHaveBeenCalledTimes(1)
 
         jest.useRealTimers()
