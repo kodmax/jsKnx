@@ -3,11 +3,17 @@ import { KnxLinkException } from './KnxLinkException'
 
 describe('KnxLinkException', () => {
     it('prefixes message with KnxLink Exception', () => {
-        const error = new KnxLinkException('READ_TIMEOUT', 'Timeout waiting for 1/2/3 response', { address: '1/2/3' })
+        const error = new KnxLinkException('READ_TIMEOUT', 'Timeout waiting for 1/2/3 response', {
+            address: '1/2/3',
+            readTimeoutCount: 2,
+            consecutiveReadTimeouts: 1
+        })
 
         expect(error.message).toBe('KnxLink Exception: Timeout waiting for 1/2/3 response')
         expect(error.code).toBe('READ_TIMEOUT')
         expect(error.details.address).toBe('1/2/3')
+        expect(error.details.readTimeoutCount).toBe(2)
+        expect(error.details.consecutiveReadTimeouts).toBe(1)
     })
 
     it('stores DATA_LENGTH_MISMATCH details', () => {
