@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.5.0]
+
+### Removed
+
+- **OpenTelemetry metrics** — counter `knx.group.operations` and histogram `knx.group.operation.duration` (including push `receive`). Labels per `knx.group_address` caused unbounded Prometheus series cardinality when the host scraped an OTEL metrics exporter.
+
+### Changed
+
+- OpenTelemetry support is **traces only** (parent-gated `knx.group` spans). Use host-app metrics for aggregate KNX health if needed.
+
 ## [3.4.1]
 
 ### Changed

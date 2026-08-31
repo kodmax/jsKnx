@@ -4,7 +4,6 @@ import { APCI, DPT, KnxCemiCode } from '@repo/knx-enums'
 import { Span } from '@opentelemetry/api'
 import EventEmitter from 'events'
 import { observeKnxGroup } from '../tracing/observeKnxGroup'
-import { recordKnxReceive } from '../tracing/knxMetrics'
 
 interface IDPT {
     readonly type: DPT
@@ -231,8 +230,6 @@ export abstract class DataPointAbstract<T> implements IDPT {
 
             switch (cemiFrame.getService()) {
                 case APCI.APCI_GROUP_VALUE_WRITE: {
-                    const receiveStart = Date.now()
-
                     if (this.isCemiFrameValueByteLengthOk(cemiFrame)) {
                         const value = this.decode(cemiFrame.value, cemiFrame)
                         this.valueEvent.emit('value-received', {
@@ -242,7 +239,6 @@ export abstract class DataPointAbstract<T> implements IDPT {
                             unit: this.unit,
                             value
                         })
-                        recordKnxReceive(this, Date.now() - receiveStart)
                         this.options.onReceive?.({
                             groupAddress: this.address,
                             dpt: String(this.type),

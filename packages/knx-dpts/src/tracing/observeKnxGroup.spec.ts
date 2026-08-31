@@ -17,7 +17,6 @@ jest.mock('@opentelemetry/api', () => {
 })
 
 import { observeKnxGroup } from './observeKnxGroup'
-import * as knxMetrics from './knxMetrics'
 
 const dataPoint = {
     getAddress: () => '2/0/4',
@@ -32,7 +31,6 @@ describe('observeKnxGroup', () => {
 
     it('does not create a span without an active parent', async () => {
         mockGetSpan.mockReturnValue(undefined)
-        const recordSpy = jest.spyOn(knxMetrics, 'recordKnxGroupOperation')
 
         const result = await observeKnxGroup('read', dataPoint, async span => {
             expect(span).toBeUndefined()
@@ -42,7 +40,6 @@ describe('observeKnxGroup', () => {
         expect(result).toBe('ok')
         expect(mockGetSpan).toHaveBeenCalledWith(context.active())
         expect(mockStartActiveSpan).not.toHaveBeenCalled()
-        expect(recordSpy).toHaveBeenCalledWith('read', dataPoint, expect.any(Number))
     })
 
     it('creates a child knx.group span when a parent span is active', async () => {

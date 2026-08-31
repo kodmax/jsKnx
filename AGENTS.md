@@ -79,6 +79,7 @@ Separate from `KnxTunnel`. Handshake uses one `setTimeout(connectionTimeout)` cl
 ## Tests
 
 - **`KnxTunnel.spec.ts`:** always uses fake timers; does not emit `tunnel.close()` in every case — fine for unit scope.
-- **Full suite worker warning:** treat as test harness / cross-suite timer noise unless `--detectOpenHandles` points at a specific test file that creates `KnxTunnel` without `close` **and** leaves real timers running.
+- **Full suite worker warning:** session-scoped tunnel timers can keep a Jest worker alive; configs set `forceExit: true` so the suite exits. That is harness noise, not an unbounded production leak — see above.
+- **Parallel Turbo/CI hang:** multiple Jest processes sharing Watchman can stall before any tests run. Configs set `watchman: false`.
 
 **Do not** “fix” production `KnxTunnel` timing logic solely to silence Jest’s worker exit message without confirming an actual unbounded handle growth.

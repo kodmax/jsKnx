@@ -2,13 +2,14 @@
 
 TypeScript/JavaScript client for KNX/IP gateways (tunneling connection, link layer).
 
-Depends on [`@opentelemetry/api`](https://www.npmjs.com/package/@opentelemetry/api) for optional tracing and metrics (no-op until the host process registers an OpenTelemetry SDK). Works on Node.js 20+.
+Depends on [`@opentelemetry/api`](https://www.npmjs.com/package/@opentelemetry/api) for optional tracing (no-op until the host process registers an OpenTelemetry SDK). Works on Node.js 20+.
 
 See [CHANGELOG](https://github.com/kodmax/jsKnx/blob/main/CHANGELOG.md) for release notes. Recent versions:
 
+- **3.5.0** — Removed OpenTelemetry metrics (cardinality); traces unchanged
 - **3.4.1** — KNX group trace spans only when a parent span is active (no root spans from js-knx)
 - **3.4.0** — `abortConnect()` to cancel in-flight `connect()` during retry; `CONNECTION_ABORTED` error code
-- **3.3.0** — OpenTelemetry spans and metrics for group read/write/request; push receive metrics; optional `onReceive` callback
+- **3.3.0** — OpenTelemetry spans for group read/write/request; optional `onReceive` callback
 - **3.2.0** — Per group address read timeout counters (`getReadTimeoutStats()`)
 - **3.1.0** — `addResponseListener` / explicit write vs read-response listeners (replaces `addValueListener`)
 - **3.0.0** — `KnxLink.group()` (renamed from `getDatapoint()`)
@@ -207,24 +208,21 @@ const knx = new KnxLink('192.168.0.8', {
 })
 ```
 
-Push telegrams also increment the OpenTelemetry metric `knx.group.operations` with `knx.operation=receive` when a metrics exporter is configured in the host process.
+## OpenTelemetry (3.3.0+; metrics removed in 3.5.0)
 
-## OpenTelemetry (3.3.0+)
+When the host application registers an OpenTelemetry SDK, js-knx emits **traces only**:
 
-When the host application registers an OpenTelemetry SDK, js-knx emits:
-
-| Signal      | What is instrumented                                                                                                           |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Traces**  | `read()`, `requestValue()`, `write()` — span `knx.group` (child span only; requires an active parent span in the OTEL context) |
-| **Metrics** | All of the above plus push `receive` (counter + histogram)                                                                     |
+| Signal     | What is instrumented                                                                                                           |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| **Traces** | `read()`, `requestValue()`, `write()` — span `knx.group` (child span only; requires an active parent span in the OTEL context) |
 
 Trace attributes: `knx.group_address`, `knx.operation` (`read` \| `request_value` \| `write`), `knx.dpt`.
 
 - **`read()`** — one span for the full round-trip; span events `knx.read_sent` and `knx.value_received`
 - **`requestValue()`** — short span covering the group-read send only (no span events, no wait for response)
-- **Push writes** — metrics only (no spans), to avoid noise and unrelated HTTP trace parents
+- **Push writes** — no spans (use `onReceive` if you need a callback)
 
-Export traces and metrics from the host app (e.g. OTLP for traces, Prometheus exporter for metrics). Without an SDK, instrumentation is a no-op.
+Child `knx.group` spans are created only when an active parent span exists. Without an SDK, tracing is a no-op.
 
 ### Connection behaviour
 
